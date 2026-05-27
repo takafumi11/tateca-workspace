@@ -9,7 +9,7 @@ Reverse SDD is a separate process documented in `docs/sdd-reverse-process.md`.
 
 ## Execution Context
 
-Open this repository (`tateca-workspace`) in your editor. Tateca SDD artifacts live under `docs/`, API Contract files live under `openapi/`, and implementation lives in `tateca-backend` via `LOCAL_REPOSITORY_LINKS.md`.
+Open this repository (`tateca-workspace`) in your editor. Tateca SDD artifacts live under `docs/`, API Contract files live under `contracts/`, and implementation lives in `tateca-backend` via `LOCAL_REPOSITORY_LINKS.md`.
 
 Agent skills are maintained from a shared SDD skill source via user-level symlinks. In this repository, references to `current repo` or `this repository` mean `tateca-workspace` unless a skill explicitly says otherwise. Step 5 implementation work targets `tateca-backend`.
 
@@ -73,7 +73,7 @@ Decide ownership in Step 2 when a feature also involves frontend, infrastructure
 - Add `frontend-requirements.md` only when a feature has a frontend-owned surface; keep UX/UI ACs there instead of expanding domain ACs
 - Use `design.md` to assign the primary owner, supporting surfaces, verification entrypoint, and test owner for each AC
 - Do not rely on implied routing, even for single-repo changes
-- API Contract in this repository is authored as OpenAPI files under `openapi/`
+- API Contract in this repository is authored as OpenAPI files under `contracts/`
 - Use `design.md` as the ownership-routing source for Step 4 and Step 5
 - UI design and frontend implementation stay in frontend-owned artifacts or repositories
 
@@ -116,15 +116,15 @@ Step 2 is not skipped. Even simple or single-repo changes update `design.md` eno
 
 ## Step 3: API Contract (OpenAPI)
 
-**Purpose:** Define the source of truth for the Tateca API Contract in this repository. Translate consumer-visible behavior from `requirements.md` and `design.md` into the published API Contract. The contract is represented as OpenAPI files under `openapi/`. Skip Step 3 only when the feature does not change the API Contract.
+**Purpose:** Define the source of truth for the Tateca API Contract in this repository. Translate consumer-visible behavior from `requirements.md` and `design.md` into the published API Contract. The contract is represented as OpenAPI files under `contracts/`. Skip Step 3 only when the feature does not change the API Contract.
 
 **Skill:** `sdd-openapi`
 
 **Artifacts:**
-- `openapi/paths/{feature}.yaml`
-- `openapi/components/schemas/requests/{Request}.yaml`
-- `openapi/components/schemas/responses/{Response}.yaml`
-- `openapi/components/examples/errors/{ERROR_CODE}.yaml`
+- `contracts/paths/{feature}.yaml`
+- `contracts/components/schemas/requests/{Request}.yaml`
+- `contracts/components/schemas/responses/{Response}.yaml`
+- `contracts/components/examples/errors/{ERROR_CODE}.yaml`
 
 **Reviewers:**
 - **Tech Lead:** Error code taxonomy, appropriateness of status codes, consistency with existing APIs

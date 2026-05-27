@@ -13,7 +13,7 @@ Reverse phases define the sequence of work. Reverse skills define the artifact s
 
 ## Execution Context
 
-Open this repository (`tateca-workspace`) in your editor for specs and contracts. Existing behavior is evidenced by code under `tateca-backend/src/`, API Contract (OpenAPI) files under `openapi/`, tests under `tateca-backend/src/test/`, and existing SDD artifacts under `docs/specs/`.
+Open this repository (`tateca-workspace`) in your editor for specs and contracts. Existing behavior is evidenced by code under `tateca-backend/src/`, API Contract (OpenAPI) files under `contracts/`, tests under `tateca-backend/src/test/`, and existing SDD artifacts under `docs/specs/`.
 
 Agent skills are maintained from a shared SDD skill source via user-level symlinks. In this repository, reverse SDD artifacts are written to `docs/` and `products/tateca/`.
 
@@ -77,7 +77,7 @@ Read in this order:
 
 1. Implementation under `src/main/`
 2. Existing docs under `docs/`
-3. Current API Contract files under `openapi/`
+3. Current API Contract files under `contracts/`
 4. Existing black-box and internal tests under `src/test/`
 5. Adjacent systems only when behavior crosses repository boundaries
 

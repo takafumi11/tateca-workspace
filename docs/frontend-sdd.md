@@ -22,7 +22,7 @@ Additional frontend-facing contracts:
 
 | Artifact | Owner | Purpose |
 |----------|-------|---------|
-| Tateca API Contract under `openapi/` | Tateca Backend | Published API Contract consumed by clients |
+| Tateca API Contract under `contracts/` | Tateca Backend | Published API Contract consumed by clients |
 | Frontend implementation docs or tests | Frontend owner | UI behavior and user journey verification |
 
 ## Process Flow
@@ -81,7 +81,7 @@ docs/specs/{feature}/
 └── reviews/
     └── YYYY-MM-DD-frontend-requirements-review.md
 
-openapi/                       # API Contract source files
+contracts/                     # API Contract source files
 └── paths/
     └── {feature}.yaml
 ```

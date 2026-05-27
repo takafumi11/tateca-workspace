@@ -15,7 +15,7 @@ This repository is the Tateca AI-agent-first SDD workspace. SDD プロセス、�
 - Main areas of the repository:
   - `docs/`: SDD process docs, testing strategy, templates
   - `docs/specs/{feature}/`: feature requirements and design
-  - `openapi/`: Tateca API Contract source files (paths, components, info)
+  - `contracts/`: Tateca API Contract source files (paths, components, info)
   - `openapi.yaml`: API Contract entry point
   - `scripts/`: local docs build helpers
 

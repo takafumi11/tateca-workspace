@@ -6,7 +6,7 @@ Use this file when updating SDD docs or using SDD skills in this repository as a
 
 - Open this repository (`tateca-workspace`) directly.
 - Tateca SDD documents live under `docs/`.
-- Tateca API Contract files live under `openapi/`.
+- Tateca API Contract files live under `contracts/`.
 - Agent-specific SDD skills are maintained from a shared SDD skill source via user-level symlinks. Do not copy skill bodies into this repository unless the project intentionally changes that strategy.
 - Existing committed agent guidance lives in `CLAUDE.md`.
 
@@ -16,7 +16,7 @@ Use this file when updating SDD docs or using SDD skills in this repository as a
 |----------|------|-------------------------|
 | `docs/` | Tateca-local SDD / reverse SDD process rules, testing strategy, review-loop rules, and artifact boundaries | The rule applies to Tateca feature work or Tateca artifact layout |
 | `docs/specs/{feature}/` | Feature-specific requirements, design, frontend requirements, and review records | The change affects one feature's behavior or ownership |
-| `openapi/` | Tateca API Contract source files | The request/response schema, path, validation, or error contract changes |
+| `contracts/` | Tateca API Contract source files | The request/response schema, path, validation, or error contract changes |
 | Shared SDD skill source | Shared skill trigger metadata, workflow, and deep references | The change should affect all projects using the shared SDD skills |
 | `CLAUDE.md` | Committed agent guidance for this repository | Commands, repo conventions, or high-level workflow guidance changes |
 | `docs/STEERING.md` | Human and agent project map | Tateca product, domain, architecture, or operations context changes |

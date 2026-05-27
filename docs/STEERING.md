@@ -18,7 +18,7 @@ docs/frontend-sdd.md         — フロントエンド面がある場合の SDD 
 docs/review-record-template.md — SDD レビュー記録テンプレート
 docs/specs/{feature}/        — フィーチャー別の要件・設計
 openapi.yaml                 — API Contract エントリポイント
-openapi/                     — Tateca API Contract source files
+contracts/                   — Tateca API Contract source files
 ```
 
 ---

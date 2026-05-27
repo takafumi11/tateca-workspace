@@ -8,7 +8,7 @@ Tateca の AI-agent-first SDD workspace です。SDD プロセス、フィーチ
 
 - SDD プロセス文書とテンプレート (`docs/`)
 - Tateca feature specs (`docs/specs/`)
-- Tateca API Contract (`openapi/`, `openapi.yaml`)
+- Tateca API Contract (`contracts/`, `openapi.yaml`)
 - API Docs の lint / preview / GitHub Pages 公開
 
 ## Initial Setup
