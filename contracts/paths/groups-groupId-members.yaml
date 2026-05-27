@@ -3,6 +3,15 @@ post:
     - Groups
   summary: Add a new member to an existing group
   operationId: addMember
+  description: |
+    Adds a new unjoined member (no Firebase account linked) to an existing group.
+
+    **Business Rules**:
+    1. **Authorization**: Only authenticated members of the group may add new members (R4-AC1; see `design.md` → AC Ownership Matrix).
+    2. **Group size limit**: A group may have at most 10 members total; the request is rejected when the limit is already reached (R3-AC1; see `design.md` → Canonical Testable Flows).
+    3. **Duplicate names**: Members with the same name are allowed (R1-AC4).
+
+    **Dependencies**: MySQL (`users`, `user_groups` tables).
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
   requestBody:
@@ -11,46 +20,105 @@ post:
       application/json:
         schema:
           $ref: "../components/schemas/requests/AddMemberRequest.yaml"
+        examples:
+          addMember:
+            summary: Add a new member named Alice
+            value:
+              member_name: Alice
   responses:
     "200":
-      description: Member added successfully
+      description: Member added successfully. Returns the full group state including the new member.
       content:
         application/json:
           schema:
             $ref: "../components/schemas/responses/GroupResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request — input validation failed.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed (field-level errors in `errors` array) |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              summary: member_name is blank or exceeds 50 characters (VALIDATION.FAILED)
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — Firebase JWT token is missing or invalid.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.INVALID_TOKEN` | Invalid authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            invalidToken:
+              summary: Invalid or missing Firebase JWT (AUTH.INVALID_TOKEN)
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "403":
-      description: Forbidden - User is not a member of this group
+      description: |
+        Forbidden — requester is not an authenticated member of the group.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `USER.NOT_GROUP_MEMBER` | Only group members can add members |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            notGroupMember:
+              summary: Requester is not a group member (USER.NOT_GROUP_MEMBER)
+              $ref: "../components/examples/errors/USER_NOT_GROUP_MEMBER.yaml"
     "404":
-      description: Group not found
+      description: |
+        Not found — the specified group does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | Group not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              summary: Group not found (GROUP.NOT_FOUND)
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
     "409":
-      description: Conflict - Group has reached maximum size
+      description: |
+        Conflict — the group has already reached the maximum of 10 members.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.MAX_SIZE_REACHED` | Group has reached maximum size of 10 members |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            maxSizeReached:
+              summary: Group is at maximum size (GROUP.MAX_SIZE_REACHED)
+              $ref: "../components/examples/errors/GROUP_MAX_SIZE_REACHED.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be `application/json`.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported Media Type. Content-Type must be application/json |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              summary: Missing or unsupported Content-Type (REQUEST.UNSUPPORTED_MEDIA_TYPE)
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
