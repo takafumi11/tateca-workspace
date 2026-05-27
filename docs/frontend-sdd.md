@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document extends the normal SDD process in `platform/docs/sdd-process.md` for frontend-owned Tateca surfaces.
+This document extends the normal SDD process in `docs/sdd-process.md` for frontend-owned Tateca surfaces.
 Backend SDD remains the source of truth for domain behavior, backend API Contract, and backend test ownership.
 Frontend SDD adds consumer-facing UX/UI behavior without duplicating domain ACs.
 
@@ -22,7 +22,7 @@ Additional frontend-facing contracts:
 
 | Artifact | Owner | Purpose |
 |----------|-------|---------|
-| Tateca API Contract under `products/tateca/contracts/internal-api/` | Tateca Backend | Published API Contract consumed by clients |
+| Tateca API Contract under `openapi/` | Tateca Backend | Published API Contract consumed by clients |
 | Frontend implementation docs or tests | Frontend owner | UI behavior and user journey verification |
 
 ## Process Flow
@@ -68,20 +68,20 @@ Do not add frontend requirements for backend-only behavior unless a frontend sur
 ## Template And Testing
 
 - Template: `docs/frontend-requirements-template.md`
-- Frontend test policy: `platform/docs/frontend-testing.md`
-- Backend test policy remains in `platform/docs/testing.md`
+- Frontend test policy: `docs/frontend-testing.md`
+- Backend test policy remains in `docs/testing.md`
 
 ## Feature Layout
 
 ```
-products/tateca/docs/specs/{feature}/
+docs/specs/{feature}/
 ├── requirements.md              # domain ACs
 ├── frontend-requirements.md     # UX/UI ACs, when applicable
 ├── design.md                    # domain + frontend ownership routing
 └── reviews/
     └── YYYY-MM-DD-frontend-requirements-review.md
 
-products/tateca/contracts/internal-api/                       # API Contract source files
+openapi/                       # API Contract source files
 └── paths/
     └── {feature}.yaml
 ```

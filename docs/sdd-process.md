@@ -5,11 +5,11 @@
 This document defines the normal SDD flow for Tateca Backend.
 It covers step order, document boundaries, repo ownership, and review handling.
 Step-level procedures live in the corresponding Cursor skills.
-Reverse SDD is a separate process documented in `platform/docs/sdd-reverse-process.md`.
+Reverse SDD is a separate process documented in `docs/sdd-reverse-process.md`.
 
 ## Execution Context
 
-Open this repository (`tateca-workspace`) in your editor. Tateca SDD artifacts live under `platform/docs/` and `products/tateca/docs/`, API Contract files live under `products/tateca/contracts/internal-api/`, and implementation lives in `tateca-backend` via `LOCAL_REPOSITORY_LINKS.md`.
+Open this repository (`tateca-workspace`) in your editor. Tateca SDD artifacts live under `docs/`, API Contract files live under `openapi/`, and implementation lives in `tateca-backend` via `LOCAL_REPOSITORY_LINKS.md`.
 
 Agent skills are maintained from a shared SDD skill source via user-level symlinks. In this repository, references to `current repo` or `this repository` mean `tateca-workspace` unless a skill explicitly says otherwise. Step 5 implementation work targets `tateca-backend`.
 
@@ -20,8 +20,8 @@ Finish this selection first; the normal step guidance below applies only after t
 
 | Situation | Process doc | Active skills |
 |-----------|-------------|---------------|
-| Implemented behavior exists and reverse reconstruction is required or already in progress, for example a baseline Step 1 is missing | `platform/docs/sdd-reverse-process.md` | `sdd-reverse-requirements`, `sdd-reverse-design`, `sdd-reverse-openapi`, `sdd-reverse-black-box-test`, `sdd-reverse-tdd` |
-| Brand-new feature, or feature work with an established baseline Step 1 already in place | `platform/docs/sdd-process.md` | `sdd-requirements`, `sdd-design`, `sdd-openapi`, `sdd-black-box-test`, `sdd-tdd` |
+| Implemented behavior exists and reverse reconstruction is required or already in progress, for example a baseline Step 1 is missing | `docs/sdd-reverse-process.md` | `sdd-reverse-requirements`, `sdd-reverse-design`, `sdd-reverse-openapi`, `sdd-reverse-black-box-test`, `sdd-reverse-tdd` |
+| Brand-new feature, or feature work with an established baseline Step 1 already in place | `docs/sdd-process.md` | `sdd-requirements`, `sdd-design`, `sdd-openapi`, `sdd-black-box-test`, `sdd-tdd` |
 
 This document covers only the normal SDD path.
 
@@ -60,7 +60,7 @@ Update the existing artifact instead of creating a new one.
 - If an SDD artifact (`requirements.md`, `design.md`, API Contract) already exists, review and update it using the corresponding skill
 - Keep Step 2 current for every change; even a small HLD delta should record ownership, verification entrypoint, and contract boundaries explicitly
 - For steps other than Step 2, skip only when the step skill explicitly allows it
-- If reverse SDD applies, use `platform/docs/sdd-reverse-process.md` and remain in reverse until baseline reconstruction is complete
+- If reverse SDD applies, use `docs/sdd-reverse-process.md` and remain in reverse until baseline reconstruction is complete
 
 ---
 
@@ -73,7 +73,7 @@ Decide ownership in Step 2 when a feature also involves frontend, infrastructure
 - Add `frontend-requirements.md` only when a feature has a frontend-owned surface; keep UX/UI ACs there instead of expanding domain ACs
 - Use `design.md` to assign the primary owner, supporting surfaces, verification entrypoint, and test owner for each AC
 - Do not rely on implied routing, even for single-repo changes
-- API Contract in this repository is authored as OpenAPI files under `products/tateca/contracts/internal-api/`
+- API Contract in this repository is authored as OpenAPI files under `openapi/`
 - Use `design.md` as the ownership-routing source for Step 4 and Step 5
 - UI design and frontend implementation stay in frontend-owned artifacts or repositories
 
@@ -85,7 +85,7 @@ Support sections such as `Scope`, `Out of Scope`, `Common Preconditions`, `Proce
 
 **Skill:** `sdd-requirements`
 
-**Artifact:** `products/tateca/docs/specs/{feature}/requirements.md`
+**Artifact:** `docs/specs/{feature}/requirements.md`
 
 **Reviewers:**
 - **PDM:** Validity of business requirements and ACs, Out of Scope decisions
@@ -104,7 +104,7 @@ Step 2 is not skipped. Even simple or single-repo changes update `design.md` eno
 
 **Skill:** `sdd-design`
 
-**Artifact:** `products/tateca/docs/specs/{feature}/design.md`
+**Artifact:** `docs/specs/{feature}/design.md`
 
 **Reviewers:**
 - **Tech Lead:** Validity of processing flows, accuracy of state transitions, appropriateness of integration patterns
@@ -116,15 +116,15 @@ Step 2 is not skipped. Even simple or single-repo changes update `design.md` eno
 
 ## Step 3: API Contract (OpenAPI)
 
-**Purpose:** Define the source of truth for the Tateca API Contract in this repository. Translate consumer-visible behavior from `requirements.md` and `design.md` into the published API Contract. The contract is represented as OpenAPI files under `products/tateca/contracts/internal-api/`. Skip Step 3 only when the feature does not change the API Contract.
+**Purpose:** Define the source of truth for the Tateca API Contract in this repository. Translate consumer-visible behavior from `requirements.md` and `design.md` into the published API Contract. The contract is represented as OpenAPI files under `openapi/`. Skip Step 3 only when the feature does not change the API Contract.
 
 **Skill:** `sdd-openapi`
 
 **Artifacts:**
-- `products/tateca/contracts/internal-api/paths/{feature}.yaml`
-- `products/tateca/contracts/internal-api/components/schemas/requests/{Request}.yaml`
-- `products/tateca/contracts/internal-api/components/schemas/responses/{Response}.yaml`
-- `products/tateca/contracts/internal-api/components/examples/errors/{ERROR_CODE}.yaml`
+- `openapi/paths/{feature}.yaml`
+- `openapi/components/schemas/requests/{Request}.yaml`
+- `openapi/components/schemas/responses/{Response}.yaml`
+- `openapi/components/examples/errors/{ERROR_CODE}.yaml`
 
 **Reviewers:**
 - **Tech Lead:** Error code taxonomy, appropriateness of status codes, consistency with existing APIs
@@ -210,10 +210,10 @@ requirements.md (Defines WHAT)
 
 All step reviews use the same format.
 
-- Save review records in `products/tateca/docs/specs/{feature}/reviews/`
+- Save review records in `docs/specs/{feature}/reviews/`
 - Use one file per step run, for example `2026-05-27-step2-design-review.md`
 - Append each iteration, its triage, fixes, and re-review result to the same file until the step closes
-- Use `platform/docs/review-record-template.md` as the starting format
+- Use `docs/review-record-template.md` as the starting format
 - Each step review is a multiple-perspective review. Cover every reviewer listed in the owning skill's `references/review-criteria.md`, including `Sanity`
 - Return one section per reviewer with a verdict of `Approved` or `Needs Revision`
 - Record each finding with severity, location, comment, triage, and status
@@ -234,7 +234,7 @@ Work proceeds in this order until the step can close:
 ## Artifact Directory Structure
 
 ```
-platform/docs/
+docs/
 ├── sdd-process.md          ← This document (overall process)
 ├── sdd-reverse-process.md  ← Reverse SDD process
 ├── review-record-template.md

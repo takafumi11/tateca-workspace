@@ -6,9 +6,9 @@ Tateca の AI-agent-first SDD workspace です。SDD プロセス、フィーチ
 
 ## What This Repo Is For
 
-- 共有 SDD プロセス文書とテンプレート
-- Tateca プロダクトの feature specs (`products/tateca/docs/specs/`)
-- Tateca API Contract (`products/tateca/contracts/internal-api/`)
+- SDD プロセス文書とテンプレート (`docs/`)
+- Tateca feature specs (`docs/specs/`)
+- Tateca API Contract (`openapi/`, `openapi.yaml`)
 - API Docs の lint / preview / GitHub Pages 公開
 
 ## Initial Setup
@@ -23,21 +23,19 @@ Tateca の AI-agent-first SDD workspace です。SDD プロセス、フィーチ
 
 - [`AGENTS.md`](AGENTS.md) が共有エージェント挙動の source of truth です。
 - クロスリポジトリ実装では `LOCAL_REPOSITORY_LINKS.md` を先に読むこと。
-- `LOCAL_REPOSITORY_LINKS.md` が未作成、または `TBU` が残っている場合は推測せず開発者に確認すること。
 
 ## Main Entry Points
 
-- `platform/docs/sdd-process.md`: normal SDD process
-- `platform/docs/sdd-reverse-process.md`: reverse SDD process
-- `platform/docs/testing.md`: shared test strategy
-- `products/tateca/docs/specs/`: feature requirements and design
-- `products/tateca/contracts/internal-api/`: OpenAPI contract
+| Document | 内容 |
+|----------|------|
+| `docs/STEERING.md` | プロジェクト全体像 |
+| `docs/sdd-process.md` | normal SDD process |
+| `docs/sdd-reverse-process.md` | reverse SDD process |
+| `docs/testing.md` | テスト戦略 |
+| `docs/specs/` | フィーチャー別の要件・設計 |
+| `openapi.yaml` | API Contract エントリポイント |
 
 ## API Docs
 
 - Production: [docs.tateca.net](https://docs.tateca.net)
-- Local preview: `cd products/tateca && npm ci && npm run preview`
-
-## Migration Note
-
-このリポジトリは `tateca-backend` から SDD 文書と OpenAPI/API Docs をコピー移行して作成しました。Git 履歴は引き継いでいません。
+- Local preview: `npm ci && npm run preview`

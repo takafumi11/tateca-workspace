@@ -8,16 +8,17 @@ Tateca の SDD / 契約 / API Docs を素早く把握するための「地図」
 ## Document Map
 
 ```
-README.md                              — 人間向けの玄関。概要 + Getting Started + リンク集
-AGENTS.md / CLAUDE.md                  — AI エージェント向け入口
-platform/docs/STEERING.md              — プロジェクトの地図（本文書）
-platform/docs/sdd-process.md           — SDD プロセスガイド
-platform/docs/sdd-reverse-process.md   — Reverse SDD プロセスガイド
-platform/docs/testing.md               — テスト戦略・テストタイプ定義
-platform/docs/frontend-sdd.md          — フロントエンド面がある場合の SDD 拡張
-platform/docs/review-record-template.md — SDD レビュー記録テンプレート
-products/tateca/products/tateca/docs/specs/{feature}/ — フィーチャー別の要件・設計
-products/tateca/contracts/internal-api/ — Tateca API Contract (OpenAPI)
+README.md                    — 人間向けの玄関。概要 + Getting Started + リンク集
+AGENTS.md / CLAUDE.md        — AI エージェント向け入口
+docs/STEERING.md             — プロジェクトの地図（本文書）
+docs/sdd-process.md          — SDD プロセスガイド
+docs/sdd-reverse-process.md  — Reverse SDD プロセスガイド
+docs/testing.md              — テスト戦略・テストタイプ定義
+docs/frontend-sdd.md         — フロントエンド面がある場合の SDD 拡張
+docs/review-record-template.md — SDD レビュー記録テンプレート
+docs/specs/{feature}/        — フィーチャー別の要件・設計
+openapi.yaml                 — API Contract エントリポイント
+openapi/                     — Tateca API Contract source files
 ```
 
 ---
@@ -232,28 +233,28 @@ API Contract Preview URL: `https://<owner>.github.io/<repo>/<branch-name>/`
 
 ## SDD Feature Specifications
 
-実装済み機能の仕様書は `products/tateca/products/tateca/docs/specs/` 配下にフィーチャー単位で管理:
+実装済み機能の仕様書は `docs/specs/` 配下にフィーチャー単位で管理:
 
 | Feature | 仕様ディレクトリ |
 |---------|-----------------|
-| 認証ユーザー作成 | `products/tateca/products/tateca/docs/specs/create-auth-user/` |
-| 認証ユーザー取得 | `products/tateca/products/tateca/docs/specs/get-auth-user/` |
-| 認証ユーザー削除 | `products/tateca/products/tateca/docs/specs/delete-auth-user/` |
-| レビュー設定更新 | `products/tateca/products/tateca/docs/specs/update-review-preferences/` |
-| 表示名更新 | `products/tateca/products/tateca/docs/specs/update-user-name/` |
-| グループ作成 | `products/tateca/products/tateca/docs/specs/create-group/` |
-| グループ一覧取得 | `products/tateca/products/tateca/docs/specs/get-group-list/` |
-| グループ詳細取得 | `products/tateca/products/tateca/docs/specs/get-group-detail/` |
-| グループ名更新 | `products/tateca/products/tateca/docs/specs/update-group-name/` |
-| グループ参加 | `products/tateca/products/tateca/docs/specs/join-group/` |
-| グループ脱退 | `products/tateca/products/tateca/docs/specs/leave-group/` |
-| メンバー追加 | `products/tateca/products/tateca/docs/specs/add-member/` |
-| メンバー削除 | `products/tateca/products/tateca/docs/specs/remove-member/` |
-| トランザクション作成 | `products/tateca/products/tateca/docs/specs/create-transaction/` |
-| トランザクション詳細取得 | `products/tateca/products/tateca/docs/specs/get-transaction-detail/` |
-| トランザクション更新 | `products/tateca/products/tateca/docs/specs/update-transaction/` |
-| トランザクション削除 | `products/tateca/products/tateca/docs/specs/delete-transaction/` |
-| 取引履歴取得 | `products/tateca/products/tateca/docs/specs/get-transaction-history/` |
-| 精算情報取得 | `products/tateca/products/tateca/docs/specs/get-transaction-settlement/` |
-| 為替レート取得 | `products/tateca/products/tateca/docs/specs/get-exchange-rate/` |
-| 為替レート更新 | `products/tateca/products/tateca/docs/specs/update-exchange-rate/` |
+| 認証ユーザー作成 | `docs/specs/create-auth-user/` |
+| 認証ユーザー取得 | `docs/specs/get-auth-user/` |
+| 認証ユーザー削除 | `docs/specs/delete-auth-user/` |
+| レビュー設定更新 | `docs/specs/update-review-preferences/` |
+| 表示名更新 | `docs/specs/update-user-name/` |
+| グループ作成 | `docs/specs/create-group/` |
+| グループ一覧取得 | `docs/specs/get-group-list/` |
+| グループ詳細取得 | `docs/specs/get-group-detail/` |
+| グループ名更新 | `docs/specs/update-group-name/` |
+| グループ参加 | `docs/specs/join-group/` |
+| グループ脱退 | `docs/specs/leave-group/` |
+| メンバー追加 | `docs/specs/add-member/` |
+| メンバー削除 | `docs/specs/remove-member/` |
+| トランザクション作成 | `docs/specs/create-transaction/` |
+| トランザクション詳細取得 | `docs/specs/get-transaction-detail/` |
+| トランザクション更新 | `docs/specs/update-transaction/` |
+| トランザクション削除 | `docs/specs/delete-transaction/` |
+| 取引履歴取得 | `docs/specs/get-transaction-history/` |
+| 精算情報取得 | `docs/specs/get-transaction-settlement/` |
+| 為替レート取得 | `docs/specs/get-exchange-rate/` |
+| 為替レート更新 | `docs/specs/update-exchange-rate/` |

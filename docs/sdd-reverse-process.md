@@ -13,9 +13,9 @@ Reverse phases define the sequence of work. Reverse skills define the artifact s
 
 ## Execution Context
 
-Open this repository (`tateca-workspace`) in your editor for specs and contracts. Existing behavior is evidenced by code under `tateca-backend/src/`, API Contract (OpenAPI) files under `products/tateca/contracts/internal-api/`, tests under `tateca-backend/src/test/`, and existing SDD artifacts under `products/tateca/docs/specs/`.
+Open this repository (`tateca-workspace`) in your editor for specs and contracts. Existing behavior is evidenced by code under `tateca-backend/src/`, API Contract (OpenAPI) files under `openapi/`, tests under `tateca-backend/src/test/`, and existing SDD artifacts under `docs/specs/`.
 
-Agent skills are maintained from a shared SDD skill source via user-level symlinks. In this repository, reverse SDD artifacts are written to `platform/docs/` and `products/tateca/`.
+Agent skills are maintained from a shared SDD skill source via user-level symlinks. In this repository, reverse SDD artifacts are written to `docs/` and `products/tateca/`.
 
 ## Core Principles
 
@@ -33,7 +33,7 @@ A reverse-created Step 1 is not treated as an established baseline until the rev
 | Situation | Process doc | Active skills |
 |-----------|-------------|---------------|
 | Implemented behavior exists and reverse reconstruction is required or already in progress | This document | `sdd-reverse-requirements`, `sdd-reverse-design`, `sdd-reverse-openapi`, `sdd-reverse-black-box-test`, `sdd-reverse-tdd` |
-| Brand-new feature, or feature work with an established baseline Step 1 already in place | `platform/docs/sdd-process.md` | Normal SDD step skills |
+| Brand-new feature, or feature work with an established baseline Step 1 already in place | `docs/sdd-process.md` | Normal SDD step skills |
 
 Once reverse SDD is selected, start with `sdd-reverse-requirements`.
 If downstream artifacts are also missing or materially incomplete, continue with the corresponding reverse artifact skill in artifact order.
@@ -77,7 +77,7 @@ Read in this order:
 
 1. Implementation under `src/main/`
 2. Existing docs under `docs/`
-3. Current API Contract files under `products/tateca/contracts/internal-api/`
+3. Current API Contract files under `openapi/`
 4. Existing black-box and internal tests under `src/test/`
 5. Adjacent systems only when behavior crosses repository boundaries
 
@@ -132,10 +132,10 @@ For each active reverse step, run the normal step review criteria and also verif
 
 ## Shared Foundations
 
-- Use `platform/docs/sdd-process.md` for shared document responsibility separation and ownership rules
-- Use `platform/docs/testing.md` for shared test-type responsibilities
-- Use `platform/docs/review-record-template.md` for review records
-- Use one review file per step run, as defined in `platform/docs/sdd-process.md`
+- Use `docs/sdd-process.md` for shared document responsibility separation and ownership rules
+- Use `docs/testing.md` for shared test-type responsibilities
+- Use `docs/review-record-template.md` for review records
+- Use one review file per step run, as defined in `docs/sdd-process.md`
 
 ## Process Boundary
 

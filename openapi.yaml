@@ -1,0 +1,121 @@
+openapi: "3.1.0"
+info:
+  $ref: "./openapi/info.yaml"
+servers:
+  - url: http://localhost:8080
+    description: Local Development
+  - url: https://staging-api.tateca.net
+    description: Staging
+  - url: https://api.tateca.net
+    description: Production
+security:
+  - BearerAuth: []
+paths:
+  /auth/users:
+    $ref: "./openapi/paths/auth-users.yaml"
+  /auth/users/{uid}:
+    $ref: "./openapi/paths/auth-users-uid.yaml"
+  /auth/users/review-preferences:
+    $ref: "./openapi/paths/auth-users-review-preferences.yaml"
+  /exchange-rate/{date}:
+    $ref: "./openapi/paths/exchange-rate.yaml"
+  /groups:
+    $ref: "./openapi/paths/groups.yaml"
+  /groups/list:
+    $ref: "./openapi/paths/groups-list.yaml"
+  /groups/{groupId}:
+    $ref: "./openapi/paths/groups-groupId.yaml"
+  /groups/{groupId}/members:
+    $ref: "./openapi/paths/groups-groupId-members.yaml"
+  /groups/{groupId}/members/{userUuid}:
+    $ref: "./openapi/paths/groups-groupId-members-userUuid.yaml"
+  /groups/{groupId}/users/{userUuid}:
+    $ref: "./openapi/paths/groups-groupId-users-userUuid.yaml"
+  /groups/{groupId}/transactions:
+    $ref: "./openapi/paths/groups-groupId-transactions.yaml"
+  /groups/{groupId}/transactions/history:
+    $ref: "./openapi/paths/groups-groupId-transactions-history.yaml"
+  /groups/{groupId}/transactions/settlement:
+    $ref: "./openapi/paths/groups-groupId-transactions-settlement.yaml"
+  /groups/{groupId}/transactions/{transactionId}:
+    $ref: "./openapi/paths/groups-groupId-transactions-transactionId.yaml"
+  /internal/exchange-rates:
+    $ref: "./openapi/paths/internal-exchange-rates.yaml"
+  /users/{userId}:
+    $ref: "./openapi/paths/users-userId-update-user-name.yaml"
+components:
+  securitySchemes:
+    BearerAuth:
+      $ref: "./openapi/components/securitySchemes/BearerAuth.yaml"
+    ApiKeyAuth:
+      $ref: "./openapi/components/securitySchemes/ApiKeyAuth.yaml"
+  parameters:
+    groupIdPath:
+      $ref: "./openapi/components/parameters/groupIdPath.yaml"
+    transactionIdPath:
+      $ref: "./openapi/components/parameters/transactionIdPath.yaml"
+    userIdPath:
+      $ref: "./openapi/components/parameters/userIdPath.yaml"
+    uidPath:
+      $ref: "./openapi/components/parameters/uidPath.yaml"
+    userUuidPath:
+      $ref: "./openapi/components/parameters/userUuidPath.yaml"
+    countQuery:
+      $ref: "./openapi/components/parameters/countQuery.yaml"
+  schemas:
+    TransactionType:
+      $ref: "./openapi/components/schemas/common/TransactionType.yaml"
+    AppReviewStatus:
+      $ref: "./openapi/components/schemas/common/AppReviewStatus.yaml"
+    SymbolPosition:
+      $ref: "./openapi/components/schemas/common/SymbolPosition.yaml"
+    ErrorResponse:
+      $ref: "./openapi/components/schemas/errors/ErrorResponse.yaml"
+    FieldError:
+      $ref: "./openapi/components/schemas/errors/FieldError.yaml"
+    CreateAuthUserRequest:
+      $ref: "./openapi/components/schemas/requests/CreateAuthUserRequest.yaml"
+    UpdateAppReviewRequest:
+      $ref: "./openapi/components/schemas/requests/UpdateAppReviewRequest.yaml"
+    CreateGroupRequest:
+      $ref: "./openapi/components/schemas/requests/CreateGroupRequest.yaml"
+    UpdateGroupNameRequest:
+      $ref: "./openapi/components/schemas/requests/UpdateGroupNameRequest.yaml"
+    JoinGroupRequest:
+      $ref: "./openapi/components/schemas/requests/JoinGroupRequest.yaml"
+    AddMemberRequest:
+      $ref: "./openapi/components/schemas/requests/AddMemberRequest.yaml"
+    CreateTransactionRequest:
+      $ref: "./openapi/components/schemas/requests/CreateTransactionRequest.yaml"
+    UpdateTransactionRequest:
+      $ref: "./openapi/components/schemas/requests/UpdateTransactionRequest.yaml"
+    UpdateUserNameRequest:
+      $ref: "./openapi/components/schemas/requests/UpdateUserNameRequest.yaml"
+    AuthUserResponse:
+      $ref: "./openapi/components/schemas/responses/AuthUserResponse.yaml"
+    UserResponse:
+      $ref: "./openapi/components/schemas/responses/UserResponse.yaml"
+    GroupInfo:
+      $ref: "./openapi/components/schemas/responses/GroupInfo.yaml"
+    GroupResponse:
+      $ref: "./openapi/components/schemas/responses/GroupResponse.yaml"
+    GroupListResponse:
+      $ref: "./openapi/components/schemas/responses/GroupListResponse.yaml"
+    ExchangeRateItem:
+      $ref: "./openapi/components/schemas/responses/ExchangeRateItem.yaml"
+    ExchangeRateResponse:
+      $ref: "./openapi/components/schemas/responses/ExchangeRateResponse.yaml"
+    ObligationResponse:
+      $ref: "./openapi/components/schemas/responses/ObligationResponse.yaml"
+    LoanResponse:
+      $ref: "./openapi/components/schemas/responses/LoanResponse.yaml"
+    RepaymentResponse:
+      $ref: "./openapi/components/schemas/responses/RepaymentResponse.yaml"
+    TransactionHistoryEntry:
+      $ref: "./openapi/components/schemas/responses/TransactionHistoryEntry.yaml"
+    TransactionHistoryResponse:
+      $ref: "./openapi/components/schemas/responses/TransactionHistoryResponse.yaml"
+    TransactionSettlementResponse:
+      $ref: "./openapi/components/schemas/responses/TransactionSettlementResponse.yaml"
+    TransactionResponse:
+      $ref: "./openapi/components/schemas/responses/TransactionResponse.yaml"

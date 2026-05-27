@@ -3,7 +3,7 @@
 ## Overview
 
 This document defines frontend test types and their relationship to SDD artifacts.
-Backend test policy remains in `platform/docs/testing.md`.
+Backend test policy remains in `docs/testing.md`.
 Frontend tests verify `frontend-requirements.md` and the API behavior consumed by the frontend.
 
 ## Relationship To Backend Testing

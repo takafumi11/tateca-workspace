@@ -4,7 +4,7 @@
 
 Tests are classified by the specification they verify.
 This document defines test types, shared policy, and the Java/Spring package layout used in Tateca Backend.
-Feature-specific ownership is defined in `products/tateca/docs/specs/{feature}/design.md`.
+Feature-specific ownership is defined in `docs/specs/{feature}/design.md`.
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -91,7 +91,7 @@ Do not repeat business-outcome checks in lower layers or branch-level checks in 
 - Service Unit Tests and Integration Tests are created for Step 5 code changes
 - Supporting concerns such as security filters, API clients, repositories, and utilities use focused tests in their own packages
 - Frontend UI tests belong to frontend-owned artifacts and are outside this backend testing document
-- Frontend test policy lives in `platform/docs/frontend-testing.md`
+- Frontend test policy lives in `docs/frontend-testing.md`
 
 Use `design.md` to make the `Test owner`, `Verification entrypoint`, and published-contract boundaries explicit before creating Step 4 or Step 5 tests.
 Record these fields explicitly even for single-repo or low-complexity changes.
@@ -118,7 +118,7 @@ For Step 5 implementation:
 5. Run final verification of the current repo's owned Step 4 and Step 5 tests.
 
 This execution order is for normal SDD Step 5 implementation only.
-When reverse SDD is active, follow `platform/docs/sdd-reverse-process.md` and the reverse Step 5 skill instead; reverse-created Step 5 tests start GREEN rather than RED-first.
+When reverse SDD is active, follow `docs/sdd-reverse-process.md` and the reverse Step 5 skill instead; reverse-created Step 5 tests start GREEN rather than RED-first.
 
 ---
 

@@ -9,10 +9,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-defaults:
-  run:
-    working-directory: products/tateca
-
 jobs:
   deploy-docs:
     name: Deploy API Docs
@@ -32,7 +28,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: products/tateca/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -56,6 +51,6 @@ jobs:
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: products/tateca/out/
+          folder: out/
           branch: gh-pages
           clean: false

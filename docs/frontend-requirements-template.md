@@ -5,8 +5,8 @@
 Briefly describe the frontend surface, primary user goal, and linked domain spec.
 
 References:
-- `products/tateca/docs/specs/{feature}/requirements.md`
-- `products/tateca/docs/specs/{feature}/design.md`
+- `docs/specs/{feature}/requirements.md`
+- `docs/specs/{feature}/design.md`
 - API Contract path or client contract consumed by the frontend
 
 ## Scope
