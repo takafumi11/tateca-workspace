@@ -1,0 +1,2609 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tateca API",
+    "description": "Group expense management API with multi-currency support. Track expenses, loans, and settlements across multiple users and currencies.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Tateca Team",
+      "url": "https://tateca.net",
+      "email": "support@tateca.net"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://tateca.net/terms"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local Development"
+    },
+    {
+      "url": "https://staging-api.tateca.net",
+      "description": "Staging"
+    },
+    {
+      "url": "https://api.tateca.net",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/users": {
+      "post": {
+        "tags": [
+          "Auth Users"
+        ],
+        "summary": "Create new authenticated user",
+        "description": "Registers a new authenticated user in the system",
+        "operationId": "createAuthUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAuthUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/users/{uid}": {
+      "get": {
+        "tags": [
+          "Auth Users"
+        ],
+        "summary": "Get authenticated user information",
+        "description": "Retrieves detailed information about an authenticated user by their UID",
+        "operationId": "getAuthUser",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/uidPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid UID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "error": "Not Found",
+                  "message": "Auth user not found",
+                  "error_code": "AUTH_USER.NOT_FOUND",
+                  "path": "/auth/users/test-uid-123"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Auth Users"
+        ],
+        "summary": "Delete authenticated user",
+        "description": "Removes an authenticated user from the system",
+        "operationId": "deleteAuthUser",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/uidPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "400": {
+            "description": "Validation error - Invalid UID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "error": "Not Found",
+                  "message": "Auth user not found",
+                  "error_code": "AUTH_USER.NOT_FOUND",
+                  "path": "/auth/users/test-uid-123"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/users/review-preferences": {
+      "patch": {
+        "tags": [
+          "Auth Users"
+        ],
+        "summary": "Update app review preferences",
+        "description": "Updates the app review preferences for an authenticated user",
+        "operationId": "updateReviewPreferences",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review preferences updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exchange-rate/{date}": {
+      "get": {
+        "tags": [
+          "Exchange Rates"
+        ],
+        "summary": "Get exchange rates for a specific date",
+        "description": "Retrieve exchange rates for a specific date in ISO 8601 format (YYYY-MM-DD). Returns empty array if no rates found for the date.\n",
+        "operationId": "getExchangeRate",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "description": "Date in ISO 8601 format (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-15"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exchange rates retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid date format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Create a new group",
+        "operationId": "createGroup",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - User has reached maximum group limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/list": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get list of groups for the current user",
+        "operationId": "getGroupList",
+        "responses": {
+          "200": {
+            "description": "Group list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get group information by ID",
+        "operationId": "getGroupInfo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Update group name",
+        "operationId": "updateGroupName",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupNameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group name updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - User doesn't have permission to update this group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Join a group using invitation token",
+        "operationId": "joinGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User joined group successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid join token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - User already member of the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/members": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Add a new member to an existing group",
+        "operationId": "addMember",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Member added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - User is not a member of this group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Group has reached maximum size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/members/{userUuid}": {
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Remove an unjoined member from a group",
+        "description": "Removes an unjoined member from the specified group. Only unjoined members\n(those not yet linked to an authenticated account) can be removed.\n\n**Authorization:** The requester must be an authenticated member of the group.\nAny authenticated group member can remove unjoined members — no special privileges required.\n\n**Restriction:** Joined members (those linked to an authenticated account) cannot be removed.\nJoined members must leave the group voluntarily via the leave-group endpoint.\n",
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/userUuidPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member removed successfully"
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format for groupId or userUuid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Requester is not an authenticated member of the group (error_code: USER.NOT_GROUP_MEMBER)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "notGroupMember": {
+                    "$ref": "#/components/examples/USER_NOT_GROUP_MEMBER"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Group or target member does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "groupNotFound": {
+                    "$ref": "#/components/examples/GROUP_NOT_FOUND"
+                  },
+                  "userNotFound": {
+                    "$ref": "#/components/examples/USER_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Member cannot be removed due to business rule violation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "memberAlreadyJoined": {
+                    "$ref": "#/components/examples/MEMBER_ALREADY_JOINED"
+                  },
+                  "memberHasTransactions": {
+                    "$ref": "#/components/examples/MEMBER_HAS_TRANSACTIONS"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/users/{userUuid}": {
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Leave a group",
+        "operationId": "leaveGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/userUuidPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User left group successfully"
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - User doesn't have permission to remove this user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/transactions": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Create a new transaction",
+        "description": "Creates a LOAN or REPAYMENT transaction in the specified group.\n**Transaction types (mutually exclusive):** - LOAN: Requires `loan.obligations` (1-9 items). `repayment` must not be provided. - REPAYMENT: Requires `repayment.recipient_id`. `loan` must not be provided.\n**Exchange rate resolution:** If no exchange rate exists for the specified currency and date, the latest available rate for that currency is used and saved for the specified date.\n",
+        "operationId": "createTransaction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Group, payer, obligor, recipient, or exchange rate does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/transactions/history": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Get transaction history for a group",
+        "description": "Retrieves transaction history ordered by creation date (newest first). Returns up to the specified count (default 5). Does not verify group existence — returns empty list for non-existent groups.\n",
+        "operationId": "getTransactionHistory",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/countQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionHistoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/transactions/settlement": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Get settlement information for a group in JPY",
+        "description": "Calculates optimized settlement transactions for a group. All amounts are converted to JPY using the exchange rate recorded with each transaction. Rounding residuals are adjusted by applying the difference to the largest debtor. Returns an empty list if no transactions exist or all balances are zero. Does not verify group existence — returns empty list for non-existent groups.\n",
+        "operationId": "getTransactionSettlement",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Settlement information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionSettlementResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/transactions/{transactionId}": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Get transaction details by ID",
+        "description": "Returns full transaction details including type-specific information. For LOAN transactions: includes payer, obligations list, exchange rate, and date. For REPAYMENT transactions: includes payer, recipient, exchange rate, and date.\n",
+        "operationId": "getTransactionDetail",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/transactionIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Update a LOAN transaction",
+        "description": "Updates an existing LOAN transaction with new details.\n**Updatable fields:** - Title, amount, currency, transaction date - Payer - Obligations (users and amounts)\n**Important notes:** - Only LOAN transactions can be updated - Currency can be changed (e.g., from JPY to USD) - All existing obligations will be replaced with new ones\n",
+        "operationId": "updateTransaction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/transactionIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters or attempting to update REPAYMENT transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Transaction, payer, obligor, or exchange rate does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Delete a transaction",
+        "description": "Deletes a transaction and all associated obligations. Both LOAN and REPAYMENT transactions can be deleted. Deletion is permanent and cannot be undone.\n",
+        "operationId": "deleteTransaction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/groupIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/transactionIdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Transaction deleted successfully"
+          },
+          "400": {
+            "description": "Validation error - Invalid UUID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/exchange-rates": {
+      "post": {
+        "tags": [
+          "Internal"
+        ],
+        "summary": "Update exchange rates (fetches latest rates)",
+        "description": "Triggered by AWS EventBridge + Lambda to update daily exchange rates.\n**Authentication:** Requires X-API-Key header\n**Flow:**\n1. Lambda receives EventBridge trigger (daily at 00:01 UTC) 2. Lambda calls this endpoint 3. System fetches LATEST rates from external API 4. Rates are saved/updated in database with current date\n**Request Body:** Not required\n",
+        "operationId": "updateExchangeRates",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Exchange rates updated successfully"
+          },
+          "401": {
+            "description": "Unauthorized - Missing or invalid X-API-Key header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error - External API unavailable or database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update user name",
+        "description": "Updates the display name of the authenticated user identified by userId.\n\n**Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.\n\n**Idempotency:** Updating with the same normalized value is treated as a success without modifying the resource (updated_at remains unchanged).\n\n**Authorization:** The authenticated user must be the owner of the target resource. Attempting to modify another user's name results in 403 Forbidden.\n",
+        "operationId": "updateUserName",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserNameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User name updated successfully (also returned for idempotent same-value updates)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Invalid request parameters or malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  },
+                  "malformedJson": {
+                    "$ref": "#/components/examples/REQUEST_MALFORMED_JSON"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Authenticated user is not the owner of the target resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "userForbidden": {
+                    "$ref": "#/components/examples/USER_FORBIDDEN"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found (error_code: USER.NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "userNotFound": {
+                    "$ref": "#/components/examples/USER_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "unsupportedMediaType": {
+                    "$ref": "#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Firebase JWT token for user authentication"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key for internal system operations (EventBridge + Lambda)"
+      }
+    },
+    "parameters": {
+      "groupIdPath": {
+        "name": "groupId",
+        "in": "path",
+        "required": true,
+        "description": "Group UUID",
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "transactionIdPath": {
+        "name": "transactionId",
+        "in": "path",
+        "required": true,
+        "description": "Transaction UUID",
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "550e8400-e29b-41d4-a716-446655440001"
+        }
+      },
+      "userIdPath": {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "description": "User UUID",
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426614174000"
+        }
+      },
+      "uidPath": {
+        "name": "uid",
+        "in": "path",
+        "required": true,
+        "description": "Firebase authentication user ID",
+        "schema": {
+          "type": "string",
+          "maxLength": 128,
+          "example": "firebase-uid-123"
+        }
+      },
+      "userUuidPath": {
+        "name": "userUuid",
+        "in": "path",
+        "required": true,
+        "description": "User UUID",
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "countQuery": {
+        "name": "count",
+        "in": "query",
+        "required": false,
+        "description": "Number of items to return (default 5)",
+        "schema": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1,
+          "example": 10
+        }
+      }
+    },
+    "schemas": {
+      "TransactionType": {
+        "type": "string",
+        "description": "Type of transaction",
+        "enum": [
+          "LOAN",
+          "REPAYMENT"
+        ],
+        "example": "LOAN"
+      },
+      "AppReviewStatus": {
+        "type": "string",
+        "description": "App review status",
+        "enum": [
+          "PENDING",
+          "COMPLETED",
+          "PERMANENTLY_DECLINED"
+        ],
+        "example": "PENDING"
+      },
+      "SymbolPosition": {
+        "type": "string",
+        "description": "Position of currency symbol relative to amount",
+        "enum": [
+          "PREFIX",
+          "SUFFIX"
+        ],
+        "example": "PREFIX"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response",
+        "required": [
+          "timestamp",
+          "status",
+          "error",
+          "message",
+          "path",
+          "error_code"
+        ],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "description": "Timestamp when the request arrived at the API in ISO 8601 format",
+            "example": "2025-01-14T12:34:56.789Z"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP status reason phrase",
+            "example": "Bad Request"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "example": "Validation failed"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path where the error occurred",
+            "example": "/groups/123/transactions"
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Unique request ID for tracing and correlation with logs",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "error_code": {
+            "type": "string",
+            "description": "Machine-readable error code for client-side handling. Operation-specific allowed values are documented in each operation's error responses.",
+            "pattern": "^[A-Z0-9_]+(?:\\\\.[A-Z0-9_]+)+$",
+            "example": "AUTH.INVALID_TOKEN"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Field-level validation errors (only present for validation failures)",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          }
+        }
+      },
+      "FieldError": {
+        "type": "object",
+        "description": "Field-level validation error details",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Name of the field that failed validation",
+            "example": "groupName"
+          },
+          "message": {
+            "type": "string",
+            "description": "Validation error message",
+            "example": "Group name must be between 1 and 100 characters"
+          },
+          "rejected_value": {
+            "description": "The value that was rejected",
+            "example": ""
+          }
+        }
+      },
+      "CreateAuthUserRequest": {
+        "type": "object",
+        "description": "Request to create a new authenticated user",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's email address",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "john@example.com"
+          }
+        }
+      },
+      "UpdateAppReviewRequest": {
+        "type": "object",
+        "description": "Request to update app review preferences",
+        "required": [
+          "app_review_status"
+        ],
+        "properties": {
+          "app_review_status": {
+            "$ref": "#/components/schemas/AppReviewStatus"
+          }
+        }
+      },
+      "CreateGroupRequest": {
+        "type": "object",
+        "description": "Request to create a new group",
+        "required": [
+          "group_name",
+          "host_name",
+          "participants_name"
+        ],
+        "properties": {
+          "group_name": {
+            "type": "string",
+            "description": "Name of the group",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Team Outing 2024"
+          },
+          "host_name": {
+            "type": "string",
+            "description": "Your name as the group creator",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "John Doe"
+          },
+          "participants_name": {
+            "type": "array",
+            "description": "Names of other group members (minimum 1, maximum 9)",
+            "minItems": 1,
+            "maxItems": 9,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            },
+            "example": [
+              "Alice",
+              "Bob",
+              "Charlie"
+            ]
+          }
+        }
+      },
+      "UpdateGroupNameRequest": {
+        "type": "object",
+        "description": "Request to update group name",
+        "required": [
+          "group_name"
+        ],
+        "properties": {
+          "group_name": {
+            "type": "string",
+            "description": "New name for the group",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Summer Trip 2024"
+          }
+        }
+      },
+      "JoinGroupRequest": {
+        "type": "object",
+        "description": "Request to join a group using invitation token",
+        "required": [
+          "user_uuid",
+          "join_token"
+        ],
+        "properties": {
+          "user_uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the user joining the group",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "join_token": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Invitation token for joining the group",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        }
+      },
+      "AddMemberRequest": {
+        "type": "object",
+        "description": "Request to add a new member to an existing group",
+        "required": [
+          "member_name"
+        ],
+        "properties": {
+          "member_name": {
+            "type": "string",
+            "description": "Name of the member to add",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "John Doe"
+          }
+        }
+      },
+      "CreateTransactionRequest": {
+        "type": "object",
+        "description": "Request to create a new transaction",
+        "required": [
+          "transaction_type",
+          "title",
+          "amount",
+          "currency_code",
+          "date_str",
+          "payer_id"
+        ],
+        "properties": {
+          "transaction_type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "title": {
+            "type": "string",
+            "description": "Transaction title or description",
+            "maxLength": 50,
+            "example": "Dinner at restaurant"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)",
+            "minimum": 1,
+            "example": 5000
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "Currency code (ISO 4217)",
+            "pattern": "^[A-Z]{3}$",
+            "example": "JPY"
+          },
+          "date_str": {
+            "type": "string",
+            "description": "Transaction date in ISO 8601 format with timezone",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([+-]\\d{2}:\\d{2}|Z)$",
+            "example": "2024-01-15T18:30:00+09:00"
+          },
+          "payer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the user who paid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "loan": {
+            "type": "object",
+            "description": "Loan details (required if transaction_type is LOAN)",
+            "required": [
+              "obligations"
+            ],
+            "properties": {
+              "obligations": {
+                "type": "array",
+                "description": "List of loan obligations specifying who owes what amount (max 9)",
+                "minItems": 1,
+                "maxItems": 9,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "amount",
+                    "user_uuid"
+                  ],
+                  "properties": {
+                    "amount": {
+                      "type": "integer",
+                      "description": "Amount owed in the smallest currency unit",
+                      "minimum": 1,
+                      "example": 2500
+                    },
+                    "user_uuid": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "UUID of the user who owes this amount",
+                      "example": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "repayment": {
+            "type": "object",
+            "description": "Repayment details (required if transaction_type is REPAYMENT)",
+            "required": [
+              "recipient_id"
+            ],
+            "properties": {
+              "recipient_id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "UUID of the user receiving the repayment",
+                "example": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            }
+          }
+        }
+      },
+      "UpdateTransactionRequest": {
+        "type": "object",
+        "description": "Request to update an existing LOAN transaction",
+        "required": [
+          "title",
+          "amount",
+          "currency_code",
+          "date_str",
+          "payer_id",
+          "loan"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Transaction title or description",
+            "maxLength": 50,
+            "example": "Dinner at restaurant"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)",
+            "minimum": 1,
+            "example": 5000
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "Currency code (ISO 4217)",
+            "pattern": "^[A-Z]{3}$",
+            "example": "JPY"
+          },
+          "date_str": {
+            "type": "string",
+            "description": "Transaction date in ISO 8601 format with timezone",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([+-]\\d{2}:\\d{2}|Z)$",
+            "example": "2024-01-15T18:30:00+09:00"
+          },
+          "payer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the user who paid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "loan": {
+            "type": "object",
+            "description": "Loan details specifying obligations",
+            "required": [
+              "obligations"
+            ],
+            "properties": {
+              "obligations": {
+                "type": "array",
+                "description": "List of loan obligations specifying who owes what amount (max 9)",
+                "minItems": 1,
+                "maxItems": 9,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "amount",
+                    "user_uuid"
+                  ],
+                  "properties": {
+                    "amount": {
+                      "type": "integer",
+                      "description": "Amount owed in the smallest currency unit",
+                      "minimum": 1,
+                      "example": 2500
+                    },
+                    "user_uuid": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "UUID of the user who owes this amount",
+                      "example": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UpdateUserNameRequest": {
+        "type": "object",
+        "description": "Request to update user name",
+        "required": [
+          "user_name"
+        ],
+        "properties": {
+          "user_name": {
+            "type": "string",
+            "description": "User display name.\n\n**Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.\n\n**Validation (applied to normalized value):**\n- Must not be blank (null, empty, or whitespace-only are rejected)\n- Must be between 1 and 50 characters after normalization\n",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "John Doe"
+          }
+        }
+      },
+      "AuthUserResponse": {
+        "type": "object",
+        "description": "Authentication user information",
+        "properties": {
+          "uid": {
+            "type": "string",
+            "description": "Firebase authentication user ID",
+            "example": "firebase-uid-123"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's name",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "User's email address",
+            "example": "john.doe@example.com"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Account creation timestamp (Tokyo time)",
+            "example": "2024-01-01T12:00:00+09:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Last update timestamp (Tokyo time)",
+            "example": "2024-01-15T14:30:00+09:00"
+          },
+          "last_login_time": {
+            "type": "string",
+            "nullable": true,
+            "description": "Last login timestamp (Tokyo time)",
+            "example": "2024-01-20T10:15:00+09:00"
+          },
+          "total_login_count": {
+            "type": "integer",
+            "description": "Total number of logins",
+            "example": 42
+          },
+          "last_app_review_dialog_shown_at": {
+            "type": "string",
+            "nullable": true,
+            "description": "Timestamp when app review dialog was last shown (Tokyo time)",
+            "example": "2024-01-18T16:45:00+09:00"
+          },
+          "app_review_status": {
+            "$ref": "#/components/schemas/AppReviewStatus"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "description": "User information response",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User's unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's display name",
+            "example": "John Doe"
+          },
+          "auth_user": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuthUserResponse"
+              }
+            ],
+            "description": "Authentication user details"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "User creation timestamp (Tokyo time)",
+            "example": "2024-01-01T12:00:00+09:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "User last update timestamp (Tokyo time)",
+            "example": "2024-01-15T14:30:00+09:00"
+          }
+        }
+      },
+      "GroupInfo": {
+        "type": "object",
+        "description": "Group information",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Group's unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Group name",
+            "example": "Team Outing 2024"
+          },
+          "join_token": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Invitation token for joining the group",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "token_expires": {
+            "type": "string",
+            "description": "Token expiration date",
+            "example": "2024-12-31"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Group creation timestamp (Tokyo time)",
+            "example": "2024-01-01T12:00:00+09:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Group last update timestamp (Tokyo time)",
+            "example": "2024-01-15T14:30:00+09:00"
+          }
+        }
+      },
+      "GroupResponse": {
+        "type": "object",
+        "description": "Detailed group information including members and statistics",
+        "properties": {
+          "group": {
+            "$ref": "#/components/schemas/GroupInfo"
+          },
+          "users": {
+            "type": "array",
+            "description": "List of users in the group",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          },
+          "transaction_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of transactions in the group",
+            "example": 42
+          }
+        }
+      },
+      "GroupListResponse": {
+        "type": "object",
+        "description": "List of groups",
+        "properties": {
+          "group_list": {
+            "type": "array",
+            "description": "List of groups the user belongs to",
+            "items": {
+              "$ref": "#/components/schemas/GroupInfo"
+            }
+          }
+        }
+      },
+      "ExchangeRateItem": {
+        "type": "object",
+        "description": "Exchange rate information for a currency",
+        "properties": {
+          "currency_code": {
+            "type": "string",
+            "description": "ISO 4217 currency code",
+            "example": "USD"
+          },
+          "jp_currency_name": {
+            "type": "string",
+            "description": "Currency name in Japanese",
+            "example": "米ドル"
+          },
+          "eng_currency_name": {
+            "type": "string",
+            "description": "Currency name in English",
+            "example": "US Dollar"
+          },
+          "jp_country_name": {
+            "type": "string",
+            "description": "Country name in Japanese",
+            "example": "アメリカ合衆国"
+          },
+          "eng_country_name": {
+            "type": "string",
+            "description": "Country name in English",
+            "example": "United States"
+          },
+          "currency_symbol": {
+            "type": "string",
+            "description": "Currency symbol",
+            "example": "$"
+          },
+          "symbol_position": {
+            "$ref": "#/components/schemas/SymbolPosition"
+          },
+          "exchange_rate": {
+            "type": "string",
+            "description": "Exchange rate to JPY",
+            "example": "150.25"
+          }
+        }
+      },
+      "ExchangeRateResponse": {
+        "type": "object",
+        "description": "Exchange rate list response",
+        "properties": {
+          "exchange_rate": {
+            "type": "array",
+            "description": "List of exchange rates",
+            "items": {
+              "$ref": "#/components/schemas/ExchangeRateItem"
+            }
+          }
+        }
+      },
+      "ObligationResponse": {
+        "type": "object",
+        "description": "Loan obligation for a specific user",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Amount owed in the smallest currency unit",
+            "example": 2500
+          }
+        }
+      },
+      "LoanResponse": {
+        "type": "object",
+        "description": "Loan details including all obligations",
+        "properties": {
+          "obligations": {
+            "type": "array",
+            "description": "List of loan obligations showing who owes how much",
+            "items": {
+              "$ref": "#/components/schemas/ObligationResponse"
+            }
+          }
+        }
+      },
+      "RepaymentResponse": {
+        "type": "object",
+        "description": "Repayment details",
+        "properties": {
+          "recipient": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        }
+      },
+      "TransactionHistoryEntry": {
+        "type": "object",
+        "description": "Transaction history entry",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Transaction unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "transaction_type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "title": {
+            "type": "string",
+            "description": "Transaction title",
+            "example": "Dinner at restaurant"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)",
+            "example": 5000
+          },
+          "exchange_rate": {
+            "$ref": "#/components/schemas/ExchangeRateItem"
+          },
+          "date": {
+            "type": "string",
+            "description": "Transaction date (Tokyo time)",
+            "example": "2024-01-15T18:30:00+09:00"
+          }
+        }
+      },
+      "TransactionHistoryResponse": {
+        "type": "object",
+        "description": "Transaction history response containing list of transactions",
+        "properties": {
+          "transactions_history": {
+            "type": "array",
+            "description": "List of transaction history entries",
+            "items": {
+              "$ref": "#/components/schemas/TransactionHistoryEntry"
+            }
+          }
+        }
+      },
+      "TransactionSettlementResponse": {
+        "type": "object",
+        "description": "Settlement information for a group",
+        "properties": {
+          "transactions_settlement": {
+            "type": "array",
+            "description": "List of settlements needed to balance accounts",
+            "items": {
+              "type": "object",
+              "description": "Settlement transaction between two users",
+              "properties": {
+                "from": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "to": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "amount": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Amount to be settled in JPY (rounded to nearest integer)",
+                  "example": 3500
+                }
+              }
+            }
+          }
+        }
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "description": "Detailed transaction information",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Transaction unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "transaction_type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "title": {
+            "type": "string",
+            "description": "Transaction title",
+            "example": "Dinner at restaurant"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)",
+            "example": 5000
+          },
+          "payer": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "exchange_rate": {
+            "$ref": "#/components/schemas/ExchangeRateItem"
+          },
+          "date_str": {
+            "type": "string",
+            "description": "Transaction date (Tokyo time)",
+            "example": "2024-01-15T18:30:00+09:00"
+          },
+          "loan": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoanResponse"
+              }
+            ],
+            "description": "Loan details (present if transaction_type is LOAN)"
+          },
+          "repayment": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RepaymentResponse"
+              }
+            ],
+            "description": "Repayment details (present if transaction_type is REPAYMENT)"
+          }
+        }
+      }
+    },
+    "examples": {
+      "AUTH_MISSING_CREDENTIALS": {
+        "summary": "Missing authentication credentials",
+        "description": "Authorization header is missing.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Authentication required",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.MISSING_CREDENTIALS"
+        }
+      },
+      "AUTH_INVALID_FORMAT": {
+        "summary": "Invalid authentication header format",
+        "description": "Authorization header format is invalid.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Invalid authentication credentials",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.INVALID_FORMAT"
+        }
+      },
+      "AUTH_INVALID_TOKEN": {
+        "summary": "Invalid authentication token",
+        "description": "Firebase token failed verification.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Invalid authentication token",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.INVALID_TOKEN"
+        }
+      },
+      "USER_NOT_GROUP_MEMBER": {
+        "summary": "User is not a member of the group",
+        "description": "Requester is not an authenticated member of the target group.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 403,
+          "error": "Forbidden",
+          "message": "Only group members can perform this action",
+          "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "USER.NOT_GROUP_MEMBER"
+        }
+      },
+      "GROUP_NOT_FOUND": {
+        "summary": "Group not found",
+        "description": "Target group identified by groupId does not exist.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 404,
+          "error": "Not Found",
+          "message": "Group not found",
+          "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "GROUP.NOT_FOUND"
+        }
+      },
+      "USER_NOT_FOUND": {
+        "summary": "User not found",
+        "description": "Target user identified by userId does not exist.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 404,
+          "error": "Not Found",
+          "message": "User not found",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "USER.NOT_FOUND"
+        }
+      },
+      "MEMBER_ALREADY_JOINED": {
+        "summary": "Member has already joined the group",
+        "description": "Target member is linked to an authenticated account and cannot be removed. Joined members must leave voluntarily.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 409,
+          "error": "Conflict",
+          "message": "Cannot remove a joined member",
+          "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "MEMBER.ALREADY_JOINED"
+        }
+      },
+      "MEMBER_HAS_TRANSACTIONS": {
+        "summary": "Member has transactions in the group",
+        "description": "Target member is involved in transactions as a payer or obligor and cannot be removed.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 409,
+          "error": "Conflict",
+          "message": "Cannot remove a member who is involved in transactions",
+          "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "MEMBER.HAS_TRANSACTIONS"
+        }
+      },
+      "SYSTEM_INTERNAL_ERROR": {
+        "summary": "Internal server error",
+        "description": "Unexpected server-side failure.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 500,
+          "error": "Internal Server Error",
+          "message": "Internal server error",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "SYSTEM.INTERNAL_ERROR"
+        }
+      },
+      "VALIDATION_FAILED": {
+        "summary": "Validation failed",
+        "description": "Request body passed JSON parsing but violated field validation rules.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 400,
+          "error": "Bad Request",
+          "message": "Validation failed",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "VALIDATION.FAILED",
+          "errors": [
+            {
+              "field": "user_name",
+              "message": "User name must be between 1 and 50 characters",
+              "rejected_value": ""
+            }
+          ]
+        }
+      },
+      "REQUEST_MALFORMED_JSON": {
+        "summary": "Malformed JSON",
+        "description": "Request body is not valid JSON format.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 400,
+          "error": "Bad Request",
+          "message": "Invalid request body format. Please check the data types and structure.",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "REQUEST.MALFORMED_JSON"
+        }
+      },
+      "USER_FORBIDDEN": {
+        "summary": "Forbidden - not the resource owner",
+        "description": "Authenticated user attempted to modify another user's resource.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 403,
+          "error": "Forbidden",
+          "message": "You are not allowed to modify this resource",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "USER.FORBIDDEN"
+        }
+      },
+      "REQUEST_UNSUPPORTED_MEDIA_TYPE": {
+        "summary": "Unsupported media type",
+        "description": "Content-Type is not application/json.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 415,
+          "error": "Unsupported Media Type",
+          "message": "Unsupported Media Type. Content-Type must be application/json",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "REQUEST.UNSUPPORTED_MEDIA_TYPE"
+        }
+      }
+    }
+  }
+}
