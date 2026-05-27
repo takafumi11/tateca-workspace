@@ -1,0 +1,42 @@
+get:
+  tags:
+    - Exchange Rates
+  summary: Get exchange rates for a specific date
+  description: >
+    Retrieve exchange rates for a specific date in ISO 8601 format (YYYY-MM-DD).
+    Returns empty array if no rates found for the date.
+  operationId: getExchangeRate
+  parameters:
+    - name: date
+      in: path
+      required: true
+      description: Date in ISO 8601 format (YYYY-MM-DD)
+      schema:
+        type: string
+        format: date
+        example: "2024-01-15"
+  responses:
+    "200":
+      description: Exchange rates retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/ExchangeRateResponse.yaml"
+    "400":
+      description: Validation error - Invalid date format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

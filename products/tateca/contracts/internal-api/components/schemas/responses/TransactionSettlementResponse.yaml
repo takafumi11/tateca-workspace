@@ -1,0 +1,19 @@
+type: object
+description: Settlement information for a group
+properties:
+  transactions_settlement:
+    type: array
+    description: List of settlements needed to balance accounts
+    items:
+      type: object
+      description: Settlement transaction between two users
+      properties:
+        from:
+          $ref: "./UserResponse.yaml"
+        to:
+          $ref: "./UserResponse.yaml"
+        amount:
+          type: integer
+          format: int64
+          description: Amount to be settled in JPY (rounded to nearest integer)
+          example: 3500

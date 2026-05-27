@@ -1,0 +1,10 @@
+type: object
+description: Loan obligation for a specific user
+properties:
+  user:
+    $ref: "./UserResponse.yaml"
+  amount:
+    type: integer
+    format: int64
+    description: Amount owed in the smallest currency unit
+    example: 2500

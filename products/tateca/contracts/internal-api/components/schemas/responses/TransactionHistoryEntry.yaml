@@ -1,0 +1,24 @@
+type: object
+description: Transaction history entry
+properties:
+  transaction_id:
+    type: string
+    format: uuid
+    description: Transaction unique identifier
+    example: 550e8400-e29b-41d4-a716-446655440000
+  transaction_type:
+    $ref: "../common/TransactionType.yaml"
+  title:
+    type: string
+    description: Transaction title
+    example: Dinner at restaurant
+  amount:
+    type: integer
+    description: Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)
+    example: 5000
+  exchange_rate:
+    $ref: "./ExchangeRateItem.yaml"
+  date:
+    type: string
+    description: Transaction date (Tokyo time)
+    example: "2024-01-15T18:30:00+09:00"

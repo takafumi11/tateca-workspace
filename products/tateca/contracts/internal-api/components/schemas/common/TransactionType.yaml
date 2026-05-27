@@ -1,0 +1,6 @@
+type: string
+description: Type of transaction
+enum:
+  - LOAN
+  - REPAYMENT
+example: LOAN

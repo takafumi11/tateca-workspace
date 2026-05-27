@@ -1,0 +1,140 @@
+get:
+  tags:
+    - Groups
+  summary: Get group information by ID
+  operationId: getGroupInfo
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+  responses:
+    "200":
+      description: Group information retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/GroupResponse.yaml"
+    "400":
+      description: Validation error - Invalid UUID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Group not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+
+patch:
+  tags:
+    - Groups
+  summary: Update group name
+  operationId: updateGroupName
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/UpdateGroupNameRequest.yaml"
+  responses:
+    "200":
+      description: Group name updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/GroupResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "403":
+      description: Forbidden - User doesn't have permission to update this group
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Group not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+
+post:
+  tags:
+    - Groups
+  summary: Join a group using invitation token
+  operationId: joinGroup
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/JoinGroupRequest.yaml"
+  responses:
+    "200":
+      description: User joined group successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/GroupResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "403":
+      description: Forbidden - Invalid join token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Group not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "409":
+      description: Conflict - User already member of the group
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

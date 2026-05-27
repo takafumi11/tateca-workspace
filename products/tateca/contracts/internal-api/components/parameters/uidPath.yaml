@@ -1,0 +1,8 @@
+name: uid
+in: path
+required: true
+description: Firebase authentication user ID
+schema:
+  type: string
+  maxLength: 128
+  example: firebase-uid-123

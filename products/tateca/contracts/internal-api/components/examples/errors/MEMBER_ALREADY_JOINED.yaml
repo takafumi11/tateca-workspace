@@ -1,0 +1,10 @@
+summary: Member has already joined the group
+description: Target member is linked to an authenticated account and cannot be removed. Joined members must leave voluntarily.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 409
+  error: Conflict
+  message: Cannot remove a joined member
+  path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: MEMBER.ALREADY_JOINED

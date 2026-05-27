@@ -1,0 +1,8 @@
+type: object
+description: Exchange rate list response
+properties:
+  exchange_rate:
+    type: array
+    description: List of exchange rates
+    items:
+      $ref: "./ExchangeRateItem.yaml"

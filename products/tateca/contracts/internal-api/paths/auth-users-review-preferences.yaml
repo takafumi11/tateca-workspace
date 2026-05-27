@@ -1,0 +1,49 @@
+patch:
+  tags:
+    - Auth Users
+  summary: Update app review preferences
+  description: Updates the app review preferences for an authenticated user
+  operationId: updateReviewPreferences
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/UpdateAppReviewRequest.yaml"
+  responses:
+    "200":
+      description: Review preferences updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/AuthUserResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

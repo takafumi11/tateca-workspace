@@ -1,0 +1,79 @@
+delete:
+  tags:
+    - Groups
+  summary: Remove an unjoined member from a group
+  description: |
+    Removes an unjoined member from the specified group. Only unjoined members
+    (those not yet linked to an authenticated account) can be removed.
+
+    **Authorization:** The requester must be an authenticated member of the group.
+    Any authenticated group member can remove unjoined members — no special privileges required.
+
+    **Restriction:** Joined members (those linked to an authenticated account) cannot be removed.
+    Joined members must leave the group voluntarily via the leave-group endpoint.
+  operationId: removeMember
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+    - $ref: "../components/parameters/userUuidPath.yaml"
+  responses:
+    "204":
+      description: Member removed successfully
+    "400":
+      description: Validation error - Invalid UUID format for groupId or userUuid
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
+    "403":
+      description: "Forbidden - Requester is not an authenticated member of the group (error_code: USER.NOT_GROUP_MEMBER)"
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            notGroupMember:
+              $ref: "../components/examples/errors/USER_NOT_GROUP_MEMBER.yaml"
+    "404":
+      description: "Not Found - Group or target member does not exist"
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
+            userNotFound:
+              $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
+    "409":
+      description: "Conflict - Member cannot be removed due to business rule violation"
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            memberAlreadyJoined:
+              $ref: "../components/examples/errors/MEMBER_ALREADY_JOINED.yaml"
+            memberHasTransactions:
+              $ref: "../components/examples/errors/MEMBER_HAS_TRANSACTIONS.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

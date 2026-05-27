@@ -1,0 +1,75 @@
+get:
+  tags:
+    - Auth Users
+  summary: Get authenticated user information
+  description: Retrieves detailed information about an authenticated user by their UID
+  operationId: getAuthUser
+  parameters:
+    - $ref: "../components/parameters/uidPath.yaml"
+  responses:
+    "200":
+      description: User information retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/AuthUserResponse.yaml"
+    "400":
+      description: Validation error - Invalid UID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          example:
+            status: 404
+            error: Not Found
+            message: Auth user not found
+            error_code: AUTH_USER.NOT_FOUND
+            path: /auth/users/test-uid-123
+
+delete:
+  tags:
+    - Auth Users
+  summary: Delete authenticated user
+  description: Removes an authenticated user from the system
+  operationId: deleteAuthUser
+  parameters:
+    - $ref: "../components/parameters/uidPath.yaml"
+  responses:
+    "204":
+      description: User deleted successfully
+    "400":
+      description: Validation error - Invalid UID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          example:
+            status: 404
+            error: Not Found
+            message: Auth user not found
+            error_code: AUTH_USER.NOT_FOUND
+            path: /auth/users/test-uid-123

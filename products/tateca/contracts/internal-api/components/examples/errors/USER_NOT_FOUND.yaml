@@ -1,0 +1,10 @@
+summary: User not found
+description: Target user identified by userId does not exist.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 404
+  error: Not Found
+  message: User not found
+  path: /users/123e4567-e89b-12d3-a456-426614174000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: USER.NOT_FOUND

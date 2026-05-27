@@ -1,0 +1,35 @@
+post:
+  tags:
+    - Internal
+  summary: Update exchange rates (fetches latest rates)
+  description: >
+    Triggered by AWS EventBridge + Lambda to update daily exchange rates.
+
+    **Authentication:** Requires X-API-Key header
+
+    **Flow:**
+
+    1. Lambda receives EventBridge trigger (daily at 00:01 UTC)
+    2. Lambda calls this endpoint
+    3. System fetches LATEST rates from external API
+    4. Rates are saved/updated in database with current date
+
+    **Request Body:** Not required
+  operationId: updateExchangeRates
+  security:
+    - ApiKeyAuth: []
+  responses:
+    "204":
+      description: Exchange rates updated successfully
+    "401":
+      description: Unauthorized - Missing or invalid X-API-Key header
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "500":
+      description: Internal server error - External API unavailable or database error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

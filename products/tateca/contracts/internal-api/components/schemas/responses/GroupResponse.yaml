@@ -1,0 +1,15 @@
+type: object
+description: Detailed group information including members and statistics
+properties:
+  group:
+    $ref: "./GroupInfo.yaml"
+  users:
+    type: array
+    description: List of users in the group
+    items:
+      $ref: "./UserResponse.yaml"
+  transaction_count:
+    type: integer
+    format: int64
+    description: Total number of transactions in the group
+    example: 42

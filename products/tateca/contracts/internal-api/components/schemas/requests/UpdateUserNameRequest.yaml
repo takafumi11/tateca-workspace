@@ -1,0 +1,18 @@
+type: object
+description: Request to update user name
+required:
+  - user_name
+properties:
+  user_name:
+    type: string
+    description: |
+      User display name.
+
+      **Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.
+
+      **Validation (applied to normalized value):**
+      - Must not be blank (null, empty, or whitespace-only are rejected)
+      - Must be between 1 and 50 characters after normalization
+    minLength: 1
+    maxLength: 50
+    example: John Doe

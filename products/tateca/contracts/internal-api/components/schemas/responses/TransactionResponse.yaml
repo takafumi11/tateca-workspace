@@ -1,0 +1,37 @@
+type: object
+description: Detailed transaction information
+properties:
+  transaction_id:
+    type: string
+    format: uuid
+    description: Transaction unique identifier
+    example: 550e8400-e29b-41d4-a716-446655440000
+  transaction_type:
+    $ref: "../common/TransactionType.yaml"
+  title:
+    type: string
+    description: Transaction title
+    example: Dinner at restaurant
+  amount:
+    type: integer
+    format: int64
+    description: Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)
+    example: 5000
+  payer:
+    $ref: "./UserResponse.yaml"
+  exchange_rate:
+    $ref: "./ExchangeRateItem.yaml"
+  date_str:
+    type: string
+    description: Transaction date (Tokyo time)
+    example: "2024-01-15T18:30:00+09:00"
+  loan:
+    nullable: true
+    allOf:
+      - $ref: "./LoanResponse.yaml"
+    description: Loan details (present if transaction_type is LOAN)
+  repayment:
+    nullable: true
+    allOf:
+      - $ref: "./RepaymentResponse.yaml"
+    description: Repayment details (present if transaction_type is REPAYMENT)

@@ -1,0 +1,25 @@
+type: object
+description: User information response
+properties:
+  uuid:
+    type: string
+    format: uuid
+    description: User's unique identifier
+    example: 550e8400-e29b-41d4-a716-446655440000
+  name:
+    type: string
+    description: User's display name
+    example: John Doe
+  auth_user:
+    nullable: true
+    allOf:
+      - $ref: "./AuthUserResponse.yaml"
+    description: Authentication user details
+  created_at:
+    type: string
+    description: User creation timestamp (Tokyo time)
+    example: "2024-01-01T12:00:00+09:00"
+  updated_at:
+    type: string
+    description: User last update timestamp (Tokyo time)
+    example: "2024-01-15T14:30:00+09:00"

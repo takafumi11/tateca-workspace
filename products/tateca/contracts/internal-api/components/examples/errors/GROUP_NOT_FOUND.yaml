@@ -1,0 +1,10 @@
+summary: Group not found
+description: Target group identified by groupId does not exist.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 404
+  error: Not Found
+  message: Group not found
+  path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: GROUP.NOT_FOUND

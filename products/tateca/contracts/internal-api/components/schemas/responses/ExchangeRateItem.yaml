@@ -1,0 +1,33 @@
+type: object
+description: Exchange rate information for a currency
+properties:
+  currency_code:
+    type: string
+    description: ISO 4217 currency code
+    example: USD
+  jp_currency_name:
+    type: string
+    description: Currency name in Japanese
+    example: 米ドル
+  eng_currency_name:
+    type: string
+    description: Currency name in English
+    example: US Dollar
+  jp_country_name:
+    type: string
+    description: Country name in Japanese
+    example: アメリカ合衆国
+  eng_country_name:
+    type: string
+    description: Country name in English
+    example: United States
+  currency_symbol:
+    type: string
+    description: Currency symbol
+    example: $
+  symbol_position:
+    $ref: "../common/SymbolPosition.yaml"
+  exchange_rate:
+    type: string
+    description: Exchange rate to JPY
+    example: "150.25"

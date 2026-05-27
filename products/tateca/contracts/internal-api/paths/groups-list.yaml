@@ -1,0 +1,18 @@
+get:
+  tags:
+    - Groups
+  summary: Get list of groups for the current user
+  operationId: getGroupList
+  responses:
+    "200":
+      description: Group list retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/GroupListResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

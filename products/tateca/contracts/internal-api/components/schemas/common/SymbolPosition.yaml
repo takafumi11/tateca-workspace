@@ -1,0 +1,6 @@
+type: string
+description: Position of currency symbol relative to amount
+enum:
+  - PREFIX
+  - SUFFIX
+example: PREFIX

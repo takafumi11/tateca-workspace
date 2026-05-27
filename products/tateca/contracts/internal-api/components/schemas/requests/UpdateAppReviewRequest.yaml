@@ -1,0 +1,7 @@
+type: object
+description: Request to update app review preferences
+required:
+  - app_review_status
+properties:
+  app_review_status:
+    $ref: "../common/AppReviewStatus.yaml"

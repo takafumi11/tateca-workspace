@@ -1,0 +1,8 @@
+type: object
+description: Transaction history response containing list of transactions
+properties:
+  transactions_history:
+    type: array
+    description: List of transaction history entries
+    items:
+      $ref: "./TransactionHistoryEntry.yaml"

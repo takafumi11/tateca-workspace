@@ -1,0 +1,9 @@
+name: count
+in: query
+required: false
+description: Number of items to return (default 5)
+schema:
+  type: integer
+  default: 5
+  minimum: 1
+  example: 10

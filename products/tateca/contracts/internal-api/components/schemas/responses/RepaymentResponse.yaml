@@ -1,0 +1,5 @@
+type: object
+description: Repayment details
+properties:
+  recipient:
+    $ref: "./UserResponse.yaml"

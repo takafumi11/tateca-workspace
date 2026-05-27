@@ -1,0 +1,10 @@
+summary: User is not a member of the group
+description: Requester is not an authenticated member of the target group.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 403
+  error: Forbidden
+  message: Only group members can perform this action
+  path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: USER.NOT_GROUP_MEMBER

@@ -1,0 +1,29 @@
+type: object
+description: Group information
+properties:
+  uuid:
+    type: string
+    format: uuid
+    description: Group's unique identifier
+    example: 550e8400-e29b-41d4-a716-446655440000
+  name:
+    type: string
+    description: Group name
+    example: Team Outing 2024
+  join_token:
+    type: string
+    format: uuid
+    description: Invitation token for joining the group
+    example: 123e4567-e89b-12d3-a456-426614174000
+  token_expires:
+    type: string
+    description: Token expiration date
+    example: "2024-12-31"
+  created_at:
+    type: string
+    description: Group creation timestamp (Tokyo time)
+    example: "2024-01-01T12:00:00+09:00"
+  updated_at:
+    type: string
+    description: Group last update timestamp (Tokyo time)
+    example: "2024-01-15T14:30:00+09:00"

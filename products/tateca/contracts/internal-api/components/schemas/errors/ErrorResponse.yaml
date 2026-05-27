@@ -1,0 +1,44 @@
+type: object
+description: Standard error response
+required:
+  - timestamp
+  - status
+  - error
+  - message
+  - path
+  - error_code
+properties:
+  timestamp:
+    type: string
+    description: Timestamp when the request arrived at the API in ISO 8601 format
+    example: "2025-01-14T12:34:56.789Z"
+  status:
+    type: integer
+    description: HTTP status code
+    example: 400
+  error:
+    type: string
+    description: HTTP status reason phrase
+    example: Bad Request
+  message:
+    type: string
+    description: Human-readable error message
+    example: Validation failed
+  path:
+    type: string
+    description: Request path where the error occurred
+    example: /groups/123/transactions
+  request_id:
+    type: string
+    description: Unique request ID for tracing and correlation with logs
+    example: 550e8400-e29b-41d4-a716-446655440000
+  error_code:
+    type: string
+    description: Machine-readable error code for client-side handling. Operation-specific allowed values are documented in each operation's error responses.
+    pattern: '^[A-Z0-9_]+(?:\\.[A-Z0-9_]+)+$'
+    example: AUTH.INVALID_TOKEN
+  errors:
+    type: array
+    description: Field-level validation errors (only present for validation failures)
+    items:
+      $ref: "./FieldError.yaml"

@@ -1,0 +1,39 @@
+type: object
+description: Authentication user information
+properties:
+  uid:
+    type: string
+    description: Firebase authentication user ID
+    example: firebase-uid-123
+  name:
+    type: string
+    description: User's name
+    example: John Doe
+  email:
+    type: string
+    description: User's email address
+    example: john.doe@example.com
+  created_at:
+    type: string
+    description: Account creation timestamp (Tokyo time)
+    example: "2024-01-01T12:00:00+09:00"
+  updated_at:
+    type: string
+    description: Last update timestamp (Tokyo time)
+    example: "2024-01-15T14:30:00+09:00"
+  last_login_time:
+    type: string
+    nullable: true
+    description: Last login timestamp (Tokyo time)
+    example: "2024-01-20T10:15:00+09:00"
+  total_login_count:
+    type: integer
+    description: Total number of logins
+    example: 42
+  last_app_review_dialog_shown_at:
+    type: string
+    nullable: true
+    description: Timestamp when app review dialog was last shown (Tokyo time)
+    example: "2024-01-18T16:45:00+09:00"
+  app_review_status:
+    $ref: "../common/AppReviewStatus.yaml"

@@ -1,0 +1,8 @@
+type: object
+description: List of groups
+properties:
+  group_list:
+    type: array
+    description: List of groups the user belongs to
+    items:
+      $ref: "./GroupInfo.yaml"

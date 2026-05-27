@@ -1,0 +1,8 @@
+type: object
+description: Loan details including all obligations
+properties:
+  obligations:
+    type: array
+    description: List of loan obligations showing who owes how much
+    items:
+      $ref: "./ObligationResponse.yaml"

@@ -1,0 +1,10 @@
+summary: Malformed JSON
+description: Request body is not valid JSON format.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 400
+  error: Bad Request
+  message: Invalid request body format. Please check the data types and structure.
+  path: /users/123e4567-e89b-12d3-a456-426614174000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: REQUEST.MALFORMED_JSON

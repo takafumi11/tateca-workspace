@@ -1,0 +1,163 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event.action != 'closed' }}
+
+defaults:
+  run:
+    working-directory: products/tateca
+
+jobs:
+  openapi-lint:
+    name: OpenAPI Lint
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: products/tateca/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint OpenAPI specification
+        run: npm run lint
+
+  openapi-preview:
+    name: OpenAPI Preview Deploy
+    runs-on: ubuntu-latest
+    needs: openapi-lint
+    if: github.event.action != 'closed'
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    environment:
+      name: preview
+      url: ${{ steps.url.outputs.preview_url }}
+
+    defaults:
+      run:
+        working-directory: products/tateca
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute safe branch name
+        id: branch
+        run: |
+          SAFE=$(echo "${{ github.head_ref }}" | tr '/' '-')
+          echo "safe=${SAFE}" >> "$GITHUB_OUTPUT"
+
+      - name: Set preview URL
+        id: url
+        run: |
+          echo "preview_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ steps.branch.outputs.safe }}/" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: products/tateca/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build documentation
+        run: |
+          npm run build
+          npm run bundle
+
+      - name: Prepare output
+        run: |
+          mkdir -p out/downloads
+          cp generated/docs-site/index.html out/index.html
+          cp generated/dist/openapi-bundled.yaml out/downloads/openapi.yaml
+          cp generated/dist/openapi-bundled.json out/downloads/openapi.json
+          cp CNAME out/CNAME
+
+      - name: Deploy preview
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: products/tateca/out/
+          branch: gh-pages
+          target-folder: ${{ steps.branch.outputs.safe }}
+          clean: true
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const safe = '${{ steps.branch.outputs.safe }}';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const url = `https://${owner}.github.io/${repo}/${safe}/`;
+            const body = [
+              '## OpenAPI Preview',
+              '',
+              `${url}`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('OpenAPI Preview')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: context.issue.number, body,
+              });
+            }
+
+  cleanup-preview:
+    name: Cleanup Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove preview folder
+        run: |
+          SAFE=$(echo "${{ github.head_ref }}" | tr '/' '-')
+
+          if ! git ls-remote --heads origin gh-pages | grep -q .; then
+            echo "gh-pages branch does not exist, skipping."
+            exit 0
+          fi
+
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          if [ -d "$SAFE" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            rm -rf "$SAFE"
+            git add -A
+            git commit -m "chore: remove preview for ${SAFE}"
+            git push origin gh-pages
+          else
+            echo "Preview folder '${SAFE}' not found, skipping."
+          fi

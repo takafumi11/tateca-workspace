@@ -1,0 +1,12 @@
+title: Tateca API
+description: >
+  Group expense management API with multi-currency support.
+  Track expenses, loans, and settlements across multiple users and currencies.
+version: 1.0.0
+contact:
+  name: Tateca Team
+  url: https://tateca.net
+  email: support@tateca.net
+license:
+  name: Proprietary
+  url: https://tateca.net/terms

@@ -1,0 +1,35 @@
+delete:
+  tags:
+    - Groups
+  summary: Leave a group
+  operationId: leaveGroup
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+    - $ref: "../components/parameters/userUuidPath.yaml"
+  responses:
+    "204":
+      description: User left group successfully
+    "400":
+      description: Validation error - Invalid UUID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "403":
+      description: Forbidden - User doesn't have permission to remove this user
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Group not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

@@ -1,0 +1,11 @@
+type: object
+description: Request to add a new member to an existing group
+required:
+  - member_name
+properties:
+  member_name:
+    type: string
+    description: Name of the member to add
+    minLength: 1
+    maxLength: 50
+    example: John Doe

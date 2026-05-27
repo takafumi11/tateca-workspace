@@ -1,0 +1,129 @@
+get:
+  tags:
+    - Transactions
+  summary: Get transaction details by ID
+  description: >
+    Returns full transaction details including type-specific information.
+    For LOAN transactions: includes payer, obligations list, exchange rate, and date.
+    For REPAYMENT transactions: includes payer, recipient, exchange rate, and date.
+  operationId: getTransactionDetail
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+    - $ref: "../components/parameters/transactionIdPath.yaml"
+  responses:
+    "200":
+      description: Transaction details retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/TransactionResponse.yaml"
+    "400":
+      description: Validation error - Invalid UUID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Transaction not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+
+put:
+  tags:
+    - Transactions
+  summary: Update a LOAN transaction
+  description: >
+    Updates an existing LOAN transaction with new details.
+
+    **Updatable fields:**
+    - Title, amount, currency, transaction date
+    - Payer
+    - Obligations (users and amounts)
+
+    **Important notes:**
+    - Only LOAN transactions can be updated
+    - Currency can be changed (e.g., from JPY to USD)
+    - All existing obligations will be replaced with new ones
+  operationId: updateTransaction
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+    - $ref: "../components/parameters/transactionIdPath.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/UpdateTransactionRequest.yaml"
+  responses:
+    "200":
+      description: Transaction updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/TransactionResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters or attempting to update REPAYMENT transaction
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Not Found - Transaction, payer, obligor, or exchange rate does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+
+delete:
+  tags:
+    - Transactions
+  summary: Delete a transaction
+  description: >
+    Deletes a transaction and all associated obligations.
+    Both LOAN and REPAYMENT transactions can be deleted.
+    Deletion is permanent and cannot be undone.
+  operationId: deleteTransaction
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+    - $ref: "../components/parameters/transactionIdPath.yaml"
+  responses:
+    "204":
+      description: Transaction deleted successfully
+    "400":
+      description: Validation error - Invalid UUID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Transaction not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

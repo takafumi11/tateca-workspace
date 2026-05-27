@@ -1,0 +1,49 @@
+post:
+  tags:
+    - Auth Users
+  summary: Create new authenticated user
+  description: Registers a new authenticated user in the system
+  operationId: createAuthUser
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/CreateAuthUserRequest.yaml"
+  responses:
+    "201":
+      description: User created successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/AuthUserResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "409":
+      description: Conflict - Email already exists
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

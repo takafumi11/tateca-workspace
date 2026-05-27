@@ -1,0 +1,14 @@
+type: object
+description: Field-level validation error details
+properties:
+  field:
+    type: string
+    description: Name of the field that failed validation
+    example: groupName
+  message:
+    type: string
+    description: Validation error message
+    example: Group name must be between 1 and 100 characters
+  rejected_value:
+    description: The value that was rejected
+    example: ""

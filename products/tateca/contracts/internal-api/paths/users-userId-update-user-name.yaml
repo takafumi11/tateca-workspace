@@ -1,0 +1,88 @@
+patch:
+  tags:
+    - Users
+  summary: Update user name
+  description: |
+    Updates the display name of the authenticated user identified by userId.
+
+    **Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.
+
+    **Idempotency:** Updating with the same normalized value is treated as a success without modifying the resource (updated_at remains unchanged).
+
+    **Authorization:** The authenticated user must be the owner of the target resource. Attempting to modify another user's name results in 403 Forbidden.
+  operationId: updateUserName
+  parameters:
+    - $ref: "../components/parameters/userIdPath.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/UpdateUserNameRequest.yaml"
+  responses:
+    "200":
+      description: User name updated successfully (also returned for idempotent same-value updates)
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/UserResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters or malformed JSON
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
+    "403":
+      description: Forbidden - Authenticated user is not the owner of the target resource
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            userForbidden:
+              $ref: "../components/examples/errors/USER_FORBIDDEN.yaml"
+    "404":
+      description: "User not found (error_code: USER.NOT_FOUND)"
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            userNotFound:
+              $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

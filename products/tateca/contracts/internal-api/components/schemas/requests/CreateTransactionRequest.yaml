@@ -1,0 +1,75 @@
+type: object
+description: Request to create a new transaction
+required:
+  - transaction_type
+  - title
+  - amount
+  - currency_code
+  - date_str
+  - payer_id
+properties:
+  transaction_type:
+    $ref: "../common/TransactionType.yaml"
+  title:
+    type: string
+    description: Transaction title or description
+    maxLength: 50
+    example: Dinner at restaurant
+  amount:
+    type: integer
+    description: Transaction amount in the smallest currency unit (e.g., yen for JPY, cents for USD)
+    minimum: 1
+    example: 5000
+  currency_code:
+    type: string
+    description: Currency code (ISO 4217)
+    pattern: "^[A-Z]{3}$"
+    example: JPY
+  date_str:
+    type: string
+    description: Transaction date in ISO 8601 format with timezone
+    pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([+-]\\d{2}:\\d{2}|Z)$"
+    example: "2024-01-15T18:30:00+09:00"
+  payer_id:
+    type: string
+    format: uuid
+    description: UUID of the user who paid
+    example: 550e8400-e29b-41d4-a716-446655440000
+  loan:
+    type: object
+    description: Loan details (required if transaction_type is LOAN)
+    required:
+      - obligations
+    properties:
+      obligations:
+        type: array
+        description: List of loan obligations specifying who owes what amount (max 9)
+        minItems: 1
+        maxItems: 9
+        items:
+          type: object
+          required:
+            - amount
+            - user_uuid
+          properties:
+            amount:
+              type: integer
+              description: Amount owed in the smallest currency unit
+              minimum: 1
+              example: 2500
+            user_uuid:
+              type: string
+              format: uuid
+              description: UUID of the user who owes this amount
+              example: 550e8400-e29b-41d4-a716-446655440000
+  repayment:
+    type: object
+    description: Repayment details (required if transaction_type is REPAYMENT)
+    required:
+      - recipient_id
+    properties:
+      recipient_id:
+        type: string
+        format: uuid
+        description: UUID of the user receiving the repayment
+        example: 550e8400-e29b-41d4-a716-446655440000

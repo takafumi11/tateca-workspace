@@ -1,0 +1,7 @@
+type: string
+description: App review status
+enum:
+  - PENDING
+  - COMPLETED
+  - PERMANENTLY_DECLINED
+example: PENDING

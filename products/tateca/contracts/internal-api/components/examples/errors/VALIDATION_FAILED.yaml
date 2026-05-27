@@ -1,0 +1,14 @@
+summary: Validation failed
+description: Request body passed JSON parsing but violated field validation rules.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 400
+  error: Bad Request
+  message: Validation failed
+  path: /users/123e4567-e89b-12d3-a456-426614174000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: VALIDATION.FAILED
+  errors:
+    - field: user_name
+      message: User name must be between 1 and 50 characters
+      rejected_value: ""

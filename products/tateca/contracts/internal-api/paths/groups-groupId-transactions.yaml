@@ -1,0 +1,54 @@
+post:
+  tags:
+    - Transactions
+  summary: Create a new transaction
+  description: >
+    Creates a LOAN or REPAYMENT transaction in the specified group.
+
+    **Transaction types (mutually exclusive):**
+    - LOAN: Requires `loan.obligations` (1-9 items). `repayment` must not be provided.
+    - REPAYMENT: Requires `repayment.recipient_id`. `loan` must not be provided.
+
+    **Exchange rate resolution:**
+    If no exchange rate exists for the specified currency and date,
+    the latest available rate for that currency is used and saved for the specified date.
+  operationId: createTransaction
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/CreateTransactionRequest.yaml"
+  responses:
+    "201":
+      description: Transaction created successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/TransactionResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Not Found - Group, payer, obligor, recipient, or exchange rate does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

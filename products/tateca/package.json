@@ -1,0 +1,13 @@
+{
+  "name": "tateca-openapi-spec",
+  "private": true,
+  "scripts": {
+    "lint": "redocly lint --config contracts/internal-api/redocly.yaml contracts/internal-api/openapi.yaml",
+    "build": "mkdir -p generated/docs-site generated/dist && redocly build-docs --config contracts/internal-api/redocly.yaml contracts/internal-api/openapi.yaml --output generated/docs-site/index.html && node scripts/inject-mermaid.js generated/docs-site/index.html",
+    "bundle": "mkdir -p generated/dist && redocly bundle --config contracts/internal-api/redocly.yaml contracts/internal-api/openapi.yaml --output generated/dist/openapi-bundled.yaml && redocly bundle --config contracts/internal-api/redocly.yaml contracts/internal-api/openapi.yaml --output generated/dist/openapi-bundled.json",
+    "preview": "redocly preview-docs --config contracts/internal-api/redocly.yaml contracts/internal-api/openapi.yaml"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.25.0"
+  }
+}

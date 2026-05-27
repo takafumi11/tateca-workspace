@@ -1,0 +1,32 @@
+get:
+  tags:
+    - Transactions
+  summary: Get settlement information for a group in JPY
+  description: >
+    Calculates optimized settlement transactions for a group.
+    All amounts are converted to JPY using the exchange rate recorded with each transaction.
+    Rounding residuals are adjusted by applying the difference to the largest debtor.
+    Returns an empty list if no transactions exist or all balances are zero.
+    Does not verify group existence — returns empty list for non-existent groups.
+  operationId: getTransactionSettlement
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+  responses:
+    "200":
+      description: Settlement information retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/TransactionSettlementResponse.yaml"
+    "400":
+      description: Validation error - Invalid UUID format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

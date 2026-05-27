@@ -1,0 +1,56 @@
+post:
+  tags:
+    - Groups
+  summary: Add a new member to an existing group
+  operationId: addMember
+  parameters:
+    - $ref: "../components/parameters/groupIdPath.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/AddMemberRequest.yaml"
+  responses:
+    "200":
+      description: Member added successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/GroupResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "403":
+      description: Forbidden - User is not a member of this group
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "404":
+      description: Group not found
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "409":
+      description: Conflict - Group has reached maximum size
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"

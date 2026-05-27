@@ -1,0 +1,32 @@
+type: object
+description: Request to create a new group
+required:
+  - group_name
+  - host_name
+  - participants_name
+properties:
+  group_name:
+    type: string
+    description: Name of the group
+    minLength: 1
+    maxLength: 100
+    example: Team Outing 2024
+  host_name:
+    type: string
+    description: Your name as the group creator
+    minLength: 1
+    maxLength: 50
+    example: John Doe
+  participants_name:
+    type: array
+    description: Names of other group members (minimum 1, maximum 9)
+    minItems: 1
+    maxItems: 9
+    items:
+      type: string
+      minLength: 1
+      maxLength: 50
+    example:
+      - Alice
+      - Bob
+      - Charlie

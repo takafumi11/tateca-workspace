@@ -1,0 +1,11 @@
+type: object
+description: Request to update group name
+required:
+  - group_name
+properties:
+  group_name:
+    type: string
+    description: New name for the group
+    minLength: 1
+    maxLength: 100
+    example: Summer Trip 2024

@@ -1,0 +1,61 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: products/tateca
+
+jobs:
+  deploy-docs:
+    name: Deploy API Docs
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    environment:
+      name: docs
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: products/tateca/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint OpenAPI specification
+        run: npm run lint
+
+      - name: Build documentation
+        run: |
+          npm run build
+          npm run bundle
+
+      - name: Prepare output
+        run: |
+          mkdir -p out/downloads
+          cp generated/docs-site/index.html out/index.html
+          cp generated/dist/openapi-bundled.yaml out/downloads/openapi.yaml
+          cp generated/dist/openapi-bundled.json out/downloads/openapi.json
+          cp CNAME out/CNAME
+
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: products/tateca/out/
+          branch: gh-pages
+          clean: false

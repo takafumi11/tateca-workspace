@@ -1,0 +1,42 @@
+post:
+  tags:
+    - Groups
+  summary: Create a new group
+  operationId: createGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/CreateGroupRequest.yaml"
+  responses:
+    "201":
+      description: Group created successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/GroupResponse.yaml"
+    "400":
+      description: Validation error - Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing Firebase JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "409":
+      description: Conflict - User has reached maximum group limit
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+    "415":
+      description: Unsupported Media Type - Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
