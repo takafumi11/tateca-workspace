@@ -40,7 +40,7 @@
           "Auth Users"
         ],
         "summary": "Create new authenticated user",
-        "description": "Registers a new authenticated user in the system",
+        "description": "Registers a new authenticated user in the system upon first login.\n\n**Business Rules:**\n1. **Email uniqueness**: The email address must not be already registered to another user (R3-AC1; see `design.md` → Canonical Testable Flows → Request Flow).\n2. **Initial values**: login count is set to 1, app review status is set to PENDING, and last login time is set to the creation timestamp (R1-AC2, R1-AC3; see `design.md` → Assertion Rules For Test Authors).\n",
         "operationId": "createAuthUser",
         "requestBody": {
           "required": true,
@@ -48,13 +48,21 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateAuthUserRequest"
+              },
+              "examples": {
+                "createUser": {
+                  "summary": "Create auth user",
+                  "value": {
+                    "email": "john@example.com"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "User created successfully",
+            "description": "Auth user created successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -64,41 +72,70 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  },
+                  "malformedJson": {
+                    "$ref": "#/components/examples/REQUEST_MALFORMED_JSON"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "409": {
-            "description": "Conflict - Email already exists",
+            "description": "Conflict — email address already registered.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.EMAIL_DUPLICATE` | Email already exists |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "emailDuplicate": {
+                    "$ref": "#/components/examples/AUTH_USER_EMAIL_DUPLICATE"
+                  }
                 }
               }
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "unsupportedMediaType": {
+                    "$ref": "#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE"
+                  }
                 }
               }
             }
@@ -109,6 +146,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -122,7 +164,7 @@
           "Auth Users"
         ],
         "summary": "Get authenticated user information",
-        "description": "Retrieves detailed information about an authenticated user by their UID",
+        "description": "Retrieves detailed information about an authenticated user by their UID.\nLogin count is incremented and last login time is updated on every call.\n\n**Business Rules:**\n1. **Login record update**: Each call increments `total_login_count` by 1 and updates `last_login_time` to the current timestamp (R4-AC2; see `design.md` → Canonical Testable Flows → GET フロー).\n",
         "operationId": "getAuthUser",
         "parameters": [
           {
@@ -131,7 +173,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User information retrieved successfully",
+            "description": "Auth user information retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -141,38 +183,67 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid UID format",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
+            "description": "Bad request — invalid UID path parameter.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
-                "example": {
-                  "status": 404,
-                  "error": "Not Found",
-                  "message": "Auth user not found",
-                  "error_code": "AUTH_USER.NOT_FOUND",
-                  "path": "/auth/users/test-uid-123"
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "authUserNotFound": {
+                    "$ref": "#/components/examples/AUTH_USER_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -184,7 +255,7 @@
           "Auth Users"
         ],
         "summary": "Delete authenticated user",
-        "description": "Removes an authenticated user from the system",
+        "description": "Removes an authenticated user from the system.\nAll linked app-user records have their auth reference unlinked before deletion; the app-user records themselves are preserved.\n\n**Business Rules:**\n1. **Unlink before delete**: All app-user records linked to the auth user have `auth_user_uid` set to NULL before the auth user record is deleted (R6-AC2, R6-AC3; see `design.md` → Canonical Testable Flows → DELETE フロー).\n",
         "operationId": "deleteAuthUser",
         "parameters": [
           {
@@ -193,41 +264,70 @@
         ],
         "responses": {
           "204": {
-            "description": "User deleted successfully"
+            "description": "Auth user deleted successfully"
           },
           "400": {
-            "description": "Validation error - Invalid UID format",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
+            "description": "Bad request — invalid UID path parameter.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
-                "example": {
-                  "status": 404,
-                  "error": "Not Found",
-                  "message": "Auth user not found",
-                  "error_code": "AUTH_USER.NOT_FOUND",
-                  "path": "/auth/users/test-uid-123"
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "authUserNotFound": {
+                    "$ref": "#/components/examples/AUTH_USER_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -241,7 +341,7 @@
           "Auth Users"
         ],
         "summary": "Update app review preferences",
-        "description": "Updates the app review preferences for an authenticated user",
+        "description": "Updates the app review status for the authenticated user.\n`last_app_review_dialog_shown_at` is always updated to the current timestamp on every call, even for same-value updates.\n\n**Business Rules:**\n1. **Dialog timestamp always updated**: `last_app_review_dialog_shown_at` is set to the current timestamp on every call regardless of whether the status value changes (R8-AC2; see `design.md` → Assertion Rules For Test Authors).\n2. **No transition constraints**: Any status value may transition to any other status value, including reverting from COMPLETED or PERMANENTLY_DECLINED back to PENDING (R8-AC3; see `design.md` → State Model).\n",
         "operationId": "updateReviewPreferences",
         "requestBody": {
           "required": true,
@@ -249,6 +349,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateAppReviewRequest"
+              },
+              "examples": {
+                "updateToCompleted": {
+                  "summary": "Mark review as completed",
+                  "value": {
+                    "app_review_status": "COMPLETED"
+                  }
+                }
               }
             }
           }
@@ -265,41 +373,70 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  },
+                  "malformedJson": {
+                    "$ref": "#/components/examples/REQUEST_MALFORMED_JSON"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing authentication token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "User not found",
+            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "authUserNotFound": {
+                    "$ref": "#/components/examples/AUTH_USER_NOT_FOUND"
+                  }
                 }
               }
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "unsupportedMediaType": {
+                    "$ref": "#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE"
+                  }
                 }
               }
             }
@@ -310,6 +447,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -2501,6 +2643,45 @@
           ]
         }
       },
+      "REQUEST_MALFORMED_JSON": {
+        "summary": "Malformed JSON",
+        "description": "Request body is not valid JSON format.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 400,
+          "error": "Bad Request",
+          "message": "Invalid request body format. Please check the data types and structure.",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "REQUEST.MALFORMED_JSON"
+        }
+      },
+      "AUTH_MISSING_CREDENTIALS": {
+        "summary": "Missing authentication credentials",
+        "description": "Authorization header is missing.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Authentication required",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.MISSING_CREDENTIALS"
+        }
+      },
+      "AUTH_INVALID_FORMAT": {
+        "summary": "Invalid authentication header format",
+        "description": "Authorization header format is invalid.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Invalid authentication credentials",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.INVALID_FORMAT"
+        }
+      },
       "AUTH_INVALID_TOKEN": {
         "summary": "Invalid authentication token",
         "description": "Firebase token failed verification.",
@@ -2512,6 +2693,58 @@
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "AUTH.INVALID_TOKEN"
+        }
+      },
+      "AUTH_USER_EMAIL_DUPLICATE": {
+        "summary": "Email already exists",
+        "description": "The provided email address is already registered to another user.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 409,
+          "error": "Conflict",
+          "message": "Email already exists",
+          "path": "/auth/users",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH_USER.EMAIL_DUPLICATE"
+        }
+      },
+      "REQUEST_UNSUPPORTED_MEDIA_TYPE": {
+        "summary": "Unsupported media type",
+        "description": "Content-Type is not application/json.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 415,
+          "error": "Unsupported Media Type",
+          "message": "Unsupported Media Type. Content-Type must be application/json",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "REQUEST.UNSUPPORTED_MEDIA_TYPE"
+        }
+      },
+      "SYSTEM_INTERNAL_ERROR": {
+        "summary": "Internal server error",
+        "description": "Unexpected server-side failure.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 500,
+          "error": "Internal Server Error",
+          "message": "Internal server error",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "SYSTEM.INTERNAL_ERROR"
+        }
+      },
+      "AUTH_USER_NOT_FOUND": {
+        "summary": "Auth user not found",
+        "description": "No auth user record exists for the specified UID.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 404,
+          "error": "Not Found",
+          "message": "Auth user not found",
+          "path": "/auth/users/firebase-uid-123",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH_USER.NOT_FOUND"
         }
       },
       "USER_NOT_GROUP_MEMBER": {
@@ -2553,45 +2786,6 @@
           "error_code": "GROUP.MAX_SIZE_REACHED"
         }
       },
-      "REQUEST_UNSUPPORTED_MEDIA_TYPE": {
-        "summary": "Unsupported media type",
-        "description": "Content-Type is not application/json.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 415,
-          "error": "Unsupported Media Type",
-          "message": "Unsupported Media Type. Content-Type must be application/json",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "REQUEST.UNSUPPORTED_MEDIA_TYPE"
-        }
-      },
-      "AUTH_MISSING_CREDENTIALS": {
-        "summary": "Missing authentication credentials",
-        "description": "Authorization header is missing.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 401,
-          "error": "Unauthorized",
-          "message": "Authentication required",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "AUTH.MISSING_CREDENTIALS"
-        }
-      },
-      "AUTH_INVALID_FORMAT": {
-        "summary": "Invalid authentication header format",
-        "description": "Authorization header format is invalid.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 401,
-          "error": "Unauthorized",
-          "message": "Invalid authentication credentials",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "AUTH.INVALID_FORMAT"
-        }
-      },
       "USER_NOT_FOUND": {
         "summary": "User not found",
         "description": "Target user identified by userId does not exist.",
@@ -2629,32 +2823,6 @@
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "MEMBER.HAS_TRANSACTIONS"
-        }
-      },
-      "SYSTEM_INTERNAL_ERROR": {
-        "summary": "Internal server error",
-        "description": "Unexpected server-side failure.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 500,
-          "error": "Internal Server Error",
-          "message": "Internal server error",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "SYSTEM.INTERNAL_ERROR"
-        }
-      },
-      "REQUEST_MALFORMED_JSON": {
-        "summary": "Malformed JSON",
-        "description": "Request body is not valid JSON format.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 400,
-          "error": "Bad Request",
-          "message": "Invalid request body format. Please check the data types and structure.",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "REQUEST.MALFORMED_JSON"
         }
       },
       "USER_FORBIDDEN": {
