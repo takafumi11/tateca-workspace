@@ -2,7 +2,13 @@ patch:
   tags:
     - Auth Users
   summary: Update app review preferences
-  description: Updates the app review preferences for an authenticated user
+  description: |
+    Updates the app review status for the authenticated user.
+    `last_app_review_dialog_shown_at` is always updated to the current timestamp on every call, even for same-value updates.
+
+    **Business Rules:**
+    1. **Dialog timestamp always updated**: `last_app_review_dialog_shown_at` is set to the current timestamp on every call regardless of whether the status value changes (R8-AC2; see `design.md` → Assertion Rules For Test Authors).
+    2. **No transition constraints**: Any status value may transition to any other status value, including reverting from COMPLETED or PERMANENTLY_DECLINED back to PENDING (R8-AC3; see `design.md` → State Model).
   operationId: updateReviewPreferences
   requestBody:
     required: true
@@ -10,6 +16,11 @@ patch:
       application/json:
         schema:
           $ref: "../components/schemas/requests/UpdateAppReviewRequest.yaml"
+        examples:
+          updateToCompleted:
+            summary: Mark review as completed
+            value:
+              app_review_status: "COMPLETED"
   responses:
     "200":
       description: Review preferences updated successfully
@@ -18,32 +29,76 @@ patch:
           schema:
             $ref: "../components/schemas/responses/AuthUserResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
+        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing authentication token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: User not found
+      description: |
+        Auth user not found.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH_USER.NOT_FOUND` | Auth user not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            authUserNotFound:
+              $ref: "../components/examples/errors/AUTH_USER_NOT_FOUND.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
     "500":
       description: Internal Server Error
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

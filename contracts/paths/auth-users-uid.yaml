@@ -2,74 +2,150 @@ get:
   tags:
     - Auth Users
   summary: Get authenticated user information
-  description: Retrieves detailed information about an authenticated user by their UID
+  description: |
+    Retrieves detailed information about an authenticated user by their UID.
+    Login count is incremented and last login time is updated on every call.
+
+    **Business Rules:**
+    1. **Login record update**: Each call increments `total_login_count` by 1 and updates `last_login_time` to the current timestamp (R4-AC2; see `design.md` → Canonical Testable Flows → GET フロー).
   operationId: getAuthUser
   parameters:
     - $ref: "../components/parameters/uidPath.yaml"
   responses:
     "200":
-      description: User information retrieved successfully
+      description: Auth user information retrieved successfully
       content:
         application/json:
           schema:
             $ref: "../components/schemas/responses/AuthUserResponse.yaml"
     "400":
-      description: Validation error - Invalid UID format
+      description: |
+        Bad request — invalid UID path parameter.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing authentication token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: User not found
+      description: |
+        Auth user not found.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH_USER.NOT_FOUND` | Auth user not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
-          example:
-            status: 404
-            error: Not Found
-            message: Auth user not found
-            error_code: AUTH_USER.NOT_FOUND
-            path: /auth/users/test-uid-123
+          examples:
+            authUserNotFound:
+              $ref: "../components/examples/errors/AUTH_USER_NOT_FOUND.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"
 
 delete:
   tags:
     - Auth Users
   summary: Delete authenticated user
-  description: Removes an authenticated user from the system
+  description: |
+    Removes an authenticated user from the system.
+    All linked app-user records have their auth reference unlinked before deletion; the app-user records themselves are preserved.
+
+    **Business Rules:**
+    1. **Unlink before delete**: All app-user records linked to the auth user have `auth_user_uid` set to NULL before the auth user record is deleted (R6-AC2, R6-AC3; see `design.md` → Canonical Testable Flows → DELETE フロー).
   operationId: deleteAuthUser
   parameters:
     - $ref: "../components/parameters/uidPath.yaml"
   responses:
     "204":
-      description: User deleted successfully
+      description: Auth user deleted successfully
     "400":
-      description: Validation error - Invalid UID format
+      description: |
+        Bad request — invalid UID path parameter.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing authentication token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: User not found
+      description: |
+        Auth user not found.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH_USER.NOT_FOUND` | Auth user not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
-          example:
-            status: 404
-            error: Not Found
-            message: Auth user not found
-            error_code: AUTH_USER.NOT_FOUND
-            path: /auth/users/test-uid-123
+          examples:
+            authUserNotFound:
+              $ref: "../components/examples/errors/AUTH_USER_NOT_FOUND.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

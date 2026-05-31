@@ -2,7 +2,12 @@ post:
   tags:
     - Auth Users
   summary: Create new authenticated user
-  description: Registers a new authenticated user in the system
+  description: |
+    Registers a new authenticated user in the system upon first login.
+
+    **Business Rules:**
+    1. **Email uniqueness**: The email address must not be already registered to another user (R3-AC1; see `design.md` → Canonical Testable Flows → Request Flow).
+    2. **Initial values**: login count is set to 1, app review status is set to PENDING, and last login time is set to the creation timestamp (R1-AC2, R1-AC3; see `design.md` → Assertion Rules For Test Authors).
   operationId: createAuthUser
   requestBody:
     required: true
@@ -10,40 +15,89 @@ post:
       application/json:
         schema:
           $ref: "../components/schemas/requests/CreateAuthUserRequest.yaml"
+        examples:
+          createUser:
+            summary: Create auth user
+            value:
+              email: "john@example.com"
   responses:
     "201":
-      description: User created successfully
+      description: Auth user created successfully
       content:
         application/json:
           schema:
             $ref: "../components/schemas/responses/AuthUserResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
+        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing authentication token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "409":
-      description: Conflict - Email already exists
+      description: |
+        Conflict — email address already registered.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH_USER.EMAIL_DUPLICATE` | Email already exists |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            emailDuplicate:
+              $ref: "../components/examples/errors/AUTH_USER_EMAIL_DUPLICATE.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
     "500":
       description: Internal Server Error
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

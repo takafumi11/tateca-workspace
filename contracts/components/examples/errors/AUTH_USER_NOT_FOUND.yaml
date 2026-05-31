@@ -1,0 +1,10 @@
+summary: Auth user not found
+description: No auth user record exists for the specified UID.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 404
+  error: Not Found
+  message: Auth user not found
+  path: /auth/users/firebase-uid-123
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: AUTH_USER.NOT_FOUND
