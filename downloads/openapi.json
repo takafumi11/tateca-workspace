@@ -725,6 +725,7 @@
         ],
         "summary": "Add a new member to an existing group",
         "operationId": "addMember",
+        "description": "Adds a new unjoined member (no Firebase account linked) to an existing group.\n\n**Business Rules**:\n1. **Authorization**: Only authenticated members of the group may add new members (R4-AC1; see `design.md` → AC Ownership Matrix).\n2. **Group size limit**: A group may have at most 10 members total; the request is rejected when the limit is already reached (R3-AC1; see `design.md` → Canonical Testable Flows).\n3. **Duplicate names**: Members with the same name are allowed (R1-AC4).\n\n**Dependencies**: MySQL (`users`, `user_groups` tables).\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/groupIdPath"
@@ -736,13 +737,21 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AddMemberRequest"
+              },
+              "examples": {
+                "addMember": {
+                  "summary": "Add a new member named Alice",
+                  "value": {
+                    "member_name": "Alice"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Member added successfully",
+            "description": "Member added successfully. Returns the full group state including the new member.",
             "content": {
               "application/json": {
                 "schema": {
@@ -752,61 +761,97 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed (field-level errors in `errors` array) |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "summary": "member_name is blank or exceeds 50 characters (VALIDATION.FAILED)",
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — Firebase JWT token is missing or invalid.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.INVALID_TOKEN` | Invalid authentication token |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "invalidToken": {
+                    "summary": "Invalid or missing Firebase JWT (AUTH.INVALID_TOKEN)",
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "403": {
-            "description": "Forbidden - User is not a member of this group",
+            "description": "Forbidden — requester is not an authenticated member of the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_GROUP_MEMBER` | Only group members can add members |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "notGroupMember": {
+                    "summary": "Requester is not a group member (USER.NOT_GROUP_MEMBER)",
+                    "$ref": "#/components/examples/USER_NOT_GROUP_MEMBER"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "Group not found",
+            "description": "Not found — the specified group does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "groupNotFound": {
+                    "summary": "Group not found (GROUP.NOT_FOUND)",
+                    "$ref": "#/components/examples/GROUP_NOT_FOUND"
+                  }
                 }
               }
             }
           },
           "409": {
-            "description": "Conflict - Group has reached maximum size",
+            "description": "Conflict — the group has already reached the maximum of 10 members.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.MAX_SIZE_REACHED` | Group has reached maximum size of 10 members |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "maxSizeReached": {
+                    "summary": "Group is at maximum size (GROUP.MAX_SIZE_REACHED)",
+                    "$ref": "#/components/examples/GROUP_MAX_SIZE_REACHED"
+                  }
                 }
               }
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be `application/json`.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported Media Type. Content-Type must be application/json |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "unsupportedMediaType": {
+                    "summary": "Missing or unsupported Content-Type (REQUEST.UNSUPPORTED_MEDIA_TYPE)",
+                    "$ref": "#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE"
+                  }
                 }
               }
             }
@@ -1405,7 +1450,7 @@
           "Users"
         ],
         "summary": "Update user name",
-        "description": "Updates the display name of the authenticated user identified by userId.\n\n**Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.\n\n**Idempotency:** Updating with the same normalized value is treated as a success without modifying the resource (updated_at remains unchanged).\n\n**Authorization:** The authenticated user must be the owner of the target resource. Attempting to modify another user's name results in 403 Forbidden.\n",
+        "description": "Updates the display name of the authenticated user identified by userId.\n\n**Business Rules:**\n1. **Normalization**: Leading and trailing whitespace is trimmed before validation and persistence (R2-AC1; see `design.md` → Canonical Testable Flows → Request Flow).\n2. **Self-only update**: The authenticated user must be the owner of the target resource (R3-AC3; see `design.md` → AC Ownership Matrix).\n3. **Idempotent same-value update**: Updating with the same normalized value succeeds without modifying the resource — `updated_at` remains unchanged (R4-AC1..R4-AC3; see `design.md` → Assertion Rules For Test Authors).\n",
         "operationId": "updateUserName",
         "parameters": [
           {
@@ -1418,6 +1463,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateUserNameRequest"
+              },
+              "examples": {
+                "updateName": {
+                  "summary": "Update display name",
+                  "value": {
+                    "user_name": "Alice"
+                  }
+                }
               }
             }
           }
@@ -1434,7 +1487,7 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters or malformed JSON",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1452,7 +1505,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Missing authentication credentials |\n| `AUTH.INVALID_FORMAT` | Invalid authentication format |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1473,7 +1526,7 @@
             }
           },
           "403": {
-            "description": "Forbidden - Authenticated user is not the owner of the target resource",
+            "description": "Forbidden — authenticated user is not the owner of the target resource.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.FORBIDDEN` | You are not allowed to modify this resource |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1488,7 +1541,7 @@
             }
           },
           "404": {
-            "description": "User not found (error_code: USER.NOT_FOUND)",
+            "description": "User not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_FOUND` | User not found |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1503,7 +1556,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2428,30 +2481,24 @@
       }
     },
     "examples": {
-      "AUTH_MISSING_CREDENTIALS": {
-        "summary": "Missing authentication credentials",
-        "description": "Authorization header is missing.",
+      "VALIDATION_FAILED": {
+        "summary": "Validation failed",
+        "description": "Request body passed JSON parsing but violated field validation rules.",
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 401,
-          "error": "Unauthorized",
-          "message": "Authentication required",
+          "status": 400,
+          "error": "Bad Request",
+          "message": "Validation failed",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "AUTH.MISSING_CREDENTIALS"
-        }
-      },
-      "AUTH_INVALID_FORMAT": {
-        "summary": "Invalid authentication header format",
-        "description": "Authorization header format is invalid.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 401,
-          "error": "Unauthorized",
-          "message": "Invalid authentication credentials",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "AUTH.INVALID_FORMAT"
+          "error_code": "VALIDATION.FAILED",
+          "errors": [
+            {
+              "field": "user_name",
+              "message": "User name must be between 1 and 50 characters",
+              "rejected_value": ""
+            }
+          ]
         }
       },
       "AUTH_INVALID_TOKEN": {
@@ -2491,6 +2538,58 @@
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "GROUP.NOT_FOUND"
+        }
+      },
+      "GROUP_MAX_SIZE_REACHED": {
+        "summary": "Group has reached maximum size",
+        "description": "The group already has 10 members; no more members can be added.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 409,
+          "error": "Conflict",
+          "message": "Group has reached maximum size of 10 members",
+          "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "GROUP.MAX_SIZE_REACHED"
+        }
+      },
+      "REQUEST_UNSUPPORTED_MEDIA_TYPE": {
+        "summary": "Unsupported media type",
+        "description": "Content-Type is not application/json.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 415,
+          "error": "Unsupported Media Type",
+          "message": "Unsupported Media Type. Content-Type must be application/json",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "REQUEST.UNSUPPORTED_MEDIA_TYPE"
+        }
+      },
+      "AUTH_MISSING_CREDENTIALS": {
+        "summary": "Missing authentication credentials",
+        "description": "Authorization header is missing.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Authentication required",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.MISSING_CREDENTIALS"
+        }
+      },
+      "AUTH_INVALID_FORMAT": {
+        "summary": "Invalid authentication header format",
+        "description": "Authorization header format is invalid.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Invalid authentication credentials",
+          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
+          "request_id": "550e8400-e29b-41d4-a716-446655440000",
+          "error_code": "AUTH.INVALID_FORMAT"
         }
       },
       "USER_NOT_FOUND": {
@@ -2545,26 +2644,6 @@
           "error_code": "SYSTEM.INTERNAL_ERROR"
         }
       },
-      "VALIDATION_FAILED": {
-        "summary": "Validation failed",
-        "description": "Request body passed JSON parsing but violated field validation rules.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 400,
-          "error": "Bad Request",
-          "message": "Validation failed",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "VALIDATION.FAILED",
-          "errors": [
-            {
-              "field": "user_name",
-              "message": "User name must be between 1 and 50 characters",
-              "rejected_value": ""
-            }
-          ]
-        }
-      },
       "REQUEST_MALFORMED_JSON": {
         "summary": "Malformed JSON",
         "description": "Request body is not valid JSON format.",
@@ -2589,19 +2668,6 @@
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "USER.FORBIDDEN"
-        }
-      },
-      "REQUEST_UNSUPPORTED_MEDIA_TYPE": {
-        "summary": "Unsupported media type",
-        "description": "Content-Type is not application/json.",
-        "value": {
-          "timestamp": "2026-03-01T05:12:34.567Z",
-          "status": 415,
-          "error": "Unsupported Media Type",
-          "message": "Unsupported Media Type. Content-Type must be application/json",
-          "path": "/users/123e4567-e89b-12d3-a456-426614174000",
-          "request_id": "550e8400-e29b-41d4-a716-446655440000",
-          "error_code": "REQUEST.UNSUPPORTED_MEDIA_TYPE"
         }
       }
     }
