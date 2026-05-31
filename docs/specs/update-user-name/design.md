@@ -1,234 +1,129 @@
-# Design Document
+# Design Document (HLD) — update-user-name
 
-## Overview
+## Step 2 Scope and Ownership Rules
 
-`requirements.md` で定義されたドメイン要件（正規化、バリデーション、認証・認可、同値更新の冪等、不存在拒否）を、既存レイヤ構造で実現する。
+- `design.md` は QA が E2E テストを記述するための唯一の HLD 情報源である。すべての主要フローノードは MySQL の変化と変化しない項目を明記する。
+- QA ツールエンベロープ: HTTP クライアント（`restClient`）、DB クライアント（`dbClient`）、ステージング環境。外部依存なし（`UserServiceImpl` は外部 API を呼ばない）。
+- QA が担当するブランチ: QA ツールエンベロープで再現可能なブランチ（正常更新・同値更新・認証・認可・存在確認・バリデーション）はすべて QA マトリクスに配置する。
+- 開発者専用ブランチ: プロダクト内部の失敗注入（`@PreUpdate` JPA ライフサイクルなど）が必要なブランチは開発者マトリクスに移動する。
+- 共有シナリオルール: 共有ビジネスシナリオは1回だけ定義し、QA E2E（ステージング）と開発者 Testcontainers ローカルで再利用する。
+- QA は `UUN-S01..UUN-S05` を所有する。開発者専用具体的シナリオは `UUN-S06` から続ける。
 
-## Design Goals
+## Test Asset Shape
 
-- ドメインルールを Service 層で一貫適用する
-- 認可チェックを Service 層でリソース取得と同時に行う
-- バリデーションは「正規化 → 検証」の順序を DTO 層で保証する
-- 契約情報は API Contract (OpenAPI) に一元化する
-- 既存エラーモデルと例外処理基盤を再利用する
-- テストで受け入れ基準を機械的に検証可能にする
+- 共有シナリオセット: `UpdateUserNameScenariosTests`（interface）
+- QA 自己サービス E2E スイート: `UpdateUserNameE2ETest`（staging executor）
+- 開発者ローカルセーフティネット: `UpdateUserNameTestcontainersTest`（Testcontainers executor）、`UserServiceUnitTest`、`UserServiceIntegrationTest`
 
-## Non-Goals
+## AC Ownership Matrix
 
-- HTTP 契約の詳細を Markdown に重複定義しない
-- 楽観ロック/競合解決を導入しない
-- 新規テーブル追加や DB スキーマ変更を行わない
+| Requirement / AC | Business trigger | Primary owner repo | Supporting repo(s) | Verification entrypoint | Contract / interface | Test owner |
+|------------------|------------------|--------------------|--------------------|-------------------------|----------------------|------------|
+| R1-AC1 | 認証・認可済みリクエストで有効な表示名を送信 | tateca-backend | — | `PATCH /users/{userId}` + `GET /groups/{groupId}` | `users-userId-update-user-name.yaml` | tateca-backend |
+| R1-AC2 | 更新後に対象ユーザーを参照 | tateca-backend | — | `GET /groups/{groupId}` | `users-userId-update-user-name.yaml` | tateca-backend |
+| R2-AC1 | 前後空白を含む表示名を送信 | tateca-backend | — | `PATCH /users/{userId}` レスポンス + `GET /groups/{groupId}` | `users-userId-update-user-name.yaml` | tateca-backend |
+| R2-AC2 | 不正入力（空・null・長さ超過など）を送信 | tateca-backend | — | `PATCH /users/{userId}` 400 レスポンス | `users-userId-update-user-name.yaml` | tateca-backend |
+| R3-AC1 | 未認証リクエスト | tateca-backend | — | `PATCH /users/{userId}` 401 レスポンス | `users-userId-update-user-name.yaml` | tateca-backend |
+| R3-AC2 | 不正認証情報リクエスト | tateca-backend | — | `PATCH /users/{userId}` 401 レスポンス | `users-userId-update-user-name.yaml` | tateca-backend |
+| R3-AC3 | 認証済みだが他ユーザーのリソースへアクセス | tateca-backend | — | `PATCH /users/{userId}` 403 レスポンス | `users-userId-update-user-name.yaml` | tateca-backend |
+| R4-AC1 | 同値で更新要求 | tateca-backend | — | `PATCH /users/{userId}` 200 レスポンス | `users-userId-update-user-name.yaml` | tateca-backend |
+| R4-AC2 | 同値更新後に対象ユーザーを参照 | tateca-backend | — | `GET /groups/{groupId}` | `users-userId-update-user-name.yaml` | tateca-backend |
+| R4-AC3 | 同値更新時の `updated_at` 非更新 | tateca-backend | — | `GET /groups/{groupId}` レスポンス `updated_at` フィールド | `users-userId-update-user-name.yaml` | tateca-backend |
+| R5-AC1 | 認証・認可済みだがユーザーレコード不存在 | tateca-backend | — | `PATCH /users/{userId}` 404 レスポンス | `users-userId-update-user-name.yaml` | tateca-backend |
 
-## API Contract (OpenAPI) As Source of Truth
+## Contract Dependency Order and Step Routing
 
-Interface / error response は以下を参照し、Design には再定義しない。
+1. tateca-backend が `contracts/paths/users-userId-update-user-name.yaml` を所有し固定する
+2. Step 3 (black-box tests) オーナー: tateca-backend（`UpdateUserNameScenariosTests`、`UserControllerWebTest`）
+3. Step 4 (internal tests) オーナー: tateca-backend（`UserServiceUnitTest`、`UserServiceIntegrationTest`）
 
-- Path: `contracts/internal-api/paths/users-userId-update-user-name.yaml`
-- Parameter: `contracts/internal-api/components/parameters/userIdPath.yaml`
-- Request Schema: `contracts/internal-api/components/schemas/requests/UpdateUserNameRequest.yaml`
-- Response Schema: `contracts/internal-api/components/schemas/responses/UserResponse.yaml`
-- Error Schema: `contracts/internal-api/components/schemas/errors/ErrorResponse.yaml`
-- Error Examples: `contracts/internal-api/components/examples/errors/*.yaml`
+## Canonical Testable Flows
 
-変更順序は `requirements.md` → API Contract (OpenAPI) → テスト（RED）→ 実装（GREEN）の順とする。
+### Request Flow
 
-## Architecture
-
-### Planned Flow
-
-1. Controller が認証済みリクエストを受理する
-2. DTO のデシリアライズ時に正規化（trim）が実行される
-3. Bean Validation が正規化後の値に対してバリデーションを実行する（必須・長さ）
-4. Controller が認証済み UID とともに Service に委譲する
-5. Service が Repository から対象ユーザーを取得する
-6. 対象が存在しない場合は `EntityNotFoundException` で拒否する
-7. Service が認可チェックを行う（認証済み UID とリソースオーナーの一致確認）
-8. 認可不一致の場合は `ForbiddenException` で拒否する
-9. 正規値が現在値と同一なら永続化をスキップし、現在の状態をそのまま返却する
-10. 非同値なら表示名を更新・保存して返却する
+Convention: HTTP status codes appear only on terminal response nodes. Intermediate nodes describe DB side effects only.
 
 ```mermaid
-sequenceDiagram
-    participant C as Client
-    participant API as UserController
-    participant S as UserService
-    participant R as UserRepository
-
-    C->>API: PATCH user name (uid from auth)
-    Note over API: DTO deserialize: normalize (trim)
-    Note over API: Bean Validation: blank? length?
-    alt validation failed
-        API-->>C: 400 Bad Request
-    else valid
-        API->>S: updateUserName(authUid, userId, request)
-        S->>R: findById(userId)
-        alt not found
-            S-->>API: EntityNotFoundException
-            API-->>C: 404 Not Found
-        else found
-            S->>S: authorize (authUid == resource owner?)
-            alt unauthorized
-                S-->>API: ForbiddenException
-                API-->>C: 403 Forbidden
-            else authorized
-                alt same value
-                    S-->>API: current state (skip save)
-                else different value
-                    S->>R: save
-                    S-->>API: updated state
-                end
-                API-->>C: 200 OK
-            end
-        end
-    end
+flowchart TD
+    A([PATCH /users/{userId}]) --> B[Step1: DTO deserialize\nMySQL: no write\n\nname.strip applied in constructor]
+    B --> C{Bean Validation\nblank? length > 50?}
+    C -->|invalid| T400[400 VALIDATION.FAILED\nor REQUEST.MALFORMED_JSON\nerrors array present for validation\nerrors absent for malformed JSON]
+    C -->|valid| D[Step2: findById userId\nMySQL: SELECT users\n]
+    D -->|not found| T404[404 USER.NOT_FOUND]
+    D -->|found| E{authUid == user.authUser.uid?}
+    E -->|mismatch or authUser null| T403[403 USER.FORBIDDEN]
+    E -->|match| F{newName == user.name?}
+    F -->|same value| T200S[200 OK\nUserResponse — current state\nMySQL: no write, updated_at unchanged\n]
+    F -->|different value| G[Step3: user.setName + repository.save\nMySQL: UPDATE users SET name, updated_at via @PreUpdate\n]
+    G --> T200U[200 OK\nUserResponse — updated state]
 ```
 
-## Components and Responsibilities
+**Non-gate note:** このフローには認証フィルター通過後の追加ゲート（in-flight チェック、残高確認など）は存在しない。唯一のドメインゲートは `authUid == resourceOwnerUid` の認可チェックと `userId` の存在確認である。
 
-### DTO Layer
+## External Integration Flows
 
-- 役割:
-  - デシリアライズ時の正規化（コンストラクタで trim）
-  - Bean Validation による正規化後バリデーション（`@NotBlank`, `@Size`）
-- 非役割:
-  - ドメインロジック（同値判定・存在確認）
+本フィーチャーは外部 API 呼び出しを行わない。MySQL（`users` テーブル）のみを使用する。
 
-### Controller Layer
+## State Model
 
-- 役割:
-  - 認証済みリクエストの入口
-  - 認証済み UID を Service に受け渡す
-  - Service への委譲
-- 非役割:
-  - 認可判定（Service 層の責務）
-  - ドメインルール（同値判定・存在確認）は保持しない
+`users.name` フィールドは更新可能な単一値であり、ライフサイクル状態（FIXED/RECOVERABLE 等）を持たない。同値更新の場合は永続化をスキップするため、`updated_at` は変化しない。
 
-### Service Layer
+## Assertion Rules For Test Authors
 
-- 役割:
-  - ユーザー存在確認
-  - 認可チェック（リソース取得後に認証済み UID とリソースオーナーを比較）
-  - 認可不一致時の `ForbiddenException` 送出
-  - 同値更新判定と永続化スキップ
-  - 非同値時の永続化オーケストレーション
-- 非役割:
-  - HTTP 仕様の解釈
-  - 正規化・バリデーション（DTO 層の責務）
+- **正規化順序:** DTO コンストラクタが `name.strip()` を実行してから Bean Validation が評価される。50文字制約はトリム後の値に対して適用される。テストは「前後空白付き50文字」を送信して成功することで正規化→バリデーション順序を証明できる。
+- **同値更新スキップ:** `user.name.equals(newName)` が `true` の場合、`repository.save()` は呼ばれない。JPA `@PreUpdate` は発火しないため `updated_at` は変化しない。これは `UserServiceUnitTest`（`save()` 非呼び出し確認）と `UserServiceIntegrationTest`（DB 上の `updated_at` 非変化確認）の両方で証明する。
+- **`@PreUpdate` と `updated_at`:** `repository.save()` が呼ばれた場合、JPA `@PreUpdate` コールバックが `updated_at = Instant.now()` を設定する。この振る舞いは実 DB を必要とするため `UserServiceIntegrationTest` でのみ検証する。
+- **認可チェック:** `user.authUser` が `null` の場合、`resourceOwnerUid` は `null` になり `authUid.equals(null)` は `false` のため `ForbiddenException` が投げられる。これは `UserServiceUnitTest` の `WhenNotAuthorized — authUser null` ケースで証明済み。
+- **外部→内部エラー変換:** `GlobalExceptionHandler` が `MethodArgumentNotValidException` を `VALIDATION.FAILED`（400）に、`HttpMessageNotReadableException` を `REQUEST.MALFORMED_JSON`（400）に、`HttpMediaTypeNotSupportedException` を `REQUEST.UNSUPPORTED_MEDIA_TYPE`（415）にマッピングする。これらは `UserControllerWebTest` で証明する。
+- **post-success rollback:** 本フィーチャーは外部 API を呼ばないため、外部 `2xx` 後のロールバックシナリオは存在しない。
+- **versioned-row:** `users` テーブルに `version` カラムは存在しない（楽観ロックは Out of Scope）。
 
-### Repository Layer
+## QA E2E Matrix
 
-- 役割:
-  - `userId` による取得と保存
-- 非役割:
-  - ドメインロジック（存在確認の判定、認可チェック）
-  - 正規化・バリデーション
+| QA E2E method | Source | Staging prerequisite or harness | Response checks | MySQL checks |
+|---------------|--------|--------------------------------|-----------------|----------------|-------------|
+| `uunS01_r1Ac1Ac2_updateNameAndPersist` | UUN-S01 / R1-AC1, R1-AC2 | 認証済みユーザー + グループ作成 | `200` / `$.name == "Charlie"` | `users.name == "Charlie"` via GET group |
+| `uunS02_r2Ac1_trimWhitespace` | UUN-S02 / R2-AC1 | 認証済みユーザー + グループ作成 | `200` / `$.name == "Charlie"`（前後空白除去） | `users.name == "Charlie"` via GET group |
+| `uunS03_r3Ac1Ac2_rejectUnauthenticated` | UUN-S03 / R3-AC1, R3-AC2 | 認証済みユーザー + グループ作成 | `401` / `$.error_code` が `AUTH.MISSING_CREDENTIALS` or `AUTH.INVALID_FORMAT` or `AUTH.INVALID_TOKEN` | MySQL: no write |
+| `uunS04_r4Ac1Ac2Ac3_sameValueIdempotent` | UUN-S04 / R4-AC1, R4-AC2, R4-AC3 | 認証済みユーザー + グループ作成 | `200` / `$.name == "Alice"` / `updated_at` 不変 | `users.updated_at` 変化なし via GET group |
+| `uunS05_r5Ac1_notFound` | UUN-S05 / R5-AC1 | 認証済みユーザー | `404` / `$.error_code == "USER.NOT_FOUND"` | MySQL: no write |
 
-## Domain Rules Realization
+## QA Contract E2E Matrix
 
-### Normalization and Validation
+| QA contract E2E method | Source | Staging prerequisite or harness | Response checks | MySQL checks |
+|------------------------|--------|--------------------------------|-----------------|----------------|-------------|
+| `shouldReturn400WithValidationFailedAndErrorsArray` | R2-AC2 / `VALIDATION.FAILED` (blank) | 認証済みユーザー + グループ | `400` / `$.error_code == "VALIDATION.FAILED"` / `$.errors` 存在 | no write |
+| `shouldReturn400WhenUserNameExceedsMaxLength` | R2-AC2 / `VALIDATION.FAILED` (長さ超過) | 認証済みユーザー + グループ | `400` / `$.error_code == "VALIDATION.FAILED"` | no write |
+| `shouldReturn400WhenUserNameIsNull` | R2-AC2 / `VALIDATION.FAILED` (null) | 認証済みユーザー + グループ | `400` / `$.error_code == "VALIDATION.FAILED"` | no write |
+| `shouldReturn400WithMalformedJson` | `REQUEST.MALFORMED_JSON` | 認証済みユーザー + グループ | `400` / `$.error_code == "REQUEST.MALFORMED_JSON"` / `$.errors` 不在 | no write |
+| `shouldReturn403WhenNotResourceOwner` | R3-AC3 / `USER.FORBIDDEN` | 2ユーザー + グループ | `403` / `$.error_code == "USER.FORBIDDEN"` | no write |
+| `shouldReturn415WhenContentTypeMissing` | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | 認証済みユーザー + グループ | `415` / `$.error_code == "REQUEST.UNSUPPORTED_MEDIA_TYPE"` | no write |
 
-DTO のコンストラクタでデシリアライズ時に前後空白を除去し、正規化後の値に対して Bean Validation を適用する。これにより requirements.md の Processing Order（正規化 → バリデーション）を保証しつつ、Controller 到達時点で早期フィードバックを得る。
+## Developer Verification Policy
 
-制約の具体値（長さ上限等）は API Contract request schema を参照:
-`contracts/internal-api/components/schemas/requests/UpdateUserNameRequest.yaml`
+### Shared Scenario Mirroring
 
-### Authorization
+QA E2E マトリクスが共有ビジネス動作の唯一の正規シナリオマトリクスである。QA が所有するすべての共有シナリオ（UUN-S01..UUN-S05）は Testcontainers + MockMvc を使用してローカルでも実行可能であり、同じレスポンス・MySQL アウトカムを証明しなければならない。
 
-Service がリソースを取得した後、認証済み UID とリソースオーナー（`UserEntity.authUser.uid`）を比較する。不一致の場合は `ForbiddenException` を送出する。リソース取得と認可を同一メソッドで行うことで、Controller から Repository への不要な依存を避ける。
+### Dev-Only Verification
 
-### Idempotent Same-Value Update
+| Scenario ID | Verification item | Why it is developer-owned | Expected local proof |
+|-------------|-------------------|---------------------------|----------------------|
+| UUN-S06 | `repository.save()` 呼び出し後に JPA `@PreUpdate` が `updated_at` を更新すること | 実 DB・JPA ライフサイクルが必要 | `UserServiceIntegrationTest` |
+| UUN-S07 | 同値更新時に `repository.save()` をスキップすることで `updated_at` が DB 上で変化しないこと | 実 DB・save スキップの確認が必要 | `UserServiceIntegrationTest` |
+| — | `UserServiceImpl.updateUserName` の各ブランチ（USER_NOT_FOUND・USER_FORBIDDEN・同値スキップ・通常 save）の例外・save 非呼び出し確認 | モック注入が必要 | `UserServiceUnitTest` |
+| — | 全 OpenAPI エラーコードのマッピング（`VALIDATION.FAILED`・`REQUEST.MALFORMED_JSON`・`REQUEST.UNSUPPORTED_MEDIA_TYPE` など） | ExceptionHandler マッピングは Controller Web Test で網羅 | `UserControllerWebTest` |
 
-正規化後の値が現在の表示名と同一の場合:
+### Local Proof Selection Rule
 
-- `save()` を呼ばない（永続化をスキップ）
-- `updated_at` は変更されない
-- レスポンスは現在の状態をそのまま返却する（正常更新と同一の成功レスポンス）
+- **共有シナリオ（UUN-S01..UUN-S05）:** `UpdateUserNameTestcontainersTest`（Testcontainers + MockMvc）
+- **コントラクト・バリデーション・エラーマッピング:** `UserControllerWebTest`（`@WebMvcTest`）
+- **ドメインロジック分岐:** `UserServiceUnitTest`（Mockito）
+- **DB 永続化・JPA ライフサイクル:** `UserServiceIntegrationTest`（Testcontainers）
 
-### Missing Resource
+## Data Model Decisions
 
-対象ユーザー不存在時は `EntityNotFoundException` を送出する。
-エラーコードとレスポンス形式は API Contract path spec の 404 レスポンス定義を参照。
-
-## Error Handling Design
-
-ステータスコード・エラーコード・レスポンス形式の詳細は API Contract path spec を参照:
-`contracts/internal-api/paths/users-userId-update-user-name.yaml`
-
-実装上のエラー処理方針:
-
-- 認可不一致は `ForbiddenException` を送出する
-- ユーザー不存在は `EntityNotFoundException` を送出する
-- 例外変換と最終レスポンス形成は既存 `GlobalExceptionHandler` を利用する
-- 認証エラーは `TatecaAuthenticationFilter` で処理される（Controller に到達しない）
-
-## Data and Persistence
-
-- 既存 `users` テーブルを利用し、スキーマ変更は行わない
-- 既存 `UserEntity` の更新フローを利用する
-
-## Testing Design
-
-### 外部仕様テスト
-
-#### Scenario Test (Acceptance)
-
-- 責務: `requirements.md` の Acceptance Criteria が HTTP レベルで充足されることを検証する（ブラックボックス）
-- 非責務: レスポンスのスキーマ構造検証（Controller Web Test の責務）、内部実装の詳細（Repository 呼び出し回数等）
-- 基盤: `AbstractIntegrationTest` + `MockMvc`（フルスタック）
-
-検証項目:
-- 正常更新とその永続化確認
-- 前後空白トリム更新
-- 同値更新の冪等性（`updated_at` 非更新を含む）
-- バリデーションエラー（空値、長さ超過）
-- 認可拒否（他ユーザーのリソースへのアクセス）
-- 未認証拒否
-- 不正 JSON 拒否
-- 対象ユーザー不存在拒否
-
-#### Controller Web Test (@WebMvcTest)
-
-- 責務: HTTP インターフェース契約の準拠を検証する（レスポンス構造、ステータスコード、エラー形式、Bean Validation 発火）
-- 非責務: ビジネスロジックの正しさ（Service は Mock）、データの永続化確認
-- 基盤: `@WebMvcTest(UserController.class)` + `@MockitoBean UserService`
-
-検証項目:
-- 各ステータスコード（200, 400, 403, 404, 415）のレスポンス構造が API Contract スキーマの必須フィールドに一致すること
-- `error_code` が API Contract の examples に定義された許容値と一致すること
-- Bean Validation が正しく発火すること（空値、null、キー欠落、長さ超過）
-- Service への正しい委譲（引数、呼び出し回数）
-- Service が例外を投げた場合に正しい HTTP レスポンスに変換されること
-
-DTO の正規化（trim）と Bean Validation の発火はこのレイヤーで検証される。DTO 単体テストは設けない（Controller Web Test が Bean Validation を実際に発火させるため冗長）。
-
-### 内部仕様テスト
-
-#### Unit Test (Service)
-
-- 責務: Service 層のドメインロジック（認可・存在確認・冪等更新）が正しく機能することを検証する
-- 非責務: HTTP レスポンス形式、認証、データベース永続化、正規化・バリデーション
-- 基盤: Mockito（Repository をモック）
-
-検証項目:
-- 認可不一致時に `ForbiddenException` が送出されること
-- 不存在時に `EntityNotFoundException` が送出されること
-- 同値更新時に `save()` が呼ばれないこと
-- 非同値更新時に `save()` が呼ばれること
-
-#### Integration Test (Persistence)
-
-- 責務: Unit Test では検証不可能な永続化レイヤーの振る舞いを実 DB で検証する
-- 非責務: ドメインロジックの正しさ（Unit Test の責務）、認可・存在確認（Unit Test で完全カバー済み）
-- 基盤: `AbstractIntegrationTest`（Testcontainers MySQL）
-
-検証項目:
-- `@PreUpdate` による `updated_at` タイムスタンプの更新
-- 同値更新時に `save()` スキップにより `updated_at` が変更されないこと
-- マルチバイト文字・絵文字の DB エンコーディング
-- 正規化済みの値が DB に正しく永続化されること
-- `authUser` リレーションの保持
-
-## Design Constraints
-
-- Interface と error response の詳細は API Contract を優先し、Markdown に重複記載しない
-- 実装前レビューは `requirements.md` と API Contract 差分の整合確認を必須とする
+- 既存 `users` テーブルの `name` カラム（`varchar(50)`）を更新する。スキーマ変更なし。
+- `updated_at` は JPA `@PreUpdate` コールバックによって自動更新される。同値更新時は `save()` を呼ばないため `@PreUpdate` は発火せず、`updated_at` は変化しない。
+- `authUser` リレーション（`auth_users` テーブル）は更新対象外。認可チェックの参照のみに使用する。
+- `users.name` の一意制約なし。同名ユーザーの許容は `requirements.md` の Out of Scope に明記済み。

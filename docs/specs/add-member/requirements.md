@@ -58,11 +58,9 @@ Tateca は旅行・食事・イベントなど日常の割り勘シーンにお�
 
 #### Acceptance Criteria
 
-1. WHEN メンバー名が未指定または空である THEN システム SHALL 入力不備として拒否する
+1. GIVEN リクエスト入力が不正である WHEN メンバー追加を要求する THEN システム SHALL 入力不備として拒否する
 
-2. WHEN メンバー名が50文字を超える THEN システム SHALL 入力不備として拒否する
-
-3. WHEN グループ識別子が不正な形式である THEN システム SHALL 入力不備として拒否する
+> フィールドレベルの詳細（必須項目、文字数制限、形式制約など）は API Contract (OpenAPI) で定義する。
 
 ### Requirement 3: グループサイズ上限
 

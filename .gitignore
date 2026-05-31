@@ -2,3 +2,4 @@ LOCAL_REPOSITORY_LINKS.md
 node_modules/
 generated/
 .DS_Store
+.claude
