@@ -78,7 +78,7 @@
 | `version` columns touched in two steps | `users` / `user_groups` に version 列なし。楽観ロックなし |
 | Removed legacy gates | 同名重複チェックなし — `Assertion Rules For Test Authors` と Mermaid 非ゲートコメントで明示済み |
 | External vendor body codes | 外部 API 依存なし。該当なし |
-| Best-effort side effects | Redis 操作なし。該当なし |
+| Best-effort side effects | KVS 操作なし。該当なし |
 | Async / accepted semantics | 同期レスポンス。該当なし |
 | `external_ref_key` and similar | 本フィーチャーに external_ref_key なし |
 | Daily-limit / window semantics | 本フィーチャーに日次制限なし |
@@ -131,7 +131,7 @@
 - [x] `External Integration Flows` — 外部依存なし（明示的に記述済み）
 - [x] `External Outcome Mapping Snapshot` — 外部依存なし（該当なし）
 - [x] `Assertion Rules For Test Authors` が必要なすべてのルールをカバー
-- [x] `QA E2E Matrix` と `QA Contract E2E Matrix` が全 QA 所有シナリオを response・MariaDB assertions 付きでカバー
+- [x] `QA E2E Matrix` と `QA Contract E2E Matrix` が全 QA 所有シナリオを response・MySQL assertions 付きでカバー
 - [x] `Developer Verification Policy` が QA 再現不可能なブランチを明確に記述
 - [x] Scenario IDs が連続名前空間規則に従っている（QA: AM-S01〜S05、dev: AM-S06〜）
 - [x] `State Model` がドキュメント化されている

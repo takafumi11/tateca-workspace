@@ -2,7 +2,7 @@
 
 ## Step 2 Scope and Ownership Rules
 
-- `design.md` は QA が実装コードを逆引きせずに E2E テストを書くために十分な情報を提供する。すべての主要フローノードは MySQL の変化・変化しないものを記述する（本フィーチャーに Redis は存在しない）。
+- `design.md` は QA が実装コードを逆引きせずに E2E テストを書くために十分な情報を提供する。すべての主要フローノードは MySQL の変化・変化しないものを記述する。
 - QA ツーリングエンベロープ: `restClient`（HTTP）、`dbClient`（MySQL シード・アサーション）。本フィーチャーに外部スタブ（WireMock）は不要。
 - オーナーシップルール: QA ツーリングエンベロープで再現可能なブランチは QA マトリクスに入れる。プロダクト内部の失敗注入が必要なブランチは開発者マトリクスに移す。
 - 共有シナリオルール: 共有ビジネスシナリオは一度だけ書き、QA E2E（ステージング）と開発者 Testcontainers ローカルの両方で再利用する。
@@ -38,7 +38,7 @@
 
 ### Request Flow
 
-Convention: HTTP status codes appear only on terminal response nodes. Intermediate nodes describe DB / Redis side effects only.
+Convention: HTTP status codes appear only on terminal response nodes. Intermediate nodes describe DB side effects only.
 
 ```mermaid
 flowchart TD
@@ -55,8 +55,8 @@ flowchart TD
     G -- 存在しない --> T5[403 Forbidden\nUSER.NOT_GROUP_MEMBER]
     G -- 存在する --> H{グループサイズチェック\nuser_groups.size >= 10?}
     H -- 上限到達 --> T6[409 Conflict\nGROUP.MAX_SIZE_REACHED]
-    H -- 上限未満 --> I[Step2: 新規 UserEntity 永続化\nDB: users INSERT\n  uuid=新規UUID, name=member_name, auth_user_uid=NULL\n  created_at=CURRENT_TIMESTAMP\nRedis: 操作なし]
-    I --> J[Step3: UserGroupEntity 永続化\nDB: user_groups INSERT\n  user_uuid=Step2で生成したuuid\n  group_uuid=groupId\nRedis: 操作なし]
+    H -- 上限未満 --> I[Step2: 新規 UserEntity 永続化\nDB: users INSERT\n  uuid=新規UUID, name=member_name, auth_user_uid=NULL\n  created_at=CURRENT_TIMESTAMP]
+    I --> J[Step3: UserGroupEntity 永続化\nDB: user_groups INSERT\n  user_uuid=Step2で生成したuuid\n  group_uuid=groupId]
     J --> T7[200 OK\nGroupResponse\n全メンバー一覧 + グループ情報 + transaction_count]
 ```
 
@@ -97,7 +97,7 @@ stateDiagram-v2
 
 ## QA E2E Matrix
 
-| QA E2E method | Source | Staging prerequisite or harness | Response checks | MariaDB checks | Redis checks |
+| QA E2E method | Source | Staging prerequisite or harness | Response checks | MySQL checks |
 |---------------|--------|---------------------------------|-----------------|----------------|--------------|
 | `addMember_shouldAddNewUnjoinedMember` | AM-S01 / R1-AC1 / `200` | 認証済みメンバーが存在するグループをシード | `200`、レスポンスに新メンバーが含まれる | `users` に `auth_user_uid=NULL` の行が追加された、`user_groups` に新行が追加された | なし |
 | `addMember_shouldIncludeAddedMemberAsUnjoined` | AM-S02 / R1-AC2 / `200` | 同上 | グループ取得時に追加メンバーの `auth_user=null` | `users.auth_user_uid IS NULL` | なし |
@@ -107,7 +107,7 @@ stateDiagram-v2
 
 ## QA Contract E2E Matrix
 
-| QA contract E2E method | Source | Staging prerequisite or harness | Response checks | MariaDB checks | Redis checks |
+| QA contract E2E method | Source | Staging prerequisite or harness | Response checks | MySQL checks |
 |------------------------|--------|---------------------------------|-----------------|----------------|--------------|
 | `addMember_shouldReturn400WhenMemberNameIsBlank` | R2-AC1 / `400` / `VALIDATION.FAILED` | 任意の有効グループ | `400`、`error_code=VALIDATION.FAILED`、`errors` フィールドあり | ビジネス書き込みなし | なし |
 | `addMember_shouldReturn400WhenMemberNameTooLong` | R2-AC1 / `400` / `VALIDATION.FAILED` | 同上 | `400`、`error_code=VALIDATION.FAILED` | ビジネス書き込みなし | なし |
