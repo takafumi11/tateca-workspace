@@ -1450,7 +1450,7 @@
           "Users"
         ],
         "summary": "Update user name",
-        "description": "Updates the display name of the authenticated user identified by userId.\n\n**Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.\n\n**Idempotency:** Updating with the same normalized value is treated as a success without modifying the resource (updated_at remains unchanged).\n\n**Authorization:** The authenticated user must be the owner of the target resource. Attempting to modify another user's name results in 403 Forbidden.\n",
+        "description": "Updates the display name of the authenticated user identified by userId.\n\n**Business Rules:**\n1. **Normalization**: Leading and trailing whitespace is trimmed before validation and persistence (R2-AC1; see `design.md` → Canonical Testable Flows → Request Flow).\n2. **Self-only update**: The authenticated user must be the owner of the target resource (R3-AC3; see `design.md` → AC Ownership Matrix).\n3. **Idempotent same-value update**: Updating with the same normalized value succeeds without modifying the resource — `updated_at` remains unchanged (R4-AC1..R4-AC3; see `design.md` → Assertion Rules For Test Authors).\n",
         "operationId": "updateUserName",
         "parameters": [
           {
@@ -1463,6 +1463,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateUserNameRequest"
+              },
+              "examples": {
+                "updateName": {
+                  "summary": "Update display name",
+                  "value": {
+                    "user_name": "Alice"
+                  }
+                }
               }
             }
           }
@@ -1479,7 +1487,7 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters or malformed JSON",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1497,7 +1505,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Missing authentication credentials |\n| `AUTH.INVALID_FORMAT` | Invalid authentication format |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1518,7 +1526,7 @@
             }
           },
           "403": {
-            "description": "Forbidden - Authenticated user is not the owner of the target resource",
+            "description": "Forbidden — authenticated user is not the owner of the target resource.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.FORBIDDEN` | You are not allowed to modify this resource |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1533,7 +1541,7 @@
             }
           },
           "404": {
-            "description": "User not found (error_code: USER.NOT_FOUND)",
+            "description": "User not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_FOUND` | User not found |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1548,7 +1556,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
             "content": {
               "application/json": {
                 "schema": {

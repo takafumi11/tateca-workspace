@@ -941,11 +941,10 @@ paths:
       description: |
         Updates the display name of the authenticated user identified by userId.
 
-        **Normalization:** Leading and trailing whitespace is trimmed before validation and persistence.
-
-        **Idempotency:** Updating with the same normalized value is treated as a success without modifying the resource (updated_at remains unchanged).
-
-        **Authorization:** The authenticated user must be the owner of the target resource. Attempting to modify another user's name results in 403 Forbidden.
+        **Business Rules:**
+        1. **Normalization**: Leading and trailing whitespace is trimmed before validation and persistence (R2-AC1; see `design.md` → Canonical Testable Flows → Request Flow).
+        2. **Self-only update**: The authenticated user must be the owner of the target resource (R3-AC3; see `design.md` → AC Ownership Matrix).
+        3. **Idempotent same-value update**: Updating with the same normalized value succeeds without modifying the resource — `updated_at` remains unchanged (R4-AC1..R4-AC3; see `design.md` → Assertion Rules For Test Authors).
       operationId: updateUserName
       parameters:
         - $ref: '#/components/parameters/userIdPath'
@@ -955,6 +954,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUserNameRequest'
+            examples:
+              updateName:
+                summary: Update display name
+                value:
+                  user_name: Alice
       responses:
         '200':
           description: User name updated successfully (also returned for idempotent same-value updates)
@@ -963,7 +967,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponse'
         '400':
-          description: Validation error - Invalid request parameters or malformed JSON
+          description: |
+            Bad request.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
+            | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
           content:
             application/json:
               schema:
@@ -974,7 +984,14 @@ paths:
                 malformedJson:
                   $ref: '#/components/examples/REQUEST_MALFORMED_JSON'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Missing authentication credentials |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication format |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
@@ -987,7 +1004,12 @@ paths:
                 invalidToken:
                   $ref: '#/components/examples/AUTH_INVALID_TOKEN'
         '403':
-          description: Forbidden - Authenticated user is not the owner of the target resource
+          description: |
+            Forbidden — authenticated user is not the owner of the target resource.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `USER.FORBIDDEN` | You are not allowed to modify this resource |
           content:
             application/json:
               schema:
@@ -996,7 +1018,12 @@ paths:
                 userForbidden:
                   $ref: '#/components/examples/USER_FORBIDDEN'
         '404':
-          description: 'User not found (error_code: USER.NOT_FOUND)'
+          description: |
+            User not found.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `USER.NOT_FOUND` | User not found |
           content:
             application/json:
               schema:
@@ -1005,7 +1032,12 @@ paths:
                 userNotFound:
                   $ref: '#/components/examples/USER_NOT_FOUND'
         '415':
-          description: Unsupported Media Type - Content-Type must be application/json
+          description: |
+            Unsupported Media Type — Content-Type must be application/json.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
           content:
             application/json:
               schema:
