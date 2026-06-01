@@ -3,14 +3,14 @@ delete:
     - Groups
   summary: Remove an unjoined member from a group
   description: |
-    Removes an unjoined member from the specified group. Only unjoined members
-    (those not yet linked to an authenticated account) can be removed.
+    Permanently removes an unjoined member (not linked to an auth account) from the group.
+    Both the user record and the user_groups record are deleted.
+    Joined members and members involved in transactions cannot be removed.
 
-    **Authorization:** The requester must be an authenticated member of the group.
-    Any authenticated group member can remove unjoined members — no special privileges required.
-
-    **Restriction:** Joined members (those linked to an authenticated account) cannot be removed.
-    Joined members must leave the group voluntarily via the leave-group endpoint.
+    **Business Rules:**
+    1. **Unjoined members only**: Members linked to an auth account (joined) cannot be removed; they must leave voluntarily (R7-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).
+    2. **No transactions**: Members involved in transactions as payer or obligee cannot be removed (R8-AC1).
+    3. **Authorization**: Only authenticated members of the group may remove unjoined members (R4-AC1).
   operationId: removeMember
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -19,13 +19,28 @@ delete:
     "204":
       description: Member removed successfully
     "400":
-      description: Validation error - Invalid UUID format for groupId or userUuid
+      description: |
+        Bad request — invalid UUID format for groupId or userUuid.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
@@ -38,7 +53,12 @@ delete:
             invalidToken:
               $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "403":
-      description: "Forbidden - Requester is not an authenticated member of the group (error_code: USER.NOT_GROUP_MEMBER)"
+      description: |
+        Forbidden — requester is not an authenticated member of the group.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `USER.NOT_GROUP_MEMBER` | Only group members can add members |
       content:
         application/json:
           schema:
@@ -47,7 +67,13 @@ delete:
             notGroupMember:
               $ref: "../components/examples/errors/USER_NOT_GROUP_MEMBER.yaml"
     "404":
-      description: "Not Found - Group or target member does not exist"
+      description: |
+        Not found — group or target member does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | Group not found |
+        | `USER.NOT_FOUND` | User not found |
       content:
         application/json:
           schema:
@@ -58,7 +84,13 @@ delete:
             userNotFound:
               $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
     "409":
-      description: "Conflict - Member cannot be removed due to business rule violation"
+      description: |
+        Conflict — member cannot be removed due to business rule violation.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `MEMBER.ALREADY_JOINED` | Member is already joined and cannot be removed |
+        | `MEMBER.HAS_TRANSACTIONS` | Member has transactions and cannot be removed |
       content:
         application/json:
           schema:

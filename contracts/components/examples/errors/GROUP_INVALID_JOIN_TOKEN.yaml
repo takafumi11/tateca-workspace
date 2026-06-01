@@ -1,0 +1,10 @@
+summary: Invalid or expired join token
+description: The provided join token does not match the group's token.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 403
+  error: Forbidden
+  message: Invalid or expired join token
+  path: /groups/123e4567-e89b-12d3-a456-426614174000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: GROUP.INVALID_JOIN_TOKEN

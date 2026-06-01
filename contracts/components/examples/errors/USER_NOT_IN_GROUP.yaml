@@ -1,0 +1,10 @@
+summary: User not in group
+description: The specified user is not a member of the group.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 404
+  error: Not Found
+  message: User is not in this group
+  path: /groups/123e4567-e89b-12d3-a456-426614174000/users/550e8400-e29b-41d4-a716-446655440000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: USER.NOT_IN_GROUP

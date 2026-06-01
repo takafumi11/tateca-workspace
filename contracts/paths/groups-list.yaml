@@ -2,17 +2,47 @@ get:
   tags:
     - Groups
   summary: Get list of groups for the current user
+  description: |
+    Returns the list of groups the authenticated user currently belongs to as an authenticated member.
+    Groups the user has left (auth link unlinked) are not included.
+    Returns an empty list if the user belongs to no groups.
+
+    **Business Rules:**
+    1. **Joined groups only**: Only groups where the user is an authenticated member are returned; left groups are excluded (R8-AC2, R8-AC3; see `design.md` → Canonical Testable Flows → GET /groups/list フロー).
   operationId: getGroupList
   responses:
     "200":
-      description: Group list retrieved successfully
+      description: Group list retrieved successfully (empty list if no groups)
       content:
         application/json:
           schema:
             $ref: "../components/schemas/responses/GroupListResponse.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

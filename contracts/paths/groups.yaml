@@ -2,6 +2,16 @@ post:
   tags:
     - Groups
   summary: Create a new group
+  description: |
+    Creates a new group. The creator is automatically registered as an authenticated member.
+    All other participants are registered as unjoined members (no auth account linked).
+
+    **Business Rules:**
+    1. **Creator as authenticated member**: The creator is linked to their auth account on creation (R1-AC2; see `design.md` → Canonical Testable Flows → POST /groups フロー).
+    2. **Participants as unjoined members**: Participants are registered with name only; they join later via invite token (R1-AC3).
+    3. **Group count limit**: A user may not belong to more than 9 groups; privilege users are exempt (R3-AC1, R3-AC2; see `design.md` → Assertion Rules For Test Authors).
+
+    **Dependencies**: MySQL (`groups`, `users`, `user_groups` tables).
   operationId: createGroup
   requestBody:
     required: true
@@ -9,6 +19,15 @@ post:
       application/json:
         schema:
           $ref: "../components/schemas/requests/CreateGroupRequest.yaml"
+        examples:
+          createGroup:
+            summary: Create a group with two participants
+            value:
+              group_name: "Summer Trip 2024"
+              host_name: "Alice"
+              participants_name:
+                - "Bob"
+                - "Charlie"
   responses:
     "201":
       description: Group created successfully
@@ -17,26 +36,90 @@ post:
           schema:
             $ref: "../components/schemas/responses/GroupResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request — input validation failed.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
+        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
+    "404":
+      description: |
+        Not found — the auth user record does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH_USER.NOT_FOUND` | Auth user not found |
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            authUserNotFound:
+              $ref: "../components/examples/errors/AUTH_USER_NOT_FOUND.yaml"
     "409":
-      description: Conflict - User has reached maximum group limit
+      description: |
+        Conflict — user has reached the maximum number of groups.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            maxGroupCountExceeded:
+              $ref: "../components/examples/errors/USER_MAX_GROUP_COUNT_EXCEEDED.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

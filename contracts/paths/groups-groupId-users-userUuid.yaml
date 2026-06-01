@@ -2,6 +2,14 @@ delete:
   tags:
     - Groups
   summary: Leave a group
+  description: |
+    Unlinks the specified member's authentication account, reverting them to an unjoined member.
+    The member record itself is preserved. The member may rejoin later using the invite token.
+    Any authenticated user may trigger the leave for any member (no requester-target identity check).
+
+    **Business Rules:**
+    1. **Unlink only**: The member record is kept; only `auth_user_uid` is set to NULL (R13-AC2; see `design.md` → Canonical Testable Flows → DELETE /groups/{groupId}/users/{userUuid} フロー).
+    2. **No requester check**: Any authenticated user may unlink any member (see `design.md` → Step 2 Scope and Ownership Rules).
   operationId: leaveGroup
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -10,26 +18,65 @@ delete:
     "204":
       description: User left group successfully
     "400":
-      description: Validation error - Invalid UUID format
+      description: |
+        Bad request — invalid UUID format for groupId or userUuid.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
-    "403":
-      description: Forbidden - User doesn't have permission to remove this user
-      content:
-        application/json:
-          schema:
-            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Group not found
+      description: |
+        Not found — group or member does not exist, or user is not in the group.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | Group not found |
+        | `USER.NOT_IN_GROUP` | User is not in this group |
+        | `USER.NOT_FOUND` | User not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
+            userNotInGroup:
+              $ref: "../components/examples/errors/USER_NOT_IN_GROUP.yaml"
+            userNotFound:
+              $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

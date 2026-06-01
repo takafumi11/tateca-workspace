@@ -1,0 +1,10 @@
+summary: User max group count exceeded
+description: The user has already reached the maximum number of groups (9).
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 409
+  error: Conflict
+  message: User can't join more than 9 groups
+  path: /groups
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: USER.MAX_GROUP_COUNT_EXCEEDED

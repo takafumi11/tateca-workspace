@@ -2,6 +2,12 @@ get:
   tags:
     - Groups
   summary: Get group information by ID
+  description: |
+    Retrieves detailed group information including all members and transaction count.
+    Any authenticated user may retrieve group details regardless of membership.
+
+    **Business Rules:**
+    1. **No access control**: Authentication is required but group membership is not (R5-AC1; see `design.md` → Step 2 Scope and Ownership Rules).
   operationId: getGroupInfo
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -13,28 +19,74 @@ get:
           schema:
             $ref: "../components/schemas/responses/GroupResponse.yaml"
     "400":
-      description: Validation error - Invalid UUID format
+      description: |
+        Bad request — invalid UUID format for groupId.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Group not found
+      description: |
+        Not found — group does not exist or has no members.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | Group not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"
 
 patch:
   tags:
     - Groups
   summary: Update group name
+  description: |
+    Updates the name of the specified group. Any authenticated user may update the group name
+    regardless of membership.
+
+    **Business Rules:**
+    1. **No authorization check**: Authentication is required but group membership is not (R9-AC1; see `design.md` → Step 2 Scope and Ownership Rules).
+    2. **Immutable attributes**: Only the group name is updated; join_token, created_at, and other attributes remain unchanged (R9-AC3, R9-AC4).
   operationId: updateGroupName
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -44,6 +96,11 @@ patch:
       application/json:
         schema:
           $ref: "../components/schemas/requests/UpdateGroupNameRequest.yaml"
+        examples:
+          updateName:
+            summary: Update group name
+            value:
+              group_name: "Winter Trip 2024"
   responses:
     "200":
       description: Group name updated successfully
@@ -52,40 +109,94 @@ patch:
           schema:
             $ref: "../components/schemas/responses/GroupResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request — input validation failed.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
+        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
-    "403":
-      description: Forbidden - User doesn't have permission to update this group
-      content:
-        application/json:
-          schema:
-            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Group not found
+      description: |
+        Not found — group does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | Group not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"
 
 post:
   tags:
     - Groups
   summary: Join a group using invitation token
+  description: |
+    Links an unjoined member to the authenticated user's account, effectively joining the group.
+    The invitation token must match the group's token exactly.
+
+    **Business Rules:**
+    1. **Token validation**: The join_token must exactly match the group's stored token; token expiry is not checked (R12-AC1; see `design.md` → Canonical Testable Flows → POST /groups/{groupId} フロー).
+    2. **Duplicate join prevention**: A user already joined (as any member) is rejected (R11-AC1, R11-AC2).
+    3. **Group count limit**: A user may not belong to more than 9 groups; privilege users are exempt (R3-AC1, R3-AC2).
+
+    **Dependencies**: MySQL (`groups`, `users`, `user_groups`, `auth_users` tables).
   operationId: joinGroup
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -95,6 +206,12 @@ post:
       application/json:
         schema:
           $ref: "../components/schemas/requests/JoinGroupRequest.yaml"
+        examples:
+          joinGroup:
+            summary: Join a group as an existing unjoined member
+            value:
+              user_uuid: "550e8400-e29b-41d4-a716-446655440000"
+              join_token: "123e4567-e89b-12d3-a456-426614174000"
   responses:
     "200":
       description: User joined group successfully
@@ -103,38 +220,113 @@ post:
           schema:
             $ref: "../components/schemas/responses/GroupResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request — input validation failed.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | Validation failed |
+        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "403":
-      description: Forbidden - Invalid join token
+      description: |
+        Forbidden — invalid join token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.INVALID_JOIN_TOKEN` | Invalid or expired join token |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            invalidJoinToken:
+              $ref: "../components/examples/errors/GROUP_INVALID_JOIN_TOKEN.yaml"
     "404":
-      description: Group not found
+      description: |
+        Not found — group, user, or auth user does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | Group not found |
+        | `USER.NOT_FOUND` | User not found |
+        | `AUTH_USER.NOT_FOUND` | Auth user not found |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
+            userNotFound:
+              $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
+            authUserNotFound:
+              $ref: "../components/examples/errors/AUTH_USER_NOT_FOUND.yaml"
     "409":
-      description: Conflict - User already member of the group
+      description: |
+        Conflict — business rule violation.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.ALREADY_JOINED` | You have already joined this group |
+        | `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            alreadyJoined:
+              $ref: "../components/examples/errors/GROUP_ALREADY_JOINED.yaml"
+            maxGroupCountExceeded:
+              $ref: "../components/examples/errors/USER_MAX_GROUP_COUNT_EXCEEDED.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"
