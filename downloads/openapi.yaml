@@ -428,6 +428,16 @@ paths:
       tags:
         - Groups
       summary: Create a new group
+      description: |
+        Creates a new group. The creator is automatically registered as an authenticated member.
+        All other participants are registered as unjoined members (no auth account linked).
+
+        **Business Rules:**
+        1. **Creator as authenticated member**: The creator is linked to their auth account on creation (R1-AC2; see `design.md` → Canonical Testable Flows → POST /groups フロー).
+        2. **Participants as unjoined members**: Participants are registered with name only; they join later via invite token (R1-AC3).
+        3. **Group count limit**: A user may not belong to more than 9 groups; privilege users are exempt (R3-AC1, R3-AC2; see `design.md` → Assertion Rules For Test Authors).
+
+        **Dependencies**: MySQL (`groups`, `users`, `user_groups` tables).
       operationId: createGroup
       requestBody:
         required: true
@@ -435,6 +445,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateGroupRequest'
+            examples:
+              createGroup:
+                summary: Create a group with two participants
+                value:
+                  group_name: Summer Trip 2024
+                  host_name: Alice
+                  participants_name:
+                    - Bob
+                    - Charlie
       responses:
         '201':
           description: Group created successfully
@@ -443,53 +462,153 @@ paths:
               schema:
                 $ref: '#/components/schemas/GroupResponse'
         '400':
-          description: Validation error - Invalid request parameters
+          description: |
+            Bad request — input validation failed.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
+            | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationFailed:
+                  $ref: '#/components/examples/VALIDATION_FAILED'
+                malformedJson:
+                  $ref: '#/components/examples/REQUEST_MALFORMED_JSON'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCredentials:
+                  $ref: '#/components/examples/AUTH_MISSING_CREDENTIALS'
+                invalidFormat:
+                  $ref: '#/components/examples/AUTH_INVALID_FORMAT'
+                invalidToken:
+                  $ref: '#/components/examples/AUTH_INVALID_TOKEN'
+        '404':
+          description: |
+            Not found — the auth user record does not exist.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH_USER.NOT_FOUND` | Auth user not found |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                authUserNotFound:
+                  $ref: '#/components/examples/AUTH_USER_NOT_FOUND'
         '409':
-          description: Conflict - User has reached maximum group limit
+          description: |
+            Conflict — user has reached the maximum number of groups.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                maxGroupCountExceeded:
+                  $ref: '#/components/examples/USER_MAX_GROUP_COUNT_EXCEEDED'
         '415':
-          description: Unsupported Media Type - Content-Type must be application/json
+          description: |
+            Unsupported Media Type — Content-Type must be application/json.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupportedMediaType:
+                  $ref: '#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/SYSTEM_INTERNAL_ERROR'
   /groups/list:
     get:
       tags:
         - Groups
       summary: Get list of groups for the current user
+      description: |
+        Returns the list of groups the authenticated user currently belongs to as an authenticated member.
+        Groups the user has left (auth link unlinked) are not included.
+        Returns an empty list if the user belongs to no groups.
+
+        **Business Rules:**
+        1. **Joined groups only**: Only groups where the user is an authenticated member are returned; left groups are excluded (R8-AC2, R8-AC3; see `design.md` → Canonical Testable Flows → GET /groups/list フロー).
       operationId: getGroupList
       responses:
         '200':
-          description: Group list retrieved successfully
+          description: Group list retrieved successfully (empty list if no groups)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GroupListResponse'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCredentials:
+                  $ref: '#/components/examples/AUTH_MISSING_CREDENTIALS'
+                invalidFormat:
+                  $ref: '#/components/examples/AUTH_INVALID_FORMAT'
+                invalidToken:
+                  $ref: '#/components/examples/AUTH_INVALID_TOKEN'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/SYSTEM_INTERNAL_ERROR'
   /groups/{groupId}:
     get:
       tags:
         - Groups
       summary: Get group information by ID
+      description: |
+        Retrieves detailed group information including all members and transaction count.
+        Any authenticated user may retrieve group details regardless of membership.
+
+        **Business Rules:**
+        1. **No access control**: Authentication is required but group membership is not (R5-AC1; see `design.md` → Step 2 Scope and Ownership Rules).
       operationId: getGroupInfo
       parameters:
         - $ref: '#/components/parameters/groupIdPath'
@@ -501,27 +620,73 @@ paths:
               schema:
                 $ref: '#/components/schemas/GroupResponse'
         '400':
-          description: Validation error - Invalid UUID format
+          description: |
+            Bad request — invalid UUID format for groupId.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationFailed:
+                  $ref: '#/components/examples/VALIDATION_FAILED'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCredentials:
+                  $ref: '#/components/examples/AUTH_MISSING_CREDENTIALS'
+                invalidFormat:
+                  $ref: '#/components/examples/AUTH_INVALID_FORMAT'
+                invalidToken:
+                  $ref: '#/components/examples/AUTH_INVALID_TOKEN'
         '404':
-          description: Group not found
+          description: |
+            Not found — group does not exist or has no members.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.NOT_FOUND` | Group not found |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                groupNotFound:
+                  $ref: '#/components/examples/GROUP_NOT_FOUND'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/SYSTEM_INTERNAL_ERROR'
     patch:
       tags:
         - Groups
       summary: Update group name
+      description: |
+        Updates the name of the specified group. Any authenticated user may update the group name
+        regardless of membership.
+
+        **Business Rules:**
+        1. **No authorization check**: Authentication is required but group membership is not (R9-AC1; see `design.md` → Step 2 Scope and Ownership Rules).
+        2. **Immutable attributes**: Only the group name is updated; join_token, created_at, and other attributes remain unchanged (R9-AC3, R9-AC4).
       operationId: updateGroupName
       parameters:
         - $ref: '#/components/parameters/groupIdPath'
@@ -531,6 +696,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateGroupNameRequest'
+            examples:
+              updateName:
+                summary: Update group name
+                value:
+                  group_name: Winter Trip 2024
       responses:
         '200':
           description: Group name updated successfully
@@ -539,39 +709,93 @@ paths:
               schema:
                 $ref: '#/components/schemas/GroupResponse'
         '400':
-          description: Validation error - Invalid request parameters
+          description: |
+            Bad request — input validation failed.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
+            | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationFailed:
+                  $ref: '#/components/examples/VALIDATION_FAILED'
+                malformedJson:
+                  $ref: '#/components/examples/REQUEST_MALFORMED_JSON'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden - User doesn't have permission to update this group
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCredentials:
+                  $ref: '#/components/examples/AUTH_MISSING_CREDENTIALS'
+                invalidFormat:
+                  $ref: '#/components/examples/AUTH_INVALID_FORMAT'
+                invalidToken:
+                  $ref: '#/components/examples/AUTH_INVALID_TOKEN'
         '404':
-          description: Group not found
+          description: |
+            Not found — group does not exist.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.NOT_FOUND` | Group not found |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                groupNotFound:
+                  $ref: '#/components/examples/GROUP_NOT_FOUND'
         '415':
-          description: Unsupported Media Type - Content-Type must be application/json
+          description: |
+            Unsupported Media Type — Content-Type must be application/json.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupportedMediaType:
+                  $ref: '#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/SYSTEM_INTERNAL_ERROR'
     post:
       tags:
         - Groups
       summary: Join a group using invitation token
+      description: |
+        Links an unjoined member to the authenticated user's account, effectively joining the group.
+        The invitation token must match the group's token exactly.
+
+        **Business Rules:**
+        1. **Token validation**: The join_token must exactly match the group's stored token; token expiry is not checked (R12-AC1; see `design.md` → Canonical Testable Flows → POST /groups/{groupId} フロー).
+        2. **Duplicate join prevention**: A user already joined (as any member) is rejected (R11-AC1, R11-AC2).
+        3. **Group count limit**: A user may not belong to more than 9 groups; privilege users are exempt (R3-AC1, R3-AC2).
+
+        **Dependencies**: MySQL (`groups`, `users`, `user_groups`, `auth_users` tables).
       operationId: joinGroup
       parameters:
         - $ref: '#/components/parameters/groupIdPath'
@@ -581,6 +805,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/JoinGroupRequest'
+            examples:
+              joinGroup:
+                summary: Join a group as an existing unjoined member
+                value:
+                  user_uuid: 550e8400-e29b-41d4-a716-446655440000
+                  join_token: 123e4567-e89b-12d3-a456-426614174000
       responses:
         '200':
           description: User joined group successfully
@@ -589,41 +819,116 @@ paths:
               schema:
                 $ref: '#/components/schemas/GroupResponse'
         '400':
-          description: Validation error - Invalid request parameters
+          description: |
+            Bad request — input validation failed.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
+            | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationFailed:
+                  $ref: '#/components/examples/VALIDATION_FAILED'
+                malformedJson:
+                  $ref: '#/components/examples/REQUEST_MALFORMED_JSON'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCredentials:
+                  $ref: '#/components/examples/AUTH_MISSING_CREDENTIALS'
+                invalidFormat:
+                  $ref: '#/components/examples/AUTH_INVALID_FORMAT'
+                invalidToken:
+                  $ref: '#/components/examples/AUTH_INVALID_TOKEN'
         '403':
-          description: Forbidden - Invalid join token
+          description: |
+            Forbidden — invalid join token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.INVALID_JOIN_TOKEN` | Invalid or expired join token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJoinToken:
+                  $ref: '#/components/examples/GROUP_INVALID_JOIN_TOKEN'
         '404':
-          description: Group not found
+          description: |
+            Not found — group, user, or auth user does not exist.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.NOT_FOUND` | Group not found |
+            | `USER.NOT_FOUND` | User not found |
+            | `AUTH_USER.NOT_FOUND` | Auth user not found |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                groupNotFound:
+                  $ref: '#/components/examples/GROUP_NOT_FOUND'
+                userNotFound:
+                  $ref: '#/components/examples/USER_NOT_FOUND'
+                authUserNotFound:
+                  $ref: '#/components/examples/AUTH_USER_NOT_FOUND'
         '409':
-          description: Conflict - User already member of the group
+          description: |
+            Conflict — business rule violation.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.ALREADY_JOINED` | You have already joined this group |
+            | `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                alreadyJoined:
+                  $ref: '#/components/examples/GROUP_ALREADY_JOINED'
+                maxGroupCountExceeded:
+                  $ref: '#/components/examples/USER_MAX_GROUP_COUNT_EXCEEDED'
         '415':
-          description: Unsupported Media Type - Content-Type must be application/json
+          description: |
+            Unsupported Media Type — Content-Type must be application/json.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupportedMediaType:
+                  $ref: '#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/SYSTEM_INTERNAL_ERROR'
   /groups/{groupId}/members:
     post:
       tags:
@@ -755,14 +1060,14 @@ paths:
         - Groups
       summary: Remove an unjoined member from a group
       description: |
-        Removes an unjoined member from the specified group. Only unjoined members
-        (those not yet linked to an authenticated account) can be removed.
+        Permanently removes an unjoined member (not linked to an auth account) from the group.
+        Both the user record and the user_groups record are deleted.
+        Joined members and members involved in transactions cannot be removed.
 
-        **Authorization:** The requester must be an authenticated member of the group.
-        Any authenticated group member can remove unjoined members — no special privileges required.
-
-        **Restriction:** Joined members (those linked to an authenticated account) cannot be removed.
-        Joined members must leave the group voluntarily via the leave-group endpoint.
+        **Business Rules:**
+        1. **Unjoined members only**: Members linked to an auth account (joined) cannot be removed; they must leave voluntarily (R7-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).
+        2. **No transactions**: Members involved in transactions as payer or obligee cannot be removed (R8-AC1).
+        3. **Authorization**: Only authenticated members of the group may remove unjoined members (R4-AC1).
       operationId: removeMember
       parameters:
         - $ref: '#/components/parameters/groupIdPath'
@@ -771,13 +1076,28 @@ paths:
         '204':
           description: Member removed successfully
         '400':
-          description: Validation error - Invalid UUID format for groupId or userUuid
+          description: |
+            Bad request — invalid UUID format for groupId or userUuid.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationFailed:
+                  $ref: '#/components/examples/VALIDATION_FAILED'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
@@ -790,7 +1110,12 @@ paths:
                 invalidToken:
                   $ref: '#/components/examples/AUTH_INVALID_TOKEN'
         '403':
-          description: 'Forbidden - Requester is not an authenticated member of the group (error_code: USER.NOT_GROUP_MEMBER)'
+          description: |
+            Forbidden — requester is not an authenticated member of the group.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `USER.NOT_GROUP_MEMBER` | Only group members can add members |
           content:
             application/json:
               schema:
@@ -799,7 +1124,13 @@ paths:
                 notGroupMember:
                   $ref: '#/components/examples/USER_NOT_GROUP_MEMBER'
         '404':
-          description: Not Found - Group or target member does not exist
+          description: |
+            Not found — group or target member does not exist.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.NOT_FOUND` | Group not found |
+            | `USER.NOT_FOUND` | User not found |
           content:
             application/json:
               schema:
@@ -810,7 +1141,13 @@ paths:
                 userNotFound:
                   $ref: '#/components/examples/USER_NOT_FOUND'
         '409':
-          description: Conflict - Member cannot be removed due to business rule violation
+          description: |
+            Conflict — member cannot be removed due to business rule violation.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `MEMBER.ALREADY_JOINED` | Member is already joined and cannot be removed |
+            | `MEMBER.HAS_TRANSACTIONS` | Member has transactions and cannot be removed |
           content:
             application/json:
               schema:
@@ -834,6 +1171,14 @@ paths:
       tags:
         - Groups
       summary: Leave a group
+      description: |
+        Unlinks the specified member's authentication account, reverting them to an unjoined member.
+        The member record itself is preserved. The member may rejoin later using the invite token.
+        Any authenticated user may trigger the leave for any member (no requester-target identity check).
+
+        **Business Rules:**
+        1. **Unlink only**: The member record is kept; only `auth_user_uid` is set to NULL (R13-AC2; see `design.md` → Canonical Testable Flows → DELETE /groups/{groupId}/users/{userUuid} フロー).
+        2. **No requester check**: Any authenticated user may unlink any member (see `design.md` → Step 2 Scope and Ownership Rules).
       operationId: leaveGroup
       parameters:
         - $ref: '#/components/parameters/groupIdPath'
@@ -842,29 +1187,68 @@ paths:
         '204':
           description: User left group successfully
         '400':
-          description: Validation error - Invalid UUID format
+          description: |
+            Bad request — invalid UUID format for groupId or userUuid.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `VALIDATION.FAILED` | Validation failed |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationFailed:
+                  $ref: '#/components/examples/VALIDATION_FAILED'
         '401':
-          description: Unauthorized - Invalid or missing Firebase JWT token
+          description: |
+            Unauthorized — invalid or missing authentication token.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `AUTH.MISSING_CREDENTIALS` | Authentication required |
+            | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
+            | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden - User doesn't have permission to remove this user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCredentials:
+                  $ref: '#/components/examples/AUTH_MISSING_CREDENTIALS'
+                invalidFormat:
+                  $ref: '#/components/examples/AUTH_INVALID_FORMAT'
+                invalidToken:
+                  $ref: '#/components/examples/AUTH_INVALID_TOKEN'
         '404':
-          description: Group not found
+          description: |
+            Not found — group or member does not exist, or user is not in the group.
+
+            | Internal code | Message |
+            |---------------|---------|
+            | `GROUP.NOT_FOUND` | Group not found |
+            | `USER.NOT_IN_GROUP` | User is not in this group |
+            | `USER.NOT_FOUND` | User not found |
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                groupNotFound:
+                  $ref: '#/components/examples/GROUP_NOT_FOUND'
+                userNotInGroup:
+                  $ref: '#/components/examples/USER_NOT_IN_GROUP'
+                userNotFound:
+                  $ref: '#/components/examples/USER_NOT_FOUND'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/SYSTEM_INTERNAL_ERROR'
   /groups/{groupId}/transactions:
     post:
       tags:
@@ -2028,17 +2412,17 @@ components:
         path: /auth/users/firebase-uid-123
         request_id: 550e8400-e29b-41d4-a716-446655440000
         error_code: AUTH_USER.NOT_FOUND
-    USER_NOT_GROUP_MEMBER:
-      summary: User is not a member of the group
-      description: Requester is not an authenticated member of the target group.
+    USER_MAX_GROUP_COUNT_EXCEEDED:
+      summary: User max group count exceeded
+      description: The user has already reached the maximum number of groups (9).
       value:
         timestamp: '2026-03-01T05:12:34.567Z'
-        status: 403
-        error: Forbidden
-        message: Only group members can perform this action
-        path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
+        status: 409
+        error: Conflict
+        message: User can't join more than 9 groups
+        path: /groups
         request_id: 550e8400-e29b-41d4-a716-446655440000
-        error_code: USER.NOT_GROUP_MEMBER
+        error_code: USER.MAX_GROUP_COUNT_EXCEEDED
     GROUP_NOT_FOUND:
       summary: Group not found
       description: Target group identified by groupId does not exist.
@@ -2050,17 +2434,17 @@ components:
         path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
         request_id: 550e8400-e29b-41d4-a716-446655440000
         error_code: GROUP.NOT_FOUND
-    GROUP_MAX_SIZE_REACHED:
-      summary: Group has reached maximum size
-      description: The group already has 10 members; no more members can be added.
+    GROUP_INVALID_JOIN_TOKEN:
+      summary: Invalid or expired join token
+      description: The provided join token does not match the group's token.
       value:
         timestamp: '2026-03-01T05:12:34.567Z'
-        status: 409
-        error: Conflict
-        message: Group has reached maximum size of 10 members
-        path: /groups/550e8400-e29b-41d4-a716-446655440000/members
+        status: 403
+        error: Forbidden
+        message: Invalid or expired join token
+        path: /groups/123e4567-e89b-12d3-a456-426614174000
         request_id: 550e8400-e29b-41d4-a716-446655440000
-        error_code: GROUP.MAX_SIZE_REACHED
+        error_code: GROUP.INVALID_JOIN_TOKEN
     USER_NOT_FOUND:
       summary: User not found
       description: Target user identified by userId does not exist.
@@ -2072,6 +2456,39 @@ components:
         path: /users/123e4567-e89b-12d3-a456-426614174000
         request_id: 550e8400-e29b-41d4-a716-446655440000
         error_code: USER.NOT_FOUND
+    GROUP_ALREADY_JOINED:
+      summary: Already joined group
+      description: The user has already joined this group.
+      value:
+        timestamp: '2026-03-01T05:12:34.567Z'
+        status: 409
+        error: Conflict
+        message: You have already joined this group
+        path: /groups/123e4567-e89b-12d3-a456-426614174000
+        request_id: 550e8400-e29b-41d4-a716-446655440000
+        error_code: GROUP.ALREADY_JOINED
+    USER_NOT_GROUP_MEMBER:
+      summary: User is not a member of the group
+      description: Requester is not an authenticated member of the target group.
+      value:
+        timestamp: '2026-03-01T05:12:34.567Z'
+        status: 403
+        error: Forbidden
+        message: Only group members can perform this action
+        path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
+        request_id: 550e8400-e29b-41d4-a716-446655440000
+        error_code: USER.NOT_GROUP_MEMBER
+    GROUP_MAX_SIZE_REACHED:
+      summary: Group has reached maximum size
+      description: The group already has 10 members; no more members can be added.
+      value:
+        timestamp: '2026-03-01T05:12:34.567Z'
+        status: 409
+        error: Conflict
+        message: Group has reached maximum size of 10 members
+        path: /groups/550e8400-e29b-41d4-a716-446655440000/members
+        request_id: 550e8400-e29b-41d4-a716-446655440000
+        error_code: GROUP.MAX_SIZE_REACHED
     MEMBER_ALREADY_JOINED:
       summary: Member has already joined the group
       description: Target member is linked to an authenticated account and cannot be removed. Joined members must leave voluntarily.
@@ -2094,6 +2511,17 @@ components:
         path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
         request_id: 550e8400-e29b-41d4-a716-446655440000
         error_code: MEMBER.HAS_TRANSACTIONS
+    USER_NOT_IN_GROUP:
+      summary: User not in group
+      description: The specified user is not a member of the group.
+      value:
+        timestamp: '2026-03-01T05:12:34.567Z'
+        status: 404
+        error: Not Found
+        message: User is not in this group
+        path: /groups/123e4567-e89b-12d3-a456-426614174000/users/550e8400-e29b-41d4-a716-446655440000
+        request_id: 550e8400-e29b-41d4-a716-446655440000
+        error_code: USER.NOT_IN_GROUP
     USER_FORBIDDEN:
       summary: Forbidden - not the resource owner
       description: Authenticated user attempted to modify another user's resource.
