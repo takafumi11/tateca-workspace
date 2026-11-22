@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Tateca API",
-    "description": "Group expense management API with multi-currency support. Track expenses, loans, and settlements across multiple users and currencies.\n",
+    "description": "Group expense management API with multi-currency support. Track expenses, loans, and settlements across multiple users and currencies.\n\n**Localization**: Clients may send an `Accept-Language` header (`ja` or `en`) to select the language of error response `message` fields. When omitted or set to an unsupported language, the API defaults to Japanese (`ja`). The `error_code` field is always a stable, language-independent identifier.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Tateca Team",
@@ -72,7 +72,7 @@
             }
           },
           "400": {
-            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -90,7 +90,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -111,7 +111,7 @@
             }
           },
           "409": {
-            "description": "Conflict — email address already registered.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.EMAIL_DUPLICATE` | Email already exists |\n",
+            "description": "Conflict — email address already registered.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.EMAIL_DUPLICATE` | このメールアドレスは既に登録されています |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -126,7 +126,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -183,7 +183,7 @@
             }
           },
           "400": {
-            "description": "Bad request — invalid UID path parameter.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
+            "description": "Bad request — invalid UID path parameter.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -198,7 +198,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -219,7 +219,7 @@
             }
           },
           "404": {
-            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -267,7 +267,7 @@
             "description": "Auth user deleted successfully"
           },
           "400": {
-            "description": "Bad request — invalid UID path parameter.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
+            "description": "Bad request — invalid UID path parameter.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -282,7 +282,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -303,7 +303,7 @@
             }
           },
           "404": {
-            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -373,7 +373,7 @@
             }
           },
           "400": {
-            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -391,7 +391,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -412,7 +412,7 @@
             }
           },
           "404": {
-            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "description": "Auth user not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -427,7 +427,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -567,7 +567,7 @@
             }
           },
           "400": {
-            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -585,7 +585,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -606,7 +606,7 @@
             }
           },
           "404": {
-            "description": "Not found — the auth user record does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "description": "Not found — the auth user record does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -621,7 +621,7 @@
             }
           },
           "409": {
-            "description": "Conflict — user has reached the maximum number of groups.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |\n",
+            "description": "Conflict — user has reached the maximum number of groups.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.MAX_GROUP_COUNT_EXCEEDED` | 参加できるグループは10個までです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -636,7 +636,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -688,7 +688,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -751,7 +751,7 @@
             }
           },
           "400": {
-            "description": "Bad request — invalid UUID format for groupId.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
+            "description": "Bad request — invalid UUID format for groupId.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -766,7 +766,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -787,7 +787,7 @@
             }
           },
           "404": {
-            "description": "Not found — group does not exist or has no members.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n",
+            "description": "Not found — group does not exist or has no members.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -860,7 +860,7 @@
             }
           },
           "400": {
-            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -878,7 +878,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -899,7 +899,7 @@
             }
           },
           "404": {
-            "description": "Not found — group does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n",
+            "description": "Not found — group does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -914,7 +914,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -988,7 +988,7 @@
             }
           },
           "400": {
-            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1006,7 +1006,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1027,7 +1027,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — invalid join token.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.INVALID_JOIN_TOKEN` | Invalid or expired join token |\n",
+            "description": "Forbidden — invalid join token.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.INVALID_JOIN_TOKEN` | 参加用のリンクが無効または期限切れです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1042,7 +1042,7 @@
             }
           },
           "404": {
-            "description": "Not found — group, user, or auth user does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n| `USER.NOT_FOUND` | User not found |\n| `AUTH_USER.NOT_FOUND` | Auth user not found |\n",
+            "description": "Not found — group, user, or auth user does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n| `USER.NOT_FOUND` | ユーザーが見つかりません |\n| `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1063,7 +1063,7 @@
             }
           },
           "409": {
-            "description": "Conflict — business rule violation.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.ALREADY_JOINED` | You have already joined this group |\n| `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |\n",
+            "description": "Conflict — business rule violation.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.ALREADY_JOINED` | 既にこのグループに参加しています |\n| `USER.MAX_GROUP_COUNT_EXCEEDED` | 参加できるグループは10個までです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1081,7 +1081,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1156,7 +1156,7 @@
             }
           },
           "400": {
-            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed (field-level errors in `errors` array) |\n",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります（フィールド単位のエラーは `errors` 配列に含まれます） |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1172,7 +1172,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — Firebase JWT token is missing or invalid.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.INVALID_TOKEN` | Invalid authentication token |\n",
+            "description": "Unauthorized — Firebase JWT token is missing or invalid.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1188,7 +1188,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — requester is not an authenticated member of the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_GROUP_MEMBER` | Only group members can add members |\n",
+            "description": "Forbidden — requester is not an authenticated member of the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_GROUP_MEMBER` | グループのメンバーのみがメンバーを追加できます |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1204,7 +1204,7 @@
             }
           },
           "404": {
-            "description": "Not found — the specified group does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n",
+            "description": "Not found — the specified group does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1220,7 +1220,7 @@
             }
           },
           "409": {
-            "description": "Conflict — the group has already reached the maximum of 10 members.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.MAX_SIZE_REACHED` | Group has reached maximum size of 10 members |\n",
+            "description": "Conflict — the group has already reached the maximum of 10 members.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.MAX_SIZE_REACHED` | グループの最大人数（10人）に達しています |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1236,7 +1236,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be `application/json`.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported Media Type. Content-Type must be application/json |\n",
+            "description": "Unsupported Media Type — Content-Type must be `application/json`.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1260,7 +1260,7 @@
           "Groups"
         ],
         "summary": "Remove an unjoined member from a group",
-        "description": "Permanently removes an unjoined member (not linked to an auth account) from the group.\nBoth the user record and the user_groups record are deleted.\nJoined members and members involved in transactions cannot be removed.\n\n**Business Rules:**\n1. **Unjoined members only**: Members linked to an auth account (joined) cannot be removed; they must leave voluntarily (R7-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).\n2. **No transactions**: Members involved in transactions as payer or obligee cannot be removed (R8-AC1).\n3. **Authorization**: Only authenticated members of the group may remove unjoined members (R4-AC1).\n",
+        "description": "Permanently removes an unjoined member (not linked to an auth account) from the group.\nBoth the user record and the user_groups record are deleted.\nJoined members and members used in one or more transactions cannot be removed.\n\n**Business Rules:**\n1. **Unjoined members only**: Members linked to an auth account (joined) cannot be removed; they must leave voluntarily (R7-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).\n2. **No transactions**: Members used in one or more transactions as payer or obligee cannot be removed; the API returns `MEMBER.HAS_TRANSACTIONS` (R8-AC1).\n3. **Authorization**: Only authenticated members of the group may remove unjoined members (R4-AC1).\n",
         "operationId": "removeMember",
         "parameters": [
           {
@@ -1275,7 +1275,7 @@
             "description": "Member removed successfully"
           },
           "400": {
-            "description": "Bad request — invalid UUID format for groupId or userUuid.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
+            "description": "Bad request — invalid UUID format for groupId or userUuid.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1290,7 +1290,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1311,7 +1311,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — requester is not an authenticated member of the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_GROUP_MEMBER` | Only group members can add members |\n",
+            "description": "Forbidden — requester is not an authenticated member of the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_GROUP_MEMBER` | グループのメンバーのみがメンバーを追加できます |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1326,7 +1326,7 @@
             }
           },
           "404": {
-            "description": "Not found — group or target member does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n| `USER.NOT_FOUND` | User not found |\n",
+            "description": "Not found — group or target member does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n| `USER.NOT_FOUND` | ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1344,7 +1344,7 @@
             }
           },
           "409": {
-            "description": "Conflict — member cannot be removed due to business rule violation.\n\n| Internal code | Message |\n|---------------|---------|\n| `MEMBER.ALREADY_JOINED` | Member is already joined and cannot be removed |\n| `MEMBER.HAS_TRANSACTIONS` | Member has transactions and cannot be removed |\n",
+            "description": "Conflict — member cannot be removed due to business rule violation.\n\n| Internal code | Message |\n|---------------|---------|\n| `MEMBER.ALREADY_JOINED` | 既に参加しているメンバーは削除できません |\n| `MEMBER.HAS_TRANSACTIONS` | 取引履歴のあるメンバーは削除できません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1400,7 +1400,7 @@
             "description": "User left group successfully"
           },
           "400": {
-            "description": "Bad request — invalid UUID format for groupId or userUuid.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n",
+            "description": "Bad request — invalid UUID format for groupId or userUuid.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1415,7 +1415,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Authentication required |\n| `AUTH.INVALID_FORMAT` | Invalid authentication credentials |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1436,7 +1436,7 @@
             }
           },
           "404": {
-            "description": "Not found — group or member does not exist, or user is not in the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | Group not found |\n| `USER.NOT_IN_GROUP` | User is not in this group |\n| `USER.NOT_FOUND` | User not found |\n",
+            "description": "Not found — group or member does not exist, or user is not in the group.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n| `USER.NOT_IN_GROUP` | このグループに参加していません |\n| `USER.NOT_FOUND` | ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1480,7 +1480,7 @@
           "Transactions"
         ],
         "summary": "Create a new transaction",
-        "description": "Creates a LOAN or REPAYMENT transaction in the specified group.\n**Transaction types (mutually exclusive):** - LOAN: Requires `loan.obligations` (1-9 items). `repayment` must not be provided. - REPAYMENT: Requires `repayment.recipient_id`. `loan` must not be provided.\n**Exchange rate resolution:** If no exchange rate exists for the specified currency and date, the latest available rate for that currency is used and saved for the specified date.\n",
+        "description": "Creates a LOAN or REPAYMENT transaction in the specified group.\n\n**Business Rules:**\n1. **Transaction type exclusivity**: LOAN requires `loan.obligations` (1–9 items); `repayment` must not be provided. REPAYMENT requires `repayment.recipient_id`; `loan` must not be provided (R1-AC1, R2-AC1; see `design.md` → Canonical Testable Flows → POST フロー).\n2. **Exchange rate resolution**: If no exchange rate exists for the specified currency and date, the latest available rate for that currency is used and saved for the specified date. If no rate exists for the currency at all, the request is rejected (R3-AC1, R3-AC2, R3-AC3).\n3. **No membership check**: Any authenticated user may create transactions in any group (see `design.md` → Non-gate notes).\n\n**Dependencies**: MySQL (`transaction_history`, `transaction_obligations`, `users`, `groups`, `exchange_rates`).\n",
         "operationId": "createTransaction",
         "parameters": [
           {
@@ -1493,6 +1493,45 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateTransactionRequest"
+              },
+              "examples": {
+                "createLoan": {
+                  "summary": "Create a LOAN transaction",
+                  "value": {
+                    "transaction_type": "LOAN",
+                    "title": "Dinner",
+                    "amount": 5000,
+                    "currency_code": "JPY",
+                    "date_str": "2024-01-15T18:30:00+09:00",
+                    "payer_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "loan": {
+                      "obligations": [
+                        {
+                          "amount": 2500,
+                          "user_uuid": "660e8400-e29b-41d4-a716-446655440000"
+                        },
+                        {
+                          "amount": 2500,
+                          "user_uuid": "770e8400-e29b-41d4-a716-446655440000"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "createRepayment": {
+                  "summary": "Create a REPAYMENT transaction",
+                  "value": {
+                    "transaction_type": "REPAYMENT",
+                    "title": "Repay lunch",
+                    "amount": 2500,
+                    "currency_code": "JPY",
+                    "date_str": "2024-01-16T10:00:00+09:00",
+                    "payer_id": "660e8400-e29b-41d4-a716-446655440000",
+                    "repayment": {
+                      "recipient_id": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  }
+                }
               }
             }
           }
@@ -1509,41 +1548,91 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  },
+                  "malformedJson": {
+                    "$ref": "#/components/examples/REQUEST_MALFORMED_JSON"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "Not Found - Group, payer, obligor, recipient, or exchange rate does not exist",
+            "description": "Not found — group, user, or exchange rate does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `GROUP.NOT_FOUND` | グループが見つかりません |\n| `USER.NOT_FOUND` | ユーザーが見つかりません |\n| `EXCHANGE_RATE.NOT_FOUND` | 為替レートが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "groupNotFound": {
+                    "$ref": "#/components/examples/GROUP_NOT_FOUND"
+                  },
+                  "userNotFound": {
+                    "$ref": "#/components/examples/USER_NOT_FOUND"
+                  },
+                  "exchangeRateNotFound": {
+                    "$ref": "#/components/examples/EXCHANGE_RATE_NOT_FOUND"
+                  }
                 }
               }
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "unsupportedMediaType": {
+                    "$ref": "#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -1557,7 +1646,7 @@
           "Transactions"
         ],
         "summary": "Get transaction history for a group",
-        "description": "Retrieves transaction history ordered by creation date (newest first). Returns up to the specified count (default 5). Does not verify group existence — returns empty list for non-existent groups.\n",
+        "description": "Retrieves transaction history ordered by creation date (newest first).\nReturns up to the specified count (default 5).\n\n**Business Rules:**\n1. **No group existence check**: Returns an empty list for non-existent groups (R15-AC4; see `design.md` → Non-gate notes).\n2. **Default count**: Returns up to 5 transactions when `count` is not specified (R15-AC3).\n",
         "operationId": "getTransactionHistory",
         "parameters": [
           {
@@ -1569,7 +1658,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Transaction history retrieved successfully",
+            "description": "Transaction history retrieved successfully (empty list if no transactions)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1579,21 +1668,52 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid UUID format",
+            "description": "Bad request — invalid UUID format for groupId.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -1607,7 +1727,7 @@
           "Transactions"
         ],
         "summary": "Get settlement information for a group in JPY",
-        "description": "Calculates optimized settlement transactions for a group. All amounts are converted to JPY using the exchange rate recorded with each transaction. Rounding residuals are adjusted by applying the difference to the largest debtor. Returns an empty list if no transactions exist or all balances are zero. Does not verify group existence — returns empty list for non-existent groups.\n",
+        "description": "Calculates optimized settlement transactions for a group.\nAll obligation amounts are converted to JPY using the exchange rate recorded with each transaction.\nRounding residuals are adjusted by applying the difference to the largest debtor.\n\n**Business Rules:**\n1. **JPY only**: All settlement amounts are expressed in JPY as integers (rounded half-up) (R19-AC2; see `design.md` → Assertion Rules For Test Authors).\n2. **Minimized transfers**: The settlement algorithm minimizes the number of transfers between debtors and creditors (R19-AC3).\n3. **No group existence check**: Returns an empty list for non-existent groups or groups with no members (R17-AC3; see `design.md` → Non-gate notes).\n",
         "operationId": "getTransactionSettlement",
         "parameters": [
           {
@@ -1616,7 +1736,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Settlement information retrieved successfully",
+            "description": "Settlement information retrieved successfully (empty list if no transactions or all balances are zero)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1626,21 +1746,52 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid UUID format",
+            "description": "Bad request — invalid UUID format for groupId.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -1654,7 +1805,7 @@
           "Transactions"
         ],
         "summary": "Get transaction details by ID",
-        "description": "Returns full transaction details including type-specific information. For LOAN transactions: includes payer, obligations list, exchange rate, and date. For REPAYMENT transactions: includes payer, recipient, exchange rate, and date.\n",
+        "description": "Returns full transaction details including type-specific information.\nFor LOAN transactions: includes payer, obligations list, exchange rate, and date.\nFor REPAYMENT transactions: includes payer, recipient, exchange rate, and date.\n\n**Business Rules:**\n1. **No group-transaction consistency check**: The `groupId` path parameter is not used to filter transactions; only `transactionId` is used (R6-AC1, R6-AC2; see `design.md` → Canonical Testable Flows → GET 詳細フロー).\n",
         "operationId": "getTransactionDetail",
         "parameters": [
           {
@@ -1676,31 +1827,67 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid UUID format",
+            "description": "Bad request — invalid UUID format.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "Transaction not found",
+            "description": "Not found — transaction does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `TRANSACTION.NOT_FOUND` | 取引が見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "transactionNotFound": {
+                    "$ref": "#/components/examples/TRANSACTION_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -1712,7 +1899,7 @@
           "Transactions"
         ],
         "summary": "Update a LOAN transaction",
-        "description": "Updates an existing LOAN transaction with new details.\n**Updatable fields:** - Title, amount, currency, transaction date - Payer - Obligations (users and amounts)\n**Important notes:** - Only LOAN transactions can be updated - Currency can be changed (e.g., from JPY to USD) - All existing obligations will be replaced with new ones\n",
+        "description": "Updates an existing LOAN transaction with new details.\nAll existing obligations are replaced with the new obligations list.\n\n**Business Rules:**\n1. **LOAN only**: Only LOAN transactions can be updated. REPAYMENT transactions are immutable (R8-AC1, R9-AC1; see `design.md` → Canonical Testable Flows → PUT フロー).\n2. **Full obligation replacement**: All existing obligations are deleted and replaced with the new list (R8-AC3).\n3. **Exchange rate resolution**: Same fallback logic as create — latest rate is used when the specified date has no rate (R10-AC1, R10-AC2, R10-AC3).\n4. **created_at preserved**: Only `updated_at` changes on update; `created_at` is unchanged (R8-AC4).\n\n**Dependencies**: MySQL (`transaction_history`, `transaction_obligations`, `users`, `exchange_rates`).\n",
         "operationId": "updateTransaction",
         "parameters": [
           {
@@ -1728,6 +1915,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateTransactionRequest"
+              },
+              "examples": {
+                "updateLoan": {
+                  "summary": "Update a LOAN transaction",
+                  "value": {
+                    "title": "Updated dinner",
+                    "amount": 6000,
+                    "currency_code": "JPY",
+                    "date_str": "2024-01-15T18:30:00+09:00",
+                    "payer_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "loan": {
+                      "obligations": [
+                        {
+                          "amount": 3000,
+                          "user_uuid": "660e8400-e29b-41d4-a716-446655440000"
+                        },
+                        {
+                          "amount": 3000,
+                          "user_uuid": "770e8400-e29b-41d4-a716-446655440000"
+                        }
+                      ]
+                    }
+                  }
+                }
               }
             }
           }
@@ -1744,41 +1955,106 @@
             }
           },
           "400": {
-            "description": "Validation error - Invalid request parameters or attempting to update REPAYMENT transaction",
+            "description": "Bad request — input validation failed.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  },
+                  "malformedJson": {
+                    "$ref": "#/components/examples/REQUEST_MALFORMED_JSON"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "Not Found - Transaction, payer, obligor, or exchange rate does not exist",
+            "description": "Not found — transaction, user, or exchange rate does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `TRANSACTION.NOT_FOUND` | 取引が見つかりません |\n| `USER.NOT_FOUND` | ユーザーが見つかりません |\n| `EXCHANGE_RATE.NOT_FOUND` | 為替レートが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "transactionNotFound": {
+                    "$ref": "#/components/examples/TRANSACTION_NOT_FOUND"
+                  },
+                  "userNotFound": {
+                    "$ref": "#/components/examples/USER_NOT_FOUND"
+                  },
+                  "exchangeRateNotFound": {
+                    "$ref": "#/components/examples/EXCHANGE_RATE_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict — attempting to update a REPAYMENT transaction, which is immutable.\n\n| Internal code | Message |\n|---------------|---------|\n| `TRANSACTION.UPDATE_NOT_SUPPORTED` | この取引は更新できません |\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "updateNotSupported": {
+                    "$ref": "#/components/examples/TRANSACTION_UPDATE_NOT_SUPPORTED"
+                  }
                 }
               }
             }
           },
           "415": {
-            "description": "Unsupported Media Type - Content-Type must be application/json",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "unsupportedMediaType": {
+                    "$ref": "#/components/examples/REQUEST_UNSUPPORTED_MEDIA_TYPE"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -1790,7 +2066,7 @@
           "Transactions"
         ],
         "summary": "Delete a transaction",
-        "description": "Deletes a transaction and all associated obligations. Both LOAN and REPAYMENT transactions can be deleted. Deletion is permanent and cannot be undone.\n",
+        "description": "Deletes a transaction and all associated obligations.\nBoth LOAN and REPAYMENT transactions can be deleted.\nDeletion is permanent and cannot be undone.\n\n**Business Rules:**\n1. **Existence check**: The transaction must exist; deleting a non-existent transaction returns 404 (R14-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).\n2. **Obligations deleted first**: Associated obligations are deleted before the transaction record (R13-AC1).\n",
         "operationId": "deleteTransaction",
         "parameters": [
           {
@@ -1805,31 +2081,67 @@
             "description": "Transaction deleted successfully"
           },
           "400": {
-            "description": "Validation error - Invalid UUID format",
+            "description": "Bad request — invalid UUID format.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationFailed": {
+                    "$ref": "#/components/examples/VALIDATION_FAILED"
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - Invalid or missing Firebase JWT token",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |\n| `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "$ref": "#/components/examples/AUTH_MISSING_CREDENTIALS"
+                  },
+                  "invalidFormat": {
+                    "$ref": "#/components/examples/AUTH_INVALID_FORMAT"
+                  },
+                  "invalidToken": {
+                    "$ref": "#/components/examples/AUTH_INVALID_TOKEN"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "Transaction not found",
+            "description": "Not found — transaction does not exist.\n\n| Internal code | Message |\n|---------------|---------|\n| `TRANSACTION.NOT_FOUND` | 取引が見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "transactionNotFound": {
+                    "$ref": "#/components/examples/TRANSACTION_NOT_FOUND"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "internalError": {
+                    "$ref": "#/components/examples/SYSTEM_INTERNAL_ERROR"
+                  }
                 }
               }
             }
@@ -1920,7 +2232,7 @@
             }
           },
           "400": {
-            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | Validation failed |\n| `REQUEST.MALFORMED_JSON` | Malformed JSON request body |\n",
+            "description": "Bad request.\n\n| Internal code | Message |\n|---------------|---------|\n| `VALIDATION.FAILED` | 入力内容に誤りがあります |\n| `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1938,7 +2250,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Missing authentication credentials |\n| `AUTH.INVALID_FORMAT` | Invalid authentication format |\n| `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |\n",
+            "description": "Unauthorized — invalid or missing authentication token.\n\n| Internal code | Message |\n|---------------|---------|\n| `AUTH.MISSING_CREDENTIALS` | Missing authentication credentials |\n| `AUTH.INVALID_FORMAT` | Invalid authentication format |\n| `AUTH.INVALID_TOKEN` | 認証トークンが無効です |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1959,7 +2271,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — authenticated user is not the owner of the target resource.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.FORBIDDEN` | You are not allowed to modify this resource |\n",
+            "description": "Forbidden — authenticated user is not the owner of the target resource.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.FORBIDDEN` | このリソースを変更する権限がありません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1974,7 +2286,7 @@
             }
           },
           "404": {
-            "description": "User not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_FOUND` | User not found |\n",
+            "description": "User not found.\n\n| Internal code | Message |\n|---------------|---------|\n| `USER.NOT_FOUND` | ユーザーが見つかりません |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1989,7 +2301,7 @@
             }
           },
           "415": {
-            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |\n",
+            "description": "Unsupported Media Type — Content-Type must be application/json.\n\n| Internal code | Message |\n|---------------|---------|\n| `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2141,7 +2453,6 @@
         "required": [
           "timestamp",
           "status",
-          "error",
           "message",
           "path",
           "error_code"
@@ -2157,15 +2468,10 @@
             "description": "HTTP status code",
             "example": 400
           },
-          "error": {
-            "type": "string",
-            "description": "HTTP status reason phrase",
-            "example": "Bad Request"
-          },
           "message": {
             "type": "string",
-            "description": "Human-readable error message",
-            "example": "Validation failed"
+            "description": "Canonical, end-user-facing message. 1:1 with error_code, independent of HTTP status — clients should display this text as-is. Localized according to the request's Accept-Language header (ja or en; defaults to ja).\n",
+            "example": "入力内容に誤りがあります"
           },
           "path": {
             "type": "string",
@@ -2914,14 +3220,19 @@
       }
     },
     "examples": {
+      "TransactionNotFound": {
+        "$ref": "#/components/examples/TRANSACTION_NOT_FOUND"
+      },
+      "ExchangeRateNotFound": {
+        "$ref": "#/components/examples/EXCHANGE_RATE_NOT_FOUND"
+      },
       "VALIDATION_FAILED": {
         "summary": "Validation failed",
         "description": "Request body passed JSON parsing but violated field validation rules.",
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 400,
-          "error": "Bad Request",
-          "message": "Validation failed",
+          "message": "入力内容に誤りがあります",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "VALIDATION.FAILED",
@@ -2940,8 +3251,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 400,
-          "error": "Bad Request",
-          "message": "Invalid request body format. Please check the data types and structure.",
+          "message": "リクエストの形式が正しくありません",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "REQUEST.MALFORMED_JSON"
@@ -2953,8 +3263,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 401,
-          "error": "Unauthorized",
-          "message": "Authentication required",
+          "message": "認証情報が必要です",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "AUTH.MISSING_CREDENTIALS"
@@ -2966,8 +3275,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 401,
-          "error": "Unauthorized",
-          "message": "Invalid authentication credentials",
+          "message": "認証情報の形式が正しくありません",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "AUTH.INVALID_FORMAT"
@@ -2979,8 +3287,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 401,
-          "error": "Unauthorized",
-          "message": "Invalid authentication token",
+          "message": "認証トークンが無効です",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "AUTH.INVALID_TOKEN"
@@ -2992,8 +3299,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 409,
-          "error": "Conflict",
-          "message": "Email already exists",
+          "message": "このメールアドレスは既に登録されています",
           "path": "/auth/users",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "AUTH_USER.EMAIL_DUPLICATE"
@@ -3005,8 +3311,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 415,
-          "error": "Unsupported Media Type",
-          "message": "Unsupported Media Type. Content-Type must be application/json",
+          "message": "サポートされていないContent-Typeです",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "REQUEST.UNSUPPORTED_MEDIA_TYPE"
@@ -3018,8 +3323,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 500,
-          "error": "Internal Server Error",
-          "message": "Internal server error",
+          "message": "予期しないエラーが発生しました。しばらくしてから再度お試しください",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "SYSTEM.INTERNAL_ERROR"
@@ -3031,8 +3335,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 404,
-          "error": "Not Found",
-          "message": "Auth user not found",
+          "message": "認証ユーザーが見つかりません",
           "path": "/auth/users/firebase-uid-123",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "AUTH_USER.NOT_FOUND"
@@ -3044,8 +3347,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 409,
-          "error": "Conflict",
-          "message": "User can't join more than 9 groups",
+          "message": "参加できるグループは10個までです",
           "path": "/groups",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "USER.MAX_GROUP_COUNT_EXCEEDED"
@@ -3057,8 +3359,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 404,
-          "error": "Not Found",
-          "message": "Group not found",
+          "message": "グループが見つかりません",
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "GROUP.NOT_FOUND"
@@ -3070,8 +3371,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 403,
-          "error": "Forbidden",
-          "message": "Invalid or expired join token",
+          "message": "参加用のリンクが無効または期限切れです",
           "path": "/groups/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "GROUP.INVALID_JOIN_TOKEN"
@@ -3083,8 +3383,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 404,
-          "error": "Not Found",
-          "message": "User not found",
+          "message": "ユーザーが見つかりません",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "USER.NOT_FOUND"
@@ -3096,8 +3395,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 409,
-          "error": "Conflict",
-          "message": "You have already joined this group",
+          "message": "既にこのグループに参加しています",
           "path": "/groups/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "GROUP.ALREADY_JOINED"
@@ -3109,8 +3407,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 403,
-          "error": "Forbidden",
-          "message": "Only group members can perform this action",
+          "message": "グループのメンバーのみがメンバーを追加できます",
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "USER.NOT_GROUP_MEMBER"
@@ -3122,8 +3419,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 409,
-          "error": "Conflict",
-          "message": "Group has reached maximum size of 10 members",
+          "message": "グループの最大人数（10人）に達しています",
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "GROUP.MAX_SIZE_REACHED"
@@ -3135,8 +3431,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 409,
-          "error": "Conflict",
-          "message": "Cannot remove a joined member",
+          "message": "既に参加しているメンバーは削除できません",
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "MEMBER.ALREADY_JOINED"
@@ -3148,8 +3443,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 409,
-          "error": "Conflict",
-          "message": "Cannot remove a member who is involved in transactions",
+          "message": "取引履歴のあるメンバーは削除できません",
           "path": "/groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "MEMBER.HAS_TRANSACTIONS"
@@ -3161,11 +3455,46 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 404,
-          "error": "Not Found",
-          "message": "User is not in this group",
+          "message": "このグループに参加していません",
           "path": "/groups/123e4567-e89b-12d3-a456-426614174000/users/550e8400-e29b-41d4-a716-446655440000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "USER.NOT_IN_GROUP"
+        }
+      },
+      "EXCHANGE_RATE_NOT_FOUND": {
+        "summary": "Exchange rate not found",
+        "description": "No exchange rate exists for the specified currency code.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 404,
+          "message": "為替レートが見つかりません",
+          "path": "/groups/123e4567-e89b-12d3-a456-426614174000/transactions",
+          "request_id": "660e8400-e29b-41d4-a716-446655440000",
+          "error_code": "EXCHANGE_RATE.NOT_FOUND"
+        }
+      },
+      "TRANSACTION_NOT_FOUND": {
+        "summary": "Transaction not found",
+        "description": "The specified transaction does not exist.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 404,
+          "message": "取引が見つかりません",
+          "path": "/groups/123e4567-e89b-12d3-a456-426614174000/transactions/550e8400-e29b-41d4-a716-446655440000",
+          "request_id": "660e8400-e29b-41d4-a716-446655440000",
+          "error_code": "TRANSACTION.NOT_FOUND"
+        }
+      },
+      "TRANSACTION_UPDATE_NOT_SUPPORTED": {
+        "summary": "Transaction update not supported",
+        "description": "Only LOAN transactions can be updated; REPAYMENT transactions are immutable.",
+        "value": {
+          "timestamp": "2026-03-01T05:12:34.567Z",
+          "status": 409,
+          "message": "この取引は更新できません",
+          "path": "/groups/123e4567-e89b-12d3-a456-426614174000/transactions/550e8400-e29b-41d4-a716-446655440000",
+          "request_id": "660e8400-e29b-41d4-a716-446655440000",
+          "error_code": "TRANSACTION.UPDATE_NOT_SUPPORTED"
         }
       },
       "USER_FORBIDDEN": {
@@ -3174,8 +3503,7 @@
         "value": {
           "timestamp": "2026-03-01T05:12:34.567Z",
           "status": 403,
-          "error": "Forbidden",
-          "message": "You are not allowed to modify this resource",
+          "message": "このリソースを変更する権限がありません",
           "path": "/users/123e4567-e89b-12d3-a456-426614174000",
           "request_id": "550e8400-e29b-41d4-a716-446655440000",
           "error_code": "USER.FORBIDDEN"
