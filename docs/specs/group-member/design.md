@@ -82,7 +82,7 @@ flowchart TD
     E -->|not found| T404U[404 USER.NOT_FOUND]
     E -->|found| F{参加済みチェック\ntargetUser.authUser != null?}
     F -->|参加済み| T409A[409 MEMBER.ALREADY_JOINED]
-    F -->|未参加| G{取引関与チェック\npayer or obligation に存在?}
+    F -->|未参加| G{取引関与チェック\n1件でも payer or obligation に存在?}
     G -->|関与あり| T409B[409 MEMBER.HAS_TRANSACTIONS]
     G -->|関与なし| H[Step3: delete userGroupEntity\nMySQL: DELETE FROM user_groups WHERE user_uuid=userUuid AND group_uuid=groupId]
     H --> I[Step4: delete userEntity\nMySQL: DELETE FROM users WHERE uuid=userUuid]
@@ -111,7 +111,7 @@ stateDiagram-v2
 - **認可チェック:** `users.auth_user_uid == uid` が `user_groups` に存在するメンバーのみが操作を許可される。未参加メンバー（`auth_user_uid = NULL`）は認可チェックを通過できない。
 - **グループサイズカウント:** `user_groups.count(group_uuid = groupId)`。認証済みメンバーと未参加メンバーの両方がカウントに含まれる。
 - **削除の物理削除:** `remove-member` は `user_groups` と `users` レコードを物理削除する。`leave-group`（`auth_user_uid = NULL` にセットのみ）とは異なる。
-- **取引関与チェック:** `transactionRepository.existsByPayer(targetUser)` または `obligationRepository.existsByUser(targetUser)` が true の場合 `MEMBER.HAS_TRANSACTIONS`。
+- **取引関与チェック:** `transactionRepository.existsByPayer(targetUser)` または `obligationRepository.existsByUser(targetUser)` が true の場合、1件以上の取引参照が存在するものとして `MEMBER.HAS_TRANSACTIONS`。
 - **外部→内部エラー変換:** `GlobalExceptionHandler` が各例外を HTTP status + error_code にマッピングする。`GroupControllerWebTest` で証明する。
 - **post-success rollback:** 外部 API なし。該当なし。
 - **versioned-row:** `users` / `user_groups` テーブルに `version` カラムなし。

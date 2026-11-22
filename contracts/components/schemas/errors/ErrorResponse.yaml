@@ -3,7 +3,6 @@ description: Standard error response
 required:
   - timestamp
   - status
-  - error
   - message
   - path
   - error_code
@@ -16,14 +15,13 @@ properties:
     type: integer
     description: HTTP status code
     example: 400
-  error:
-    type: string
-    description: HTTP status reason phrase
-    example: Bad Request
   message:
     type: string
-    description: Human-readable error message
-    example: Validation failed
+    description: >
+      Canonical, end-user-facing message. 1:1 with error_code, independent of HTTP status —
+      clients should display this text as-is. Localized according to the request's
+      Accept-Language header (ja or en; defaults to ja).
+    example: 入力内容に誤りがあります
   path:
     type: string
     description: Request path where the error occurred

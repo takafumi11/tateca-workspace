@@ -23,9 +23,9 @@ get:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:

@@ -2,31 +2,65 @@ get:
   tags:
     - Transactions
   summary: Get settlement information for a group in JPY
-  description: >
+  description: |
     Calculates optimized settlement transactions for a group.
-    All amounts are converted to JPY using the exchange rate recorded with each transaction.
+    All obligation amounts are converted to JPY using the exchange rate recorded with each transaction.
     Rounding residuals are adjusted by applying the difference to the largest debtor.
-    Returns an empty list if no transactions exist or all balances are zero.
-    Does not verify group existence — returns empty list for non-existent groups.
+
+    **Business Rules:**
+    1. **JPY only**: All settlement amounts are expressed in JPY as integers (rounded half-up) (R19-AC2; see `design.md` → Assertion Rules For Test Authors).
+    2. **Minimized transfers**: The settlement algorithm minimizes the number of transfers between debtors and creditors (R19-AC3).
+    3. **No group existence check**: Returns an empty list for non-existent groups or groups with no members (R17-AC3; see `design.md` → Non-gate notes).
   operationId: getTransactionSettlement
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
   responses:
     "200":
-      description: Settlement information retrieved successfully
+      description: Settlement information retrieved successfully (empty list if no transactions or all balances are zero)
       content:
         application/json:
           schema:
             $ref: "../components/schemas/responses/TransactionSettlementResponse.yaml"
     "400":
-      description: Validation error - Invalid UUID format
+      description: |
+        Bad request — invalid UUID format for groupId.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

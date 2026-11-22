@@ -119,3 +119,8 @@ components:
       $ref: "./contracts/components/schemas/responses/TransactionSettlementResponse.yaml"
     TransactionResponse:
       $ref: "./contracts/components/schemas/responses/TransactionResponse.yaml"
+  examples:
+    TransactionNotFound:
+      $ref: "./contracts/components/examples/errors/TRANSACTION_NOT_FOUND.yaml"
+    ExchangeRateNotFound:
+      $ref: "./contracts/components/examples/errors/EXCHANGE_RATE_NOT_FOUND.yaml"

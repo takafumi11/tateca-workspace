@@ -5,11 +5,11 @@ delete:
   description: |
     Permanently removes an unjoined member (not linked to an auth account) from the group.
     Both the user record and the user_groups record are deleted.
-    Joined members and members involved in transactions cannot be removed.
+    Joined members and members used in one or more transactions cannot be removed.
 
     **Business Rules:**
     1. **Unjoined members only**: Members linked to an auth account (joined) cannot be removed; they must leave voluntarily (R7-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).
-    2. **No transactions**: Members involved in transactions as payer or obligee cannot be removed (R8-AC1).
+    2. **No transactions**: Members used in one or more transactions as payer or obligee cannot be removed; the API returns `MEMBER.HAS_TRANSACTIONS` (R8-AC1).
     3. **Authorization**: Only authenticated members of the group may remove unjoined members (R4-AC1).
   operationId: removeMember
   parameters:
@@ -24,7 +24,7 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
       content:
         application/json:
           schema:
@@ -38,9 +38,9 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -58,7 +58,7 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `USER.NOT_GROUP_MEMBER` | Only group members can add members |
+        | `USER.NOT_GROUP_MEMBER` | グループのメンバーのみがメンバーを追加できます |
       content:
         application/json:
           schema:
@@ -72,8 +72,8 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.NOT_FOUND` | Group not found |
-        | `USER.NOT_FOUND` | User not found |
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
+        | `USER.NOT_FOUND` | ユーザーが見つかりません |
       content:
         application/json:
           schema:
@@ -89,8 +89,8 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `MEMBER.ALREADY_JOINED` | Member is already joined and cannot be removed |
-        | `MEMBER.HAS_TRANSACTIONS` | Member has transactions and cannot be removed |
+        | `MEMBER.ALREADY_JOINED` | 既に参加しているメンバーは削除できません |
+        | `MEMBER.HAS_TRANSACTIONS` | 取引履歴のあるメンバーは削除できません |
       content:
         application/json:
           schema:

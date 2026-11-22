@@ -8,7 +8,7 @@
 
 - 認可チェック（要求者がグループの認証済みメンバーであること）を Service 層で行う
 - 削除対象の制限（未参加メンバーのみ削除可能）を Service 層のドメインロジックとして実装する
-- 取引関与メンバーの削除制限（支払者・義務者として記録されているメンバーは削除不可）を Service 層で実装する
+- 取引関与メンバーの削除制限（1件でも支払者・義務者として記録されているメンバーは削除不可）を Service 層で実装する
 - 削除はメンバーレコードとグループ関連レコードの両方を除去する完全削除とする
 - 既存の認可パターン（add-member と同様の認証済みメンバー判定）を共通メソッドに抽出して再利用する
 - 契約情報は API Contract (OpenAPI) に一元化する
@@ -53,8 +53,8 @@ Interface / error response は以下を参照し、Design には再定義しな�
 9. 対象メンバーが存在しない場合は `EntityNotFoundException` で拒否する
 10. Service が対象メンバーの参加状態を確認する（`authUser` の有無）
 11. 対象メンバーが参加済み（`authUser != null`）の場合は `BusinessRuleViolationException` で拒否する
-12. Service が対象メンバーの取引関与を確認する（支払者または義務者として記録されているか）
-13. 取引に関与している場合は `BusinessRuleViolationException` で拒否する
+12. Service が対象メンバーの取引関与を確認する（1件でも支払者または義務者として記録されているか）
+13. 1件でも取引に関与している場合は `BusinessRuleViolationException`（`MEMBER.HAS_TRANSACTIONS`）で拒否する
 14. Service が対象メンバーの `UserGroupEntity` と `UserEntity` を削除する
 15. Controller が 204 No Content を返却する
 
@@ -164,9 +164,9 @@ Service がグループのメンバー一覧を取得した後、認証済み UI
 
 ### Transaction Involvement Check (Req 3)
 
-対象メンバーが取引の支払者（`TransactionHistoryEntity.payer`）または義務者（`TransactionObligationEntity.user`）として記録されている場合、`BusinessRuleViolationException` を送出する。
+対象メンバーが1件でも取引の支払者（`TransactionHistoryEntity.payer`）または義務者（`TransactionObligationEntity.user`）として記録されている場合、`BusinessRuleViolationException`（`MEMBER.HAS_TRANSACTIONS`）を送出する。
 
-これはデータ整合性の保護である。`UserEntity` が `TransactionHistoryEntity` と `TransactionObligationEntity` から外部キーで参照されているため、参照がある状態での物理削除は外部キー制約違反となる。ビジネス上も、取引に関与しているメンバーはもはや「誤登録」ではなく「運用データ」であり、削除は適切でない。
+これはデータ整合性の保護である。`transactionRepository.existsByPayer(targetUser)` または `obligationRepository.existsByUser(targetUser)` のいずれかが true であれば、1件以上の取引参照が存在するものとして削除を拒否する。`UserEntity` が `TransactionHistoryEntity` と `TransactionObligationEntity` から外部キーで参照されているため、参照がある状態での物理削除は外部キー制約違反となる。ビジネス上も、取引に関与しているメンバーはもはや「誤登録」ではなく「運用データ」であり、削除は適切でない。
 
 ### Complete Deletion (Req 1)
 
