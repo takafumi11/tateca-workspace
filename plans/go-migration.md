@@ -53,7 +53,7 @@ P1 と P2 のすべて → P3 → P4（人が go を出す）→ 1週間 → P5-
 | P2-3 | tateca-backend | group/member（Go） | P2-2、P1-2 | — |
 | P2-4 | tateca-backend | transaction（Go） | P2-3、P1-3 | — |
 | P2-5 | tateca-backend | exchange rate（Go） | P2-1、P1-4 | P2-2〜P2-4 と並列可 |
-| P3 | tateca-backend、tateca-ios | staging でのリハーサル | P1 と P2 のすべて | — |
+| P3 | tateca-backend、tateca-ios | staging でのリハーサル | P1 と P2 のすべて、Railway への CD の修正（P0 の TODO） | — |
 | P4 | tateca-config、tateca-backend、AWS | 本番の切り替え | P3、人の go | — |
 | P5-1 | tateca-backend | Java の削除 | P4 から1週間後 | — |
 | P5-2 | tateca-infrastructure | keep-alive の整理 | P5-1 | P5-3 と並列可 |
@@ -63,7 +63,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 ---
 
-## P0　verify-tateca-api スキル（完了。コミットは tateca-backend の別セッションで行う）
+## P0　verify-tateca-api スキル（完了。tateca-backend #328 でマージ済み）
 
 - [x] 依存: なし（事前に pstack を導入し、`/pstack:setup-pstack` まで済ませておく）
 - [x] 触るファイル: tateca-backend の `.gitignore`（`.claude/*` を ignore したうえで `.claude/skills/` だけを外す。追跡対象はスキルの12ファイル）、`.claude/skills/verify-tateca-api/**`
@@ -73,7 +73,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
 - [x] 確認 perf: なし
 - 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
-- [x] keep-alive の Lambda が `/actuator/health` で 401 になっていた件を直した（backend のブランチ `fix/actuator-health-public-path`。push と PR はまだ）
+- [x] keep-alive の Lambda が `/actuator/health` で 401 になっていた件を直した（tateca-backend #329 でマージ済み）
+- [ ] TODO（担当: 開発者）: #328 と #329 のマージ後の CD が、Railway への再デプロイ（`railway redeploy`）で失敗した（exit code 1、ログにエラーの内容なし）。Docker のイメージのビルドと GHCR への push は成功している。最後に成功したのは 2026-07-20。CD は Railway の CLI のイメージを `latest` で使っているので、CLI の変化か、`RAILWAY_TOKEN` が無効になったことが疑われる。直るまで本番は古いコードのままで、`/actuator/health` は 401 を返す（2026-11-22 に確認）。P3 で Go を Railway にデプロイする前に、必ず直す。直すときは、CLI のイメージのバージョンも固定する
   - 原因: #309（2026-03-08、関係のない SDD の PR）で、actuator の依存関係と、認証フィルタの `PUBLIC_PATHS` の `/actuator/health` が一緒に消えた。#325 は `SecurityConfig` の `permitAll` だけを戻したので効かなかった。フィルタだけを直しても、actuator がないので 500 になる
   - 修正: 失敗するテスト → `PUBLIC_PATHS` に戻す → actuator の依存関係を元どおりに戻し、公開するのは `health` だけにする（metrics と prometheus は使う人がおらず、公開するとログインした利用者なら誰でも読めるため）
   - 確認: verify スキルで実物を起動し、認証なしの `/actuator/health` が 200 `{"status":"UP"}`、認証なしの `/actuator/prometheus` が 401 になった。backend のテストは全560件が通った
