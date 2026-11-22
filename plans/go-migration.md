@@ -74,7 +74,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
 - [x] 確認 perf: なし
 - 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
-- [ ] TODO（担当: 開発者）: keep-alive の Lambda が `/actuator/health` で 401 になっている（本番のログに「Missing Authorization header for request」が出ている）。原因は、認証を求めないパスの一覧が `SecurityConfig` の `permitAll` と `TatecaAuthenticationFilter` の `PUBLIC_PATHS` の2か所にあり、自前の認証フィルタが `permitAll` より前に 401 を返していること。`b2f784c`（main に未マージで、`chore/allow-actuator-health` ブランチにだけある）は `permitAll` にしか足していない。直すなら `PUBLIC_PATHS` にも足し、`TatecaAuthenticationFilterUnitTest` で確かめる（移行中のルールの「急ぎのバグ修正」として Java に入れる）
+- [ ] TODO（担当: 開発者）: keep-alive の Lambda が `/actuator/health` で 401 になっている（本番のログに「Missing Authorization header for request」が出ている）。原因は、認証を求めないパスの一覧が `SecurityConfig` の `permitAll` と `TatecaAuthenticationFilter` の `PUBLIC_PATHS` の2か所にあり、自前の認証フィルタが `permitAll` より前に 401 を返していること。この変更は PR #325（`5daa780`、2026-07-20 に main へ squash マージ済み）で本番に入っているが、`permitAll` にしか足していない。backend の `chore/allow-actuator-health` ブランチはマージ済みの古いブランチなので、修正は main から新しいブランチを切って行う。直すなら `PUBLIC_PATHS` にも足し、`TatecaAuthenticationFilterUnitTest` で確かめる（移行中のルールの「急ぎのバグ修正」として Java に入れる）
 
 ## P1-0a　requirements の正本を揃える
 
@@ -103,13 +103,13 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 ## P1-0b　RSF で振る舞いの分母を作る
 
 - [ ] 依存: なし
-- [ ] 置き場所（すべてローカル。push しない。コードの抜粋とローカルの絶対パスを含むため）
+- [x] 置き場所を用意した（すべてローカル。push しない。コードの抜粋とローカルの絶対パスを含むため。仕様リポジトリにはリモートを設定していない）
   - `../sample-reverse-spec-flow/`: RSF 本体のクローン
   - `../tateca-backend-rsf-src/`: RSF にかける tateca-backend のクローン。P1 で tateca-backend を変えても影響しないよう、別にしておく
-  - `init.sh` が対象の隣に作る仕様リポジトリ
-- [ ] 変更
-  - P1-1 を始める直前の main を `../tateca-backend-rsf-src/` にクローンする
-  - `init.sh` の中身を読んでから実行する: `./sample-reverse-spec-flow/init.sh ./tateca-backend-rsf-src tateca-backend evaluation --playbook java-jaxrs-jpa`
+  - `../tateca-backend-rsf-src-spec/`: `init.sh` が作った仕様リポジトリ（ブランチ `spec/tateca-backend`）
+- [x] backend の main（`5daa780`）を `../tateca-backend-rsf-src/` にクローンした。RSF は v2.2.1（`caa0a9d`）
+- [x] `init.sh` の中身（ネットワークを使わない、解析対象と仕様リポジトリの外には書き込まない、hook は検証役の読み取りを解析対象の下に制限するだけ）を確かめてから実行した: `./sample-reverse-spec-flow/init.sh ./tateca-backend-rsf-src tateca-backend evaluation --playbook java-jaxrs-jpa`。解析対象として 211 ファイルが記録された
+- [ ] 変更（残り）
   - 作られた仕様リポジトリを新しいセッションで開き、`spec-extraction/AGENTS.md` に従って Phase 0 から進める。Phase の境界などで AI が止まったら、人が判断する
   - `observed-anomalies` に挙がったバグ候補は、`go-migration-bug` の issue にする（移行中は直さない）
 - [ ] 結果: `specs/` に、コードの行番号を根拠に持つ仕様と、技術に依存しない本質の層（業務ルール、入力チェック、状態遷移など）ができる
