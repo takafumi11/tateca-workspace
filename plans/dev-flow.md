@@ -71,7 +71,9 @@ Go 移行（`plans/go-migration.md`）とは関係なく、すべてのコンポ
 3. 大きくて、全体像を誰も持っていない
 4. 一度に広い範囲を変える
 
-主な使いどころは2つ。requirements.md がない既存機能の下書きを作るとき（引用された行を見て、人が確かめやすい）と、Go 移行のように全体の振る舞いを固定するとき。作った仕様は使い終わったら削除し、保守はしない。
+Tateca で当てはまりそうなのは iOS だけ（約13,700行に対してテストが1ファイル）。使いどころは、iOS の既存機能に requirements（画面の AC）を書き起こすときの下書き（引用された行を見て、人が確かめやすい）と、iOS を大きく作り直すとき。どちらも、まず `/how` と iOS の verify スキル（T4）で足りるかを試し、AI が同じ誤解を2回繰り返したら使う。作った仕様は使い終わったら削除し、保守はしない。
+
+backend の Go 移行では使わない。手元で動かせてテストもあるので、black-box テストのコードカバレッジを網羅の分母にするほうが、安く確実で、移行後も使い続けられる。
 
 ### スキルと文書の扱い
 
@@ -112,9 +114,9 @@ T4（独立。iOS で機能開発を始める前）
 
 ## T2　`tateca-mode` を作り、実際の変更で試す
 
-- [ ] 依存: T1
-- [ ] 触るファイル: `.claude/skills/tateca-mode/**`。`~/.claude/skills/tateca-mode` から symlink を張り、Tateca のどのリポジトリからでも使えるようにする
-- [ ] 変更
+- [x] 依存: T1
+- [x] 触るファイル: `.claude/skills/tateca-mode/**`。`~/.claude/skills/tateca-mode` から symlink を張り、Tateca のどのリポジトリからでも使えるようにする
+- [x] 変更（スキル作成の playbook と、`/pstack:automate-me` が示す mode スキルの形に沿って作った。44行。`disable-model-invocation: true` で、人が打ったときだけ動く）
   - `/pstack:poteto-mode tateca-mode スキルを書いて` で、pstack のスキル作成の playbook を使って作る。入力はこのファイルの「目標とする流れ」
   - 中身は、`poteto-mode` に足す Tateca 固有のルールだけにする（人の関門、requirements.md と AC のルール、AC とテストの対応、リポジトリをまたぐ作業で `../<リポジトリ名>` を使う決まり）
 - [ ] 結果: `/tateca-mode` で作業を始めると、上の流れに沿って進む

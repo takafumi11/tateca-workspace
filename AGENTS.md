@@ -46,7 +46,7 @@ System facts that cross repositories:
 ## How to Work
 
 - Requirements: use the `sdd-requirements` skill to create, update, review, or draft requirements from current behavior.
-- Implementation, investigation, bug fixes, and refactoring: use pstack (`/pstack:poteto-mode`) in the implementation repository.
+- Implementation, investigation, bug fixes, and refactoring: use `/tateca-mode` (pstack's poteto-mode plus the Tateca rules in `.claude/skills/tateca-mode/SKILL.md`) in the implementation repository. It is linked from `~/.claude/skills/`, so it works in every Tateca repository.
 - For a new feature or a behavior change: requirements first (PdM approval), then black-box tests that carry the AC IDs and fail first, then the implementation, then verification on the running app, then the PR.
 - Human gates: requirements changes (PdM), API changes clients can see (response shapes and per-endpoint errors; old iOS app versions keep calling the API, so such a change is effectively irreversible), and merges.
 
