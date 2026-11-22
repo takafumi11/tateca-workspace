@@ -64,15 +64,17 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 ---
 
-## P0　verify-tateca-api スキル
+## P0　verify-tateca-api スキル（完了。コミットは tateca-backend の別セッションで行う）
 
-- [ ] 依存: なし（事前に pstack を導入し、`/pstack:setup-pstack` まで済ませておく）
-- [ ] 触るファイル: tateca-backend の `.gitignore`（`.claude/skills/` だけを ignore から外す）、`.claude/skills/verify-tateca-api/**`
-- [ ] 変更: `/pstack:create-verification-skill` でスキルを生成する。中身は、docker compose の MySQL と dev プロファイルでの起動、状態確認、HTTP での操作、証拠の取得、後片付けの手順
-- [ ] 結果: どのエージェントでも、同じ手順で Java の API を起動して操作できる
-- [ ] 確認 unit: なし（スキルを追加するだけ）
-- [ ] 確認 live: 生成時に一度通しで動かす。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` で、作成者がメンバーに含まれていること。後片付けの後も証拠が残っていること
-- [ ] 確認 perf: なし
+- [x] 依存: なし（事前に pstack を導入し、`/pstack:setup-pstack` まで済ませておく）
+- [x] 触るファイル: tateca-backend の `.gitignore`（`.claude/*` を ignore したうえで `.claude/skills/` だけを外す。追跡対象はスキルの12ファイル）、`.claude/skills/verify-tateca-api/**`
+- [x] 変更: `/pstack:create-verification-skill` でスキルを生成した。中身は、docker compose の MySQL と dev プロファイルでの起動、状態確認、HTTP での操作、証拠の取得、後片付けの手順
+- [x] 結果: どのエージェントでも、同じ手順で Java の API を起動して操作できる
+- [x] 確認 unit: なし（スキルを追加するだけ）
+- [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
+- [x] 確認 perf: なし
+- 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
+- P0 で見つかったこと: `b2f784c`（`/actuator/health` を認証なしで呼べるようにする変更）が効いていないと報告された。keep-alive の Lambda は認証なしで `/actuator/health` を叩くので、本番で keep-alive が失敗していないかを backend 側で確かめる
 
 ## P1-0a　requirements の正本を揃える
 
@@ -82,14 +84,20 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - 正本をドメイン単位の6つにした: `auth-user`、`group`、`group-member`、`transaction`、`user`、`exchange-rate`（取得と更新を統合）
   - 機能単位の18ディレクトリと、design.md・reviews を削除した（コミット `f949138` の時点の内容は git の履歴に残っている）
   - AC の ID を本文に書いて固定した（`- **R{n}-AC{m}** ...`、138件）
-- [x] 対応表を作った（`plans/ac-mapping.md`）。機能単位の AC 186件のうち、176件はドメイン単位に含まれ、10件は含まれていない。内容が変わっている AC は0件。やらないことの扱いの矛盾が1件
-- [ ] 変更（残り）
-  - 含まれていない10件（認証の拒否、参加時の入力不備、存在しないメンバーの脱退、2人の間の精算など）と、矛盾1件（取引種別の不正な値の扱い）を、足すか、意図して落とす理由を書くかを PdM が決める
-  - ドメイン単位の文書が「フィールドの詳細」として AC から外した入力の条件65件のうち、業務上の意味がある上限（グループ名100文字、メンバー名50文字、参加者9名、タイトル50文字、金額が0以下は不可など）を AC に戻す。形式だけの規則（UUID や日付の形式）は、注記どおり実装（コード）に任せる
+- [x] 対応表を作った（`plans/ac-mapping.md`。今は削除済み）。機能単位の AC 186件のうち、176件はドメイン単位に含まれ、10件は含まれていない。内容が変わっている AC は0件。やらないことの扱いの矛盾が1件
+- [x] 含まれていない10件と矛盾1件を決着させた
+  - 認証の拒否（create-group R4-AC1/2、remove-member R4-AC1/2）: すべての操作に共通なので、新しい `access.md` の R1 にまとめた。内部 API の API キーによる拒否（`access R2-AC1`）も、コードの振る舞いから足した。`user` の R3-AC1/2 は `access.md` に統合して欠番にした
+  - 参加時の入力不備（join-group R5-AC1〜AC4）: `group R6-AC2` として足した
+  - 存在しないメンバーの脱退（leave-group R3-AC3）: コードは「所属していない」と同じ判定で拒否しているので、`group R7-AC4` に「存在しないメンバーを含む」と書き足した。新しい AC は作っていない
+  - 2人の間の精算（get-transaction-settlement R4-AC1）: `transaction R20-AC4` として足した
+  - 不正な取引種別（矛盾）: ドメイン単位の扱い（入力不備として拒否する。`transaction R4-AC1`）に揃え、注記に明記した
+- [x] 業務上の上限を AC に戻した（値はすべてコードで確認した）: `group R2-AC2〜AC5`、`group R6-AC3`、`group-member R2-AC2`、`user R2-AC3`、`transaction R4-AC2〜AC5`、`transaction R11-AC2〜AC5`。形式だけの規則（UUID、日付、通貨コードの形式、メールアドレスや UID の長さ）は実装（コード）に任せた
+- [x] AC は合計156件になった。`plans/ac-mapping.md` は役目を終えたので削除した（内容は git の履歴に残っている）
+- 見つかったバグ: 参加できるグループの上限は、コードでは9個（`group R3-AC1` と一致）だが、利用者向けのエラーメッセージ（`USER.MAX_GROUP_COUNT_EXCEEDED`）は「参加できるグループは10個までです」と言っている。`go-migration-bug` の issue にする（移行中は直さない）
 - [x] 注記の参照先を、凍結した OpenAPI から「実装（コード）」に変えた
-- [ ] 結果: AC の分母が1か所に決まり、業務上の上限も AC として確かめられる
+- [x] 結果: AC の分母が1か所に決まり、業務上の上限も AC として確かめられる
 - [ ] 確認 unit: なし
-- [ ] 確認 live: 対応表の「含まれていない」「内容が変わっている」行が、すべて決着している（対応表を PR に貼る）
+- [x] 確認 live: 対応表の「含まれていない」行と矛盾が、すべて決着している（決着の内容は PR に書く）。PdM の承認は PR のレビューで行う
 - [ ] 確認 perf: なし
 
 ## P1-0b　RSF で振る舞いの分母を作る
@@ -123,7 +131,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
     - `controller/AuthUserControllerWebTest.java` と `controller/UserControllerWebTest.java` のうち、HTTP で再現できるケース
 - [ ] 変更
   - 接続先を環境変数で切り替える。WHEN/THEN の接続先は `BASE_URL`、GIVEN の接続先は `GIVEN_BASE_URL`（省略したときは `BASE_URL`）
-  - 認証は `x-uid` ヘッダで通す（dev プロファイル）
+  - 認証は `x-uid` ヘッダで通す（dev プロファイル）。認証の拒否（`access` の AC）は、すべての操作に対して表形式のテストで確かめる
   - 準備は API で行う。通貨と為替だけは SQL シードで投入する。外部の為替 API は WireMock で代用する
   - Java の実際のレスポンスを記録して基準にする（`acceptance/testdata/responses/`）。テストはレスポンス全体を、記録したものと比べる。時刻、request_id、生成された UUID は、比べる前に正規化する。手書きの `contracts/` は Java とずれているので、検証には使わない
   - テストを実行したときに観測した「エンドポイントとエラーコードの組」を記録し、一覧として出力する。これが今の Java で返りうるエラーの一覧であり、Go での最初の宣言になる
@@ -135,7 +143,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 結果: auth/user の AC が Go のテストに移り、Java 側の該当テストが消える。AC 対応チェックが CI で動く
 - [ ] 確認 unit: CI で、このテストが Java に対して GREEN になる
 - [ ] 確認 live
-  - AC 対応チェックで、`auth-user` と `user` の AC がすべてテストで覆われている（出力を PR に貼る）。AC を1件わざと消すと、チェックが落ちる
+  - AC 対応チェックで、`auth-user`、`user`、`access` の AC がすべてテストで覆われている（出力を PR に貼る）。AC を1件わざと消すと、チェックが落ちる
   - RSF の該当する記述（業務ルール、入力チェック、状態遷移）が、すべてテストで覆われている（対応表を PR に貼る）。覆われていなかった振る舞いには、特性テストを足してある
   - 削除した Java テストが確かめていたことが、新しいテストのどれかで確かめられている（対応表を PR に貼る）
   - Java を1か所わざと壊すと、該当するテストが落ちる（出力を PR に貼る。壊した変更はコミットしない）
