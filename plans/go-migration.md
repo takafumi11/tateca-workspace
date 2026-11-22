@@ -74,7 +74,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
 - [x] 確認 perf: なし
 - 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
-- P0 で見つかったこと: `b2f784c`（`/actuator/health` を認証なしで呼べるようにする変更）が効いていないと報告された。keep-alive の Lambda は認証なしで `/actuator/health` を叩くので、本番で keep-alive が失敗していないかを backend 側で確かめる
+- [ ] TODO（担当: 開発者）: P0 の検証で、`b2f784c`（`/actuator/health` を認証なしで呼べるようにする変更）が効いていないと報告された。keep-alive の Lambda は認証なしで `/actuator/health` を叩くので、本番で keep-alive が失敗していないかを確かめる。失敗していれば、Go 移行を待たずに Java 側で直すかを決める
 
 ## P1-0a　requirements の正本を揃える
 
@@ -86,14 +86,14 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - AC の ID を本文に書いて固定した（`- **R{n}-AC{m}** ...`、138件）
 - [x] 対応表を作った（`plans/ac-mapping.md`。今は削除済み）。機能単位の AC 186件のうち、176件はドメイン単位に含まれ、10件は含まれていない。内容が変わっている AC は0件。やらないことの扱いの矛盾が1件
 - [x] 含まれていない10件と矛盾1件を決着させた
-  - 認証の拒否（create-group R4-AC1/2、remove-member R4-AC1/2）: すべての操作に共通なので、新しい `access.md` の R1 にまとめた。内部 API の API キーによる拒否（`access R2-AC1`）も、コードの振る舞いから足した。`user` の R3-AC1/2 は `access.md` に統合して欠番にした
+  - 認証の拒否（create-group R4-AC1/2、remove-member R4-AC1/2）: すべての操作に共通なので、新しい `access.md` の R1 にまとめた。内部 API の API キーによる拒否（`access R2-AC1`）も、コードの振る舞いから足した（PdM が意図したものとして承認済み）。`user` の R3-AC1/2 は `access.md` に統合して欠番にした
   - 参加時の入力不備（join-group R5-AC1〜AC4）: `group R6-AC2` として足した
   - 存在しないメンバーの脱退（leave-group R3-AC3）: コードは「所属していない」と同じ判定で拒否しているので、`group R7-AC4` に「存在しないメンバーを含む」と書き足した。新しい AC は作っていない
   - 2人の間の精算（get-transaction-settlement R4-AC1）: `transaction R20-AC4` として足した
   - 不正な取引種別（矛盾）: ドメイン単位の扱い（入力不備として拒否する。`transaction R4-AC1`）に揃え、注記に明記した
 - [x] 業務上の上限を AC に戻した（値はすべてコードで確認した）: `group R2-AC2〜AC5`、`group R6-AC3`、`group-member R2-AC2`、`user R2-AC3`、`transaction R4-AC2〜AC5`、`transaction R11-AC2〜AC5`。形式だけの規則（UUID、日付、通貨コードの形式、メールアドレスや UID の長さ）は実装（コード）に任せた
 - [x] AC は合計156件になった。`plans/ac-mapping.md` は役目を終えたので削除した（内容は git の履歴に残っている）
-- 見つかったバグ: 参加できるグループの上限は、コードでは9個（`group R3-AC1` と一致）だが、利用者向けのエラーメッセージ（`USER.MAX_GROUP_COUNT_EXCEEDED`）は「参加できるグループは10個までです」と言っている。`go-migration-bug` の issue にする（移行中は直さない）
+- 見つかったバグ: 参加できるグループの上限は、コードでは9個（`group R3-AC1` と一致）だが、利用者向けのエラーメッセージ（`USER.MAX_GROUP_COUNT_EXCEEDED`）は「参加できるグループは10個までです」と言っている。`go-migration-bug` の issue にした（tateca-backend #326。移行中は直さない）
 - [x] 注記の参照先を、凍結した OpenAPI から「実装（コード）」に変えた
 - [x] 結果: AC の分母が1か所に決まり、業務上の上限も AC として確かめられる
 - [ ] 確認 unit: なし
