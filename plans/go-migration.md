@@ -77,7 +77,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - 原因: #309（2026-03-08、関係のない SDD の PR）で、actuator の依存関係と、認証フィルタの `PUBLIC_PATHS` の `/actuator/health` が一緒に消えた。#325 は `SecurityConfig` の `permitAll` だけを戻したので効かなかった。フィルタだけを直しても、actuator がないので 500 になる
   - 修正: 失敗するテスト → `PUBLIC_PATHS` に戻す → actuator の依存関係を元どおりに戻し、公開するのは `health` だけにする（metrics と prometheus は使う人がおらず、公開するとログインした利用者なら誰でも読めるため）
   - 確認: verify スキルで実物を起動し、認証なしの `/actuator/health` が 200 `{"status":"UP"}`、認証なしの `/actuator/prometheus` が 401 になった。backend のテストは全560件が通った
-- 見つかったバグ: 存在しないパスへの要求が 404 ではなく 500（`SYSTEM.INTERNAL_ERROR`）になる。`GlobalExceptionHandler` が `NoResourceFoundException` を 500 に変換している。P2-1 の「存在しないパスに Java と同じエラーを返す」は、このバグも引き継ぐことになるので、issue にするかを決める
+- 見つかったバグ: 存在しないパスへの要求が 404 ではなく 500（`SYSTEM.INTERNAL_ERROR`）になる。`GlobalExceptionHandler` が `NoResourceFoundException` を 500 に変換している。tateca-backend #327（`go-migration-bug`）にした。P2-1 では Java と同じ 500 を返し、移行が終わってから直す
 
 ## P1-0a　requirements の正本を揃える
 
@@ -215,7 +215,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - エラーの対応チェックを作る。テストで観測した「エンドポイントとエラーコードの組」と宣言を両方向で比べ、どちらかにしかない組があれば CI を落とす。この仕組みは移行後も残す
   - Go のサーバーをカバレッジを取れる形でビルドし（`go build -cover`）、テストを流したときのカバレッジを出す。P1 と同じく、通っていない分岐はテストを足すか、理由を書く
   - P2-2〜P2-5 では、各エンドポイントの宣言を P1 で記録した一覧から始め（バグも含めて引き継ぐ）、エラーの対応チェックを GREEN にする
-  - 壊れた JSON、415、存在しないパスに対して、Java と同じエラーを返す
+  - 壊れた JSON、415、存在しないパスに対して、Java と同じエラーを返す（存在しないパスが 500 になるのはバグで、#327 として移行後に直す）
   - 構造化ログと trace（W3C traceparent）
   - migration はコマンドとして用意するだけにして、サーバーの起動時には実行しない
   - CI では、`db/migrations` と Java の `src/main/resources/db/migration`、およびメッセージファイルが同じ内容かを diff で確かめる
