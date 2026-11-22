@@ -116,7 +116,7 @@ T4（独立。iOS で機能開発を始める前）
 
 - [x] 依存: T1
 - [x] 触るファイル: `.claude/skills/tateca-mode/**`。`~/.claude/skills/tateca-mode` から symlink を張り、Tateca のどのリポジトリからでも使えるようにする
-- [x] 変更（スキル作成の playbook と、`/pstack:automate-me` が示す mode スキルの形に沿って作った。44行。`disable-model-invocation: true` で、人が打ったときだけ動く）
+- [x] 変更（tateca-workspace #3 でマージ済み。スキル作成の playbook と、`/pstack:automate-me` が示す mode スキルの形に沿って作った。44行。`disable-model-invocation: true` で、人が打ったときだけ動く）
   - `/pstack:poteto-mode tateca-mode スキルを書いて` で、pstack のスキル作成の playbook を使って作る。入力はこのファイルの「目標とする流れ」
   - 中身は、`poteto-mode` に足す Tateca 固有のルールだけにする（人の関門、requirements.md と AC のルール、AC とテストの対応、リポジトリをまたぐ作業で `../<リポジトリ名>` を使う決まり）
 - [ ] 結果: `/tateca-mode` で作業を始めると、上の流れに沿って進む

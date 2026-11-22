@@ -63,7 +63,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 ---
 
-## P0　verify-tateca-api スキル（完了。コミットは tateca-backend の別セッションで行う）
+## P0　verify-tateca-api スキル（完了。tateca-backend #328 でマージ済み）
 
 - [x] 依存: なし（事前に pstack を導入し、`/pstack:setup-pstack` まで済ませておく）
 - [x] 触るファイル: tateca-backend の `.gitignore`（`.claude/*` を ignore したうえで `.claude/skills/` だけを外す。追跡対象はスキルの12ファイル）、`.claude/skills/verify-tateca-api/**`
@@ -73,7 +73,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
 - [x] 確認 perf: なし
 - 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
-- [x] keep-alive の Lambda が `/actuator/health` で 401 になっていた件を直した（backend のブランチ `fix/actuator-health-public-path`。push と PR はまだ）
+- [x] keep-alive の Lambda が `/actuator/health` で 401 になっていた件を直した（tateca-backend #329 でマージ済み）
+- [x] #328 と #329 のマージ後の CD が、Railway への再デプロイで失敗していた件を直した。原因は `RAILWAY_TOKEN` の失効（開発者がトークンを作り直して登録した）。失敗したジョブを再実行して成功し、2026-11-22 に本番で確かめた: 認証なしの `/actuator/health` が 200 `{"status":"UP"}`、`/actuator/prometheus` が 401、`/groups/list` が 401。CD は Railway の CLI のイメージを `latest` で使っているので、バージョンの固定は P3 で Go の CD を作るときにあわせて行う
   - 原因: #309（2026-03-08、関係のない SDD の PR）で、actuator の依存関係と、認証フィルタの `PUBLIC_PATHS` の `/actuator/health` が一緒に消えた。#325 は `SecurityConfig` の `permitAll` だけを戻したので効かなかった。フィルタだけを直しても、actuator がないので 500 になる
   - 修正: 失敗するテスト → `PUBLIC_PATHS` に戻す → actuator の依存関係を元どおりに戻し、公開するのは `health` だけにする（metrics と prometheus は使う人がおらず、公開するとログインした利用者なら誰でも読めるため）
   - 確認: verify スキルで実物を起動し、認証なしの `/actuator/health` が 200 `{"status":"UP"}`、認証なしの `/actuator/prometheus` が 401 になった。backend のテストは全560件が通った
@@ -273,6 +274,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - tateca-backend: `.github/workflows/cd.yml`（Go のイメージを GHCR に push し、Railway の staging にデプロイする）、`acceptance/**`（本物の Firebase ID トークンで認証できるようにする）
   - tateca-ios: `money-me-ios/src/Config/EnvConfig.swift`（開発ビルド用に STAGING を追加）
 - [ ] 変更
+  - CD の Railway の CLI のイメージを、`latest` ではなく固定のバージョンにする（Java の CD も同じく）
   - P4 の手順を、メンテナンスの config を除いてそのまま staging で実行する。Java の停止、V2 までの登録、`staging-api.tateca.net` の付け替えまで含める
   - `api.tateca.net` を Railway のカスタムドメインで管理しているのか、DNS で管理しているのかを確かめ、P4 の手順に書き込む
 - [ ] 結果: staging が Go に切り替わり、P4 の手順が確定する

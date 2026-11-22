@@ -41,4 +41,4 @@ Stop and ask before:
 ## Git and GitHub
 
 - Branch from `origin/main` and unset the new branch's upstream, so a bare `git push` cannot reach `main`.
-- Pushing to github.com fails while Zscaler is on, and the repositories belong to the `takafumi11` account, which may not be the active gh account. Tell the user before every push, and push once per working session rather than after each commit. Reads and PR creation work without this.
+- Tell the user before every push and wait for their go. Push once per working session rather than after each commit. Follow any local push rules in `~/.claude/rules/`.
