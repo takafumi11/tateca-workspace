@@ -73,7 +73,11 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
 - [x] 確認 perf: なし
 - 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
-- [ ] TODO（担当: 開発者）: keep-alive の Lambda が `/actuator/health` で 401 になっている（本番のログに「Missing Authorization header for request」が出ている）。原因は、認証を求めないパスの一覧が `SecurityConfig` の `permitAll` と `TatecaAuthenticationFilter` の `PUBLIC_PATHS` の2か所にあり、自前の認証フィルタが `permitAll` より前に 401 を返していること。この変更は PR #325（`5daa780`、2026-07-20 に main へ squash マージ済み）で本番に入っているが、`permitAll` にしか足していない。backend の `chore/allow-actuator-health` ブランチはマージ済みの古いブランチなので、修正は main から新しいブランチを切って行う。直すなら `PUBLIC_PATHS` にも足し、`TatecaAuthenticationFilterUnitTest` で確かめる（移行中のルールの「急ぎのバグ修正」として Java に入れる）
+- [x] keep-alive の Lambda が `/actuator/health` で 401 になっていた件を直した（backend のブランチ `fix/actuator-health-public-path`。push と PR はまだ）
+  - 原因: #309（2026-03-08、関係のない SDD の PR）で、actuator の依存関係と、認証フィルタの `PUBLIC_PATHS` の `/actuator/health` が一緒に消えた。#325 は `SecurityConfig` の `permitAll` だけを戻したので効かなかった。フィルタだけを直しても、actuator がないので 500 になる
+  - 修正: 失敗するテスト → `PUBLIC_PATHS` に戻す → actuator の依存関係を元どおりに戻し、公開するのは `health` だけにする（metrics と prometheus は使う人がおらず、公開するとログインした利用者なら誰でも読めるため）
+  - 確認: verify スキルで実物を起動し、認証なしの `/actuator/health` が 200 `{"status":"UP"}`、認証なしの `/actuator/prometheus` が 401 になった。backend のテストは全560件が通った
+- 見つかったバグ: 存在しないパスへの要求が 404 ではなく 500（`SYSTEM.INTERNAL_ERROR`）になる。`GlobalExceptionHandler` が `NoResourceFoundException` を 500 に変換している。P2-1 の「存在しないパスに Java と同じエラーを返す」は、このバグも引き継ぐことになるので、issue にするかを決める
 
 ## P1-0a　requirements の正本を揃える
 
