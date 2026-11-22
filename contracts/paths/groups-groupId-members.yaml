@@ -38,7 +38,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed (field-level errors in `errors` array) |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります（フィールド単位のエラーは `errors` 配列に含まれます） |
       content:
         application/json:
           schema:
@@ -53,7 +53,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.INVALID_TOKEN` | Invalid authentication token |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -68,7 +68,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `USER.NOT_GROUP_MEMBER` | Only group members can add members |
+        | `USER.NOT_GROUP_MEMBER` | グループのメンバーのみがメンバーを追加できます |
       content:
         application/json:
           schema:
@@ -83,7 +83,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.NOT_FOUND` | Group not found |
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
       content:
         application/json:
           schema:
@@ -98,7 +98,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.MAX_SIZE_REACHED` | Group has reached maximum size of 10 members |
+        | `GROUP.MAX_SIZE_REACHED` | グループの最大人数（10人）に達しています |
       content:
         application/json:
           schema:
@@ -113,7 +113,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported Media Type. Content-Type must be application/json |
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:

@@ -3,8 +3,7 @@ description: Target member is involved in transactions as a payer or obligor and
 value:
   timestamp: "2026-03-01T05:12:34.567Z"
   status: 409
-  error: Conflict
-  message: Cannot remove a member who is involved in transactions
+  message: 取引履歴のあるメンバーは削除できません
   path: /groups/550e8400-e29b-41d4-a716-446655440000/members/660e8400-e29b-41d4-a716-446655440000
   request_id: 550e8400-e29b-41d4-a716-446655440000
   error_code: MEMBER.HAS_TRANSACTIONS

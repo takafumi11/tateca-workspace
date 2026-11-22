@@ -1,0 +1,9 @@
+summary: Exchange rate service unavailable
+description: The upstream exchange rate provider failed after all retries were exhausted.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 500
+  message: 為替レートの取得に失敗しました。しばらくしてから再度お試しください
+  path: /internal/exchange-rates
+  request_id: 660e8400-e29b-41d4-a716-446655440000
+  error_code: EXCHANGE_RATE.SERVICE_UNAVAILABLE

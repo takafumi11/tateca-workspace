@@ -2,10 +2,13 @@ get:
   tags:
     - Transactions
   summary: Get transaction details by ID
-  description: >
+  description: |
     Returns full transaction details including type-specific information.
     For LOAN transactions: includes payer, obligations list, exchange rate, and date.
     For REPAYMENT transactions: includes payer, recipient, exchange rate, and date.
+
+    **Business Rules:**
+    1. **No group-transaction consistency check**: The `groupId` path parameter is not used to filter transactions; only `transactionId` is used (R6-AC1, R6-AC2; see `design.md` → Canonical Testable Flows → GET 詳細フロー).
   operationId: getTransactionDetail
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -18,40 +21,78 @@ get:
           schema:
             $ref: "../components/schemas/responses/TransactionResponse.yaml"
     "400":
-      description: Validation error - Invalid UUID format
+      description: |
+        Bad request — invalid UUID format.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Transaction not found
+      description: |
+        Not found — transaction does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `TRANSACTION.NOT_FOUND` | 取引が見つかりません |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            transactionNotFound:
+              $ref: "../components/examples/errors/TRANSACTION_NOT_FOUND.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"
 
 put:
   tags:
     - Transactions
   summary: Update a LOAN transaction
-  description: >
+  description: |
     Updates an existing LOAN transaction with new details.
+    All existing obligations are replaced with the new obligations list.
 
-    **Updatable fields:**
-    - Title, amount, currency, transaction date
-    - Payer
-    - Obligations (users and amounts)
+    **Business Rules:**
+    1. **LOAN only**: Only LOAN transactions can be updated. REPAYMENT transactions are immutable (R8-AC1, R9-AC1; see `design.md` → Canonical Testable Flows → PUT フロー).
+    2. **Full obligation replacement**: All existing obligations are deleted and replaced with the new list (R8-AC3).
+    3. **Exchange rate resolution**: Same fallback logic as create — latest rate is used when the specified date has no rate (R10-AC1, R10-AC2, R10-AC3).
+    4. **created_at preserved**: Only `updated_at` changes on update; `created_at` is unchanged (R8-AC4).
 
-    **Important notes:**
-    - Only LOAN transactions can be updated
-    - Currency can be changed (e.g., from JPY to USD)
-    - All existing obligations will be replaced with new ones
+    **Dependencies**: MySQL (`transaction_history`, `transaction_obligations`, `users`, `exchange_rates`).
   operationId: updateTransaction
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -62,6 +103,21 @@ put:
       application/json:
         schema:
           $ref: "../components/schemas/requests/UpdateTransactionRequest.yaml"
+        examples:
+          updateLoan:
+            summary: Update a LOAN transaction
+            value:
+              title: "Updated dinner"
+              amount: 6000
+              currency_code: "JPY"
+              date_str: "2024-01-15T18:30:00+09:00"
+              payer_id: "550e8400-e29b-41d4-a716-446655440000"
+              loan:
+                obligations:
+                  - amount: 3000
+                    user_uuid: "660e8400-e29b-41d4-a716-446655440000"
+                  - amount: 3000
+                    user_uuid: "770e8400-e29b-41d4-a716-446655440000"
   responses:
     "200":
       description: Transaction updated successfully
@@ -70,38 +126,112 @@ put:
           schema:
             $ref: "../components/schemas/responses/TransactionResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters or attempting to update REPAYMENT transaction
+      description: |
+        Bad request — input validation failed.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Not Found - Transaction, payer, obligor, or exchange rate does not exist
+      description: |
+        Not found — transaction, user, or exchange rate does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `TRANSACTION.NOT_FOUND` | 取引が見つかりません |
+        | `USER.NOT_FOUND` | ユーザーが見つかりません |
+        | `EXCHANGE_RATE.NOT_FOUND` | 為替レートが見つかりません |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            transactionNotFound:
+              $ref: "../components/examples/errors/TRANSACTION_NOT_FOUND.yaml"
+            userNotFound:
+              $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
+            exchangeRateNotFound:
+              $ref: "../components/examples/errors/EXCHANGE_RATE_NOT_FOUND.yaml"
+    "409":
+      description: |
+        Conflict — attempting to update a REPAYMENT transaction, which is immutable.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `TRANSACTION.UPDATE_NOT_SUPPORTED` | この取引は更新できません |
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            updateNotSupported:
+              $ref: "../components/examples/errors/TRANSACTION_UPDATE_NOT_SUPPORTED.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"
 
 delete:
   tags:
     - Transactions
   summary: Delete a transaction
-  description: >
+  description: |
     Deletes a transaction and all associated obligations.
     Both LOAN and REPAYMENT transactions can be deleted.
     Deletion is permanent and cannot be undone.
+
+    **Business Rules:**
+    1. **Existence check**: The transaction must exist; deleting a non-existent transaction returns 404 (R14-AC1; see `design.md` → Canonical Testable Flows → DELETE フロー).
+    2. **Obligations deleted first**: Associated obligations are deleted before the transaction record (R13-AC1).
   operationId: deleteTransaction
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -110,20 +240,59 @@ delete:
     "204":
       description: Transaction deleted successfully
     "400":
-      description: Validation error - Invalid UUID format
+      description: |
+        Bad request — invalid UUID format.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Transaction not found
+      description: |
+        Not found — transaction does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `TRANSACTION.NOT_FOUND` | 取引が見つかりません |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            transactionNotFound:
+              $ref: "../components/examples/errors/TRANSACTION_NOT_FOUND.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

@@ -1,0 +1,9 @@
+summary: Exchange rate not found
+description: No exchange rate exists for the specified currency code.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 404
+  message: 為替レートが見つかりません
+  path: /groups/123e4567-e89b-12d3-a456-426614174000/transactions
+  request_id: 660e8400-e29b-41d4-a716-446655440000
+  error_code: EXCHANGE_RATE.NOT_FOUND

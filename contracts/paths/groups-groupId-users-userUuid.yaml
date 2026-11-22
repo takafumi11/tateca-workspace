@@ -23,7 +23,7 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
       content:
         application/json:
           schema:
@@ -37,9 +37,9 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -57,9 +57,9 @@ delete:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.NOT_FOUND` | Group not found |
-        | `USER.NOT_IN_GROUP` | User is not in this group |
-        | `USER.NOT_FOUND` | User not found |
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
+        | `USER.NOT_IN_GROUP` | このグループに参加していません |
+        | `USER.NOT_FOUND` | ユーザーが見つかりません |
       content:
         application/json:
           schema:

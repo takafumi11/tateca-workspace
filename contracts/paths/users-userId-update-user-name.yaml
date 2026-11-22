@@ -36,8 +36,8 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
-        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
@@ -55,7 +55,7 @@ patch:
         |---------------|---------|
         | `AUTH.MISSING_CREDENTIALS` | Missing authentication credentials |
         | `AUTH.INVALID_FORMAT` | Invalid authentication format |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -73,7 +73,7 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `USER.FORBIDDEN` | You are not allowed to modify this resource |
+        | `USER.FORBIDDEN` | このリソースを変更する権限がありません |
       content:
         application/json:
           schema:
@@ -87,7 +87,7 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `USER.NOT_FOUND` | User not found |
+        | `USER.NOT_FOUND` | ユーザーが見つかりません |
       content:
         application/json:
           schema:
@@ -101,7 +101,7 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:

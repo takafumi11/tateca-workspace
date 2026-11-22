@@ -33,8 +33,8 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
-        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
@@ -50,9 +50,9 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -70,7 +70,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH_USER.EMAIL_DUPLICATE` | Email already exists |
+        | `AUTH_USER.EMAIL_DUPLICATE` | このメールアドレスは既に登録されています |
       content:
         application/json:
           schema:
@@ -84,7 +84,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:

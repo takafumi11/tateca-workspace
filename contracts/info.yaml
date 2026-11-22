@@ -2,6 +2,12 @@ title: Tateca API
 description: >
   Group expense management API with multi-currency support.
   Track expenses, loans, and settlements across multiple users and currencies.
+
+
+  **Localization**: Clients may send an `Accept-Language` header (`ja` or `en`) to
+  select the language of error response `message` fields. When omitted or set to an
+  unsupported language, the API defaults to Japanese (`ja`). The `error_code` field is
+  always a stable, language-independent identifier.
 version: 1.0.0
 contact:
   name: Tateca Team

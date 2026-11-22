@@ -41,8 +41,8 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
-        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
@@ -58,9 +58,9 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -78,7 +78,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH_USER.NOT_FOUND` | Auth user not found |
+        | `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |
       content:
         application/json:
           schema:
@@ -92,7 +92,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |
+        | `USER.MAX_GROUP_COUNT_EXCEEDED` | 参加できるグループは10個までです |
       content:
         application/json:
           schema:
@@ -106,7 +106,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:

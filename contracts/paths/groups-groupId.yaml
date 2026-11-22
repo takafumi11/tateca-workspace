@@ -24,7 +24,7 @@ get:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
       content:
         application/json:
           schema:
@@ -38,9 +38,9 @@ get:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -58,7 +58,7 @@ get:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.NOT_FOUND` | Group not found |
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
       content:
         application/json:
           schema:
@@ -114,8 +114,8 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
-        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
@@ -131,9 +131,9 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -151,7 +151,7 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.NOT_FOUND` | Group not found |
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
       content:
         application/json:
           schema:
@@ -165,7 +165,7 @@ patch:
 
         | Internal code | Message |
         |---------------|---------|
-        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:
@@ -225,8 +225,8 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `VALIDATION.FAILED` | Validation failed |
-        | `REQUEST.MALFORMED_JSON` | Malformed JSON request body |
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
@@ -242,9 +242,9 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `AUTH.MISSING_CREDENTIALS` | Authentication required |
-        | `AUTH.INVALID_FORMAT` | Invalid authentication credentials |
-        | `AUTH.INVALID_TOKEN` | Invalid or expired authentication token |
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
@@ -262,7 +262,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.INVALID_JOIN_TOKEN` | Invalid or expired join token |
+        | `GROUP.INVALID_JOIN_TOKEN` | 参加用のリンクが無効または期限切れです |
       content:
         application/json:
           schema:
@@ -276,9 +276,9 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.NOT_FOUND` | Group not found |
-        | `USER.NOT_FOUND` | User not found |
-        | `AUTH_USER.NOT_FOUND` | Auth user not found |
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
+        | `USER.NOT_FOUND` | ユーザーが見つかりません |
+        | `AUTH_USER.NOT_FOUND` | 認証ユーザーが見つかりません |
       content:
         application/json:
           schema:
@@ -296,8 +296,8 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `GROUP.ALREADY_JOINED` | You have already joined this group |
-        | `USER.MAX_GROUP_COUNT_EXCEEDED` | User can't join more than 9 groups |
+        | `GROUP.ALREADY_JOINED` | 既にこのグループに参加しています |
+        | `USER.MAX_GROUP_COUNT_EXCEEDED` | 参加できるグループは10個までです |
       content:
         application/json:
           schema:
@@ -313,7 +313,7 @@ post:
 
         | Internal code | Message |
         |---------------|---------|
-        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | Unsupported media type |
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:

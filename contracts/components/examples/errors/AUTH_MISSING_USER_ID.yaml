@@ -1,0 +1,9 @@
+summary: Missing user ID in token
+description: The Firebase authentication token did not contain a user ID (subject) claim.
+value:
+  timestamp: "2026-03-01T05:12:34.567Z"
+  status: 401
+  message: 認証トークンにユーザーIDが含まれていません
+  path: /users/123e4567-e89b-12d3-a456-426614174000
+  request_id: 550e8400-e29b-41d4-a716-446655440000
+  error_code: AUTH.MISSING_USER_ID

@@ -2,16 +2,15 @@ post:
   tags:
     - Transactions
   summary: Create a new transaction
-  description: >
+  description: |
     Creates a LOAN or REPAYMENT transaction in the specified group.
 
-    **Transaction types (mutually exclusive):**
-    - LOAN: Requires `loan.obligations` (1-9 items). `repayment` must not be provided.
-    - REPAYMENT: Requires `repayment.recipient_id`. `loan` must not be provided.
+    **Business Rules:**
+    1. **Transaction type exclusivity**: LOAN requires `loan.obligations` (1–9 items); `repayment` must not be provided. REPAYMENT requires `repayment.recipient_id`; `loan` must not be provided (R1-AC1, R2-AC1; see `design.md` → Canonical Testable Flows → POST フロー).
+    2. **Exchange rate resolution**: If no exchange rate exists for the specified currency and date, the latest available rate for that currency is used and saved for the specified date. If no rate exists for the currency at all, the request is rejected (R3-AC1, R3-AC2, R3-AC3).
+    3. **No membership check**: Any authenticated user may create transactions in any group (see `design.md` → Non-gate notes).
 
-    **Exchange rate resolution:**
-    If no exchange rate exists for the specified currency and date,
-    the latest available rate for that currency is used and saved for the specified date.
+    **Dependencies**: MySQL (`transaction_history`, `transaction_obligations`, `users`, `groups`, `exchange_rates`).
   operationId: createTransaction
   parameters:
     - $ref: "../components/parameters/groupIdPath.yaml"
@@ -21,6 +20,33 @@ post:
       application/json:
         schema:
           $ref: "../components/schemas/requests/CreateTransactionRequest.yaml"
+        examples:
+          createLoan:
+            summary: Create a LOAN transaction
+            value:
+              transaction_type: "LOAN"
+              title: "Dinner"
+              amount: 5000
+              currency_code: "JPY"
+              date_str: "2024-01-15T18:30:00+09:00"
+              payer_id: "550e8400-e29b-41d4-a716-446655440000"
+              loan:
+                obligations:
+                  - amount: 2500
+                    user_uuid: "660e8400-e29b-41d4-a716-446655440000"
+                  - amount: 2500
+                    user_uuid: "770e8400-e29b-41d4-a716-446655440000"
+          createRepayment:
+            summary: Create a REPAYMENT transaction
+            value:
+              transaction_type: "REPAYMENT"
+              title: "Repay lunch"
+              amount: 2500
+              currency_code: "JPY"
+              date_str: "2024-01-16T10:00:00+09:00"
+              payer_id: "660e8400-e29b-41d4-a716-446655440000"
+              repayment:
+                recipient_id: "550e8400-e29b-41d4-a716-446655440000"
   responses:
     "201":
       description: Transaction created successfully
@@ -29,26 +55,82 @@ post:
           schema:
             $ref: "../components/schemas/responses/TransactionResponse.yaml"
     "400":
-      description: Validation error - Invalid request parameters
+      description: |
+        Bad request — input validation failed.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `VALIDATION.FAILED` | 入力内容に誤りがあります |
+        | `REQUEST.MALFORMED_JSON` | リクエストの形式が正しくありません |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            validationFailed:
+              $ref: "../components/examples/errors/VALIDATION_FAILED.yaml"
+            malformedJson:
+              $ref: "../components/examples/errors/REQUEST_MALFORMED_JSON.yaml"
     "401":
-      description: Unauthorized - Invalid or missing Firebase JWT token
+      description: |
+        Unauthorized — invalid or missing authentication token.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `AUTH.MISSING_CREDENTIALS` | 認証情報が必要です |
+        | `AUTH.INVALID_FORMAT` | 認証情報の形式が正しくありません |
+        | `AUTH.INVALID_TOKEN` | 認証トークンが無効です |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            missingCredentials:
+              $ref: "../components/examples/errors/AUTH_MISSING_CREDENTIALS.yaml"
+            invalidFormat:
+              $ref: "../components/examples/errors/AUTH_INVALID_FORMAT.yaml"
+            invalidToken:
+              $ref: "../components/examples/errors/AUTH_INVALID_TOKEN.yaml"
     "404":
-      description: Not Found - Group, payer, obligor, recipient, or exchange rate does not exist
+      description: |
+        Not found — group, user, or exchange rate does not exist.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `GROUP.NOT_FOUND` | グループが見つかりません |
+        | `USER.NOT_FOUND` | ユーザーが見つかりません |
+        | `EXCHANGE_RATE.NOT_FOUND` | 為替レートが見つかりません |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            groupNotFound:
+              $ref: "../components/examples/errors/GROUP_NOT_FOUND.yaml"
+            userNotFound:
+              $ref: "../components/examples/errors/USER_NOT_FOUND.yaml"
+            exchangeRateNotFound:
+              $ref: "../components/examples/errors/EXCHANGE_RATE_NOT_FOUND.yaml"
     "415":
-      description: Unsupported Media Type - Content-Type must be application/json
+      description: |
+        Unsupported Media Type — Content-Type must be application/json.
+
+        | Internal code | Message |
+        |---------------|---------|
+        | `REQUEST.UNSUPPORTED_MEDIA_TYPE` | サポートされていないContent-Typeです |
       content:
         application/json:
           schema:
             $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            unsupportedMediaType:
+              $ref: "../components/examples/errors/REQUEST_UNSUPPORTED_MEDIA_TYPE.yaml"
+    "500":
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/errors/ErrorResponse.yaml"
+          examples:
+            internalError:
+              $ref: "../components/examples/errors/SYSTEM_INTERNAL_ERROR.yaml"

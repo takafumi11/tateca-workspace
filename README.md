@@ -1,41 +1,26 @@
 # tateca-workspace
 
-Tateca の AI-agent-first SDD workspace です。SDD プロセス、フィーチャー仕様、OpenAPI 契約、API Docs 生成/公開をこのリポジトリで管理します。
+Tateca のプロダクト全体の正本を置くリポジトリです。要件と受け入れ基準（AC）、作業中の計画、エージェント用のスキルを管理します。
 
-実装は [`tateca-backend`](../tateca-backend) に残します。
+実装は、同じ親ディレクトリに並べた各リポジトリ（`../tateca-backend`、`../tateca-web`、`../tateca-ios` など）にあります。
 
-## What This Repo Is For
+## 構成
 
-- SDD プロセス文書とテンプレート (`docs/`)
-- Tateca feature specs (`docs/specs/`)
-- Tateca API Contract (`contracts/`, `openapi.yaml`)
-- API Docs の lint / preview / GitHub Pages 公開
+| パス | 内容 | 主に読む人 |
+|---|---|---|
+| `product/overview.md` | Tateca とは何か、ドメインの全体像、要件の一覧 | 全員 |
+| `product/requirements/` | ドメインごとの要件と AC。振る舞いについて合意した正本 | PdM・Biz・エンジニア |
+| `contracts/`、`openapi.yaml` | 凍結した手書きの OpenAPI。正ではなく、Go 移行の後に削除する | （参照しない） |
+| `plans/` | 作業中の計画。作業が終わったら削除する | エンジニア |
+| `.claude/skills/` | エージェント用のスキル | AI エージェント |
 
-## Initial Setup
+## はじめに
 
-1. このリポジトリを clone し、エディタで開く。
-2. [`LOCAL_REPOSITORY_LINKS.template.md`](LOCAL_REPOSITORY_LINKS.template.md) を `LOCAL_REPOSITORY_LINKS.md` にコピーする。
-3. ローカルの `tateca-backend` などの checkout パスを記入する。
+1. Tateca のリポジトリを、同じ親ディレクトリに並べて clone する。
+2. このリポジトリを開き、`product/overview.md` から読む。
 
-`LOCAL_REPOSITORY_LINKS.md` はローカル専用で gitignore されます。
+エージェントの振る舞いは [`AGENTS.md`](AGENTS.md) に従います。
 
-## Agent Rules
+## API の形とエラー
 
-- [`AGENTS.md`](AGENTS.md) が共有エージェント挙動の source of truth です。
-- クロスリポジトリ実装では `LOCAL_REPOSITORY_LINKS.md` を先に読むこと。
-
-## Main Entry Points
-
-| Document | 内容 |
-|----------|------|
-| `docs/STEERING.md` | プロジェクト全体像 |
-| `docs/sdd-process.md` | normal SDD process |
-| `docs/sdd-reverse-process.md` | reverse SDD process |
-| `docs/testing.md` | テスト戦略 |
-| `docs/specs/` | フィーチャー別の要件・設計 |
-| `openapi.yaml` | API Contract エントリポイント |
-
-## API Docs
-
-- Production: [docs.tateca.net](https://docs.tateca.net)
-- Local preview: `npm ci && npm run preview`
+API の形と、エンドポイントごとに返りうるエラーは、backend のコードで宣言し、テストで確かめます。OpenAPI は、外部に渡す必要が出たときにコードから生成します。手書きの OpenAPI から作っている docs.tateca.net は更新を止めており、Go 移行の後に片付けます。
