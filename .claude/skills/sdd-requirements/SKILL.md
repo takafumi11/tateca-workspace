@@ -1,70 +1,64 @@
 ---
 name: sdd-requirements
-description: Create or update `requirements.md` for Step 1 in normal SDD. Use when defining or reviewing business behavior and acceptance criteria after normal SDD has been selected. Not for Step 2 design or reverse SDD.
+description: Create, update, or review a Tateca domain requirements doc under `product/requirements/` (business requirements and acceptance criteria with stable IDs). Use when a new feature needs requirements, an existing feature's behavior changes, an implemented feature without a requirements doc needs one drafted, or the user asks to review requirements. Not for API contract shape, implementation design, or tests.
 ---
 
-# SDD Requirements
+# Requirements
 
-`requirements.md` is the Step 1 source of truth for business-visible behavior. Keep architecture, HTTP contract, and implementation detail out.
+`product/requirements/{domain}.md` is the agreed source of truth for what Tateca does and why. The PdM approves every change. Tests prove each AC by carrying its ID. Code is the source of truth only for details that no AC decides.
+Keep architecture, HTTP shape, and implementation detail out.
 
 ## Before Drafting
 
-1. Confirm normal SDD applies per `platform/docs/sdd-process.md`. If implemented behavior exists and baseline Step 1 is missing or reverse is already in progress, switch to `sdd-reverse-requirements`.
-2. Read repository root `LOCAL_REPOSITORY_LINKS.md` when cross-repo paths may be needed (see [Discovery Sources](references/discovery-sources.md)); if missing or paths are `TBU`, stop and ask the developer to update it (copy from `LOCAL_REPOSITORY_LINKS.template.md`).
-3. Read [Step 1 Quality Bar](references/quality-bar.md).
-4. Locate `docs/specs/{feature}/` and audit upstream sources using [Discovery Sources](references/discovery-sources.md).
-5. Read `platform/docs/testing.md` only for scenario coverage and validation boundaries.
+1. Read `product/overview.md` and the domain doc you will touch. One domain has one doc: if the behavior belongs to an existing domain, update that doc. Create a new doc only for a new domain.
+2. Audit sources with [Discovery Sources](references/discovery-sources.md).
+3. Read the [Quality Bar](references/quality-bar.md).
 
 ## Route
 
-| Normal SDD file state | Route |
-|-----------------------|-------|
-| `requirements.md` missing | Create |
-| `requirements.md` exists | Update |
+| Situation | Route |
+|-----------|-------|
+| New domain, or new behavior in an existing domain | Create or Update |
+| Existing behavior changes | Update |
+| Implemented behavior with no doc yet | Draft from current behavior |
 
-## Review loop
+### Create or Update
 
-Every run that creates or changes `requirements.md` must complete **Review → Triage → Fix → Re-review** using `platform/docs/review-record-template.md`:
-
-1. **Review:** Run the common checklist in [Step 1 Quality Bar](references/quality-bar.md) and every perspective in [Review Criteria](references/review-criteria.md).
-2. **Triage:** Record findings in `docs/specs/{feature}/reviews/` with `Triage` and `Status` per the template. Critical and Major default to `Fix` unless explicit documented approval says otherwise.
-3. **Fix:** Change `requirements.md` (or minimum upstream spec) for each `Fix` finding; document under **Iteration N Resolution** in the same review file.
-4. **Re-review:** Re-run affected perspectives until all Critical and Major findings are `Closed` and every verdict is `Approved`.
-
-**Review only:** If the user asks for review without edits, perform Review and Triage, set verdicts to `Needs Revision` when any finding is open, and stop.
-
-## Workflow
-
-### Create
-
-1. Extract durable business context from sources; surface conflicts (quantitative limits, actor ownership, Step 1 vs Step 2 drift) before drafting.
+1. Extract business context. Surface conflicts (quantitative limits, actor ownership, drift between the doc and code) before drafting.
 2. Ask one batched round for unresolved business gaps.
-3. Draft `requirements.md` in the current repo's established Step 1 style; complete the **Review loop**.
+3. Write or change the doc. On update, preserve confirmed behavior and change only the meaning, scope, or ACs that changed.
+4. Give a new AC the next free number in its requirement (`R{n}-AC{m}`), and a new requirement the next free `R{n}`. Never renumber or reuse an ID. A removed AC leaves a gap.
 
-### Update
+### Draft from current behavior
 
-1. Preserve confirmed behavior; change only what changed in meaning, scope, or ACs.
-2. If meaning, scope, or AC coverage changed, complete the **Review loop** with a new iteration in the existing review file.
+1. Understand the area from code, tests, and git history (`/pstack:how`, `/pstack:why`). For an area that is large, untested, or hard to run, an RSF (Reverse Spec Flow) draft with `path:line` citations can be the input. Check each cited line before using it.
+2. Make sure current behavior is pinned by characterization tests before anyone changes it. The implementation repo owns those tests.
+3. List each observed behavior and ask the human to sort it: intended (becomes an AC), incidental (stays pinned by tests, not an AC), or bug (an issue, not an AC as written).
+4. Write ACs only for intended behavior.
+
+## Review
+
+Every run that changes a doc ends with a review against the [Quality Bar](references/quality-bar.md) and every perspective in [Review Criteria](references/review-criteria.md).
+Put findings and their resolution in the PR description, not in separate review files. Close only when no Critical or Major finding is open. The PdM approves the PR.
+
+**Review only:** If the user asks for review without edits, report the findings and stop.
 
 ## Rules
 
-- Satisfy [Step 1 Quality Bar](references/quality-bar.md). Normal and reverse Step 1 must produce the same quality of `requirements.md`; only the evidence source differs.
-- Base statements on repo docs or explicit user confirmation.
-- Ask one batched round for unresolved business gaps after source audit and conflict surfacing.
-- Preserve confirmed business behavior across updates unless the user changes it.
-- Complete every review perspective listed in [Review Criteria](references/review-criteria.md), including `Sanity`.
+- Base statements on code, tests, existing docs, or explicit confirmation. Do not invent business behavior. List unconfirmed behavior as open questions in the PR.
+- Business-owned limits and conditions are ACs (for example, the maximum number of members in a group). Format-only rules (UUID format, date format) are not ACs.
+- When a change alters ACs, the implementation repo updates the tests that carry those IDs in the same change. The AC trace check fails otherwise.
 
 ## Checklist
 
-- [ ] The common Step 1 quality bar in `platform/skills/sdd-requirements/references/quality-bar.md` is satisfied
-- [ ] Source audit is complete and gaps are called out
-- [ ] Conflicts are resolved before drafting
-- [ ] Open business gaps were asked in one batched round or explicitly recorded as unresolved
-- [ ] Review loop is complete: triage recorded, fixes applied for all required Critical and Major findings, re-review done, record saved in `docs/specs/{feature}/reviews/`
+- [ ] The [Quality Bar](references/quality-bar.md) is satisfied
+- [ ] IDs are stable: nothing renumbered, reused, or duplicated
+- [ ] Open business questions are listed in the PR, not guessed
+- [ ] Every review perspective ran, and findings with their resolution are in the PR description
 
 ## References
 
 - [Discovery Sources](references/discovery-sources.md)
-- [Step 1 Quality Bar](references/quality-bar.md)
+- [Quality Bar](references/quality-bar.md)
 - [Review Criteria](references/review-criteria.md)
-- `platform/docs/sdd-process.md`, `platform/docs/testing.md`, `platform/docs/review-record-template.md`
+- `product/overview.md`
