@@ -19,6 +19,7 @@ tateca-backend の実装を Java / Spring Boot から Go に置き換える。AP
 | テストと AC の対応 | テストは AC の ID（`{spec} R{n}-AC{m}`、例: `group R1-AC2`）を持つ。テストを実行して確かめた AC の ID と、requirements.md の AC 一覧を、CI で両方向から比べる。この仕組みは移行後も残す |
 | 確認の役割 | AC テストは API だけで確認する。データの互換性は「流し分け」で確認する（GIVEN を一方の実装、WHEN/THEN をもう一方の実装で、同じ DB に対して流す） |
 | テストの網羅の分母 | AC の分母は requirements.md。AC になっていない振る舞いの分母は、RSF（AWS の Reverse Spec Flow）で作った仕様 |
+| API の形とエラー | 手書きの OpenAPI（`contracts/`）は正ではない。移行中は凍結し、P5-3 で docs.tateca.net と一緒に片付ける。request と response の形は、Java の実際のレスポンスを記録したもので固定する。エンドポイントごとに返りうるエラーは、Go ではハンドラーの横にコードで宣言し、宣言外のエラーを返せない型にしたうえで、テストで観測したものと両方向で比べる。OpenAPI は、外部に渡す必要が出たときに、この宣言から生成する |
 | 移行のためだけのもの | 流し分けの設定、Java と Go を両方起動する compose、コピーしたファイルが同一かを確かめる CI の1ステップ（いずれも P5-1 で消す）。RSF の仕様リポジトリと、RSF にかけるための tateca-backend のクローン（ローカルだけに置き、P5-3 で消す） |
 
 ## 移行中のルール（P1-1 の開始から P5-1 まで）
@@ -84,7 +85,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 対応表を作った（`plans/ac-mapping.md`）。機能単位の AC 186件のうち、176件はドメイン単位に含まれ、10件は含まれていない。内容が変わっている AC は0件。やらないことの扱いの矛盾が1件
 - [ ] 変更（残り）
   - 含まれていない10件（認証の拒否、参加時の入力不備、存在しないメンバーの脱退、2人の間の精算など）と、矛盾1件（取引種別の不正な値の扱い）を、足すか、意図して落とす理由を書くかを PdM が決める
-  - ドメイン単位の文書が「API 契約で定義する」として AC から外した入力の条件65件のうち、業務上の意味がある上限（グループ名100文字、メンバー名50文字、参加者9名、タイトル50文字、金額が0以下は不可など）を AC に戻す
+  - ドメイン単位の文書が「フィールドの詳細」として AC から外した入力の条件65件のうち、業務上の意味がある上限（グループ名100文字、メンバー名50文字、参加者9名、タイトル50文字、金額が0以下は不可など）を AC に戻す。形式だけの規則（UUID や日付の形式）は、注記どおり実装（コード）に任せる
+- [x] 注記の参照先を、凍結した OpenAPI から「実装（コード）」に変えた
 - [ ] 結果: AC の分母が1か所に決まり、業務上の上限も AC として確かめられる
 - [ ] 確認 unit: なし
 - [ ] 確認 live: 対応表の「含まれていない」「内容が変わっている」行が、すべて決着している（対応表を PR に貼る）
@@ -111,7 +113,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [ ] 依存: P0、P1-0a、P1-0b
 - [ ] 触るファイル
-  - 追加: `acceptance/**`（Go のテストパッケージと、AC 対応チェック）、`acceptance/compose.yaml`、`acceptance/seed/*.sql`、`acceptance/wiremock/**`、`api/openapi.bundled.yaml`
+  - 追加: `acceptance/**`（Go のテストパッケージと、AC 対応チェック）、`acceptance/compose.yaml`、`acceptance/seed/*.sql`、`acceptance/wiremock/**`、`acceptance/testdata/responses/**`（Java の実際のレスポンスの記録）
   - 変更: `.github/workflows/ci.yml`
   - 削除: `src/test/java/com/tateca/tatecabackend/` 配下の次のファイル
     - `scenario/CreateAuthUserScenarioTest.java`、`GetAuthUserScenarioTest.java`、`DeleteAuthUserScenarioTest.java`、`UpdateReviewPreferencesScenarioTest.java`、`UpdateUserNameScenarioTest.java`
@@ -123,7 +125,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - 接続先を環境変数で切り替える。WHEN/THEN の接続先は `BASE_URL`、GIVEN の接続先は `GIVEN_BASE_URL`（省略したときは `BASE_URL`）
   - 認証は `x-uid` ヘッダで通す（dev プロファイル）
   - 準備は API で行う。通貨と為替だけは SQL シードで投入する。外部の為替 API は WireMock で代用する
-  - すべてのレスポンスを `api/openapi.bundled.yaml` で検証する。このファイルは workspace の `openapi.yaml` を `redocly bundle` で1ファイルにしたもので、契約の正は引き続き workspace の `contracts/` にある
+  - Java の実際のレスポンスを記録して基準にする（`acceptance/testdata/responses/`）。テストはレスポンス全体を、記録したものと比べる。時刻、request_id、生成された UUID は、比べる前に正規化する。手書きの `contracts/` は Java とずれているので、検証には使わない
+  - テストを実行したときに観測した「エンドポイントとエラーコードの組」を記録し、一覧として出力する。これが今の Java で返りうるエラーの一覧であり、Go での最初の宣言になる
   - テスト名には、requirements.md の AC の ID を付ける（例: `auth-user R1-AC2 ...`）。1つのテストが複数の AC を確かめてもよい
   - AC 対応チェックを作る。テストを実行したときに確かめた AC の ID を記録し、requirements.md の AC 一覧と両方向で比べる。「テストのない AC がある」「存在しない AC を指すテストがある」のどちらでも CI を落とす。requirements.md は workspace にあるので、CI で tateca-workspace も checkout する。この仕組みは移行後も残す
   - 確認は API だけで行い、DB は直接読まない
@@ -136,6 +139,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - RSF の該当する記述（業務ルール、入力チェック、状態遷移）が、すべてテストで覆われている（対応表を PR に貼る）。覆われていなかった振る舞いには、特性テストを足してある
   - 削除した Java テストが確かめていたことが、新しいテストのどれかで確かめられている（対応表を PR に貼る）
   - Java を1か所わざと壊すと、該当するテストが落ちる（出力を PR に貼る。壊した変更はコミットしない）
+  - 観測したエラーコードの一覧を、`contracts/` に書かれたエラーと突き合わせ、ずれを PR に貼る（今どれだけずれているかの記録。`contracts/` は直さない）
 - [ ] 確認 perf: なし
 
 ## P1-2　group/member 群
@@ -147,7 +151,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 変更: P1-1 と同じやり方で移す。特権ユーザー（`UNLIMITED_GROUP_UID`）のケースも含める
 - [ ] 結果: group/member の AC が Go のテストに移る
 - [ ] 確認 unit: Java に対して GREEN
-- [ ] 確認 live: P1-1 と同じ（AC 対応チェック、RSF の記述の網羅、削除した Java テストとの対応、わざと壊すと落ちること）。対象の requirements.md は `group` と `group-member`
+- [ ] 確認 live: P1-1 と同じ（AC 対応チェック、RSF の記述の網羅、削除した Java テストとの対応、わざと壊すと落ちること、エラーコードの一覧と `contracts/` のずれ）。対象の requirements.md は `group` と `group-member`
 - [ ] 確認 perf: なし
 
 ## P1-3　transaction 群と精算のケース集
@@ -182,12 +186,14 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [ ] 依存: P1-1
 - [ ] 変更: `GET /exchange-rate/{date}` を、次の組み合わせで2〜3通り作って比べる。作業は使い捨てのディレクトリで行う
-  - OpenAPI からのコード生成（例: oapi-codegen、ogen）
+  - HTTP のルーティングとリクエストの読み取り（例: 標準の net/http、chi）
   - DB アクセス（例: sqlc、database/sql の直書き）
   - migration ツール（例: golang-migrate、goose）
 - [ ] 判断基準
-  - 生成されるコードの読みやすさ
-  - `contracts/components/schemas/errors/ErrorResponse.yaml` に沿ったエラーを返しやすいか
+  - コードの読みやすさ
+  - エンドポイントごとに返りうるエラーを型で閉じられるか。宣言外のエラーコードを返そうとするとコンパイルが通らないこと
+  - サービス層のエラーを閉じた型にでき、ハンドラーでの変換漏れを linter（網羅のチェック）で CI 前に検出できるか
+  - エラーレスポンスの形を、P1 で記録した Java のエラーレスポンスと同じにできるか
   - `BINARY(16)` の UUID の扱いやすさ
   - Java が作った既存のスキーマを、実行せずに「V2 まで適用済み」として登録できるか
 - [ ] 結果: このファイルの「決定事項」に、選んだものと理由を追記する。試作のコードは残さない
@@ -206,7 +212,12 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
     - Firebase の ID トークンを、失効チェック付きで検証する（Java の `TatecaAuthenticationFilter.java:153` と同じ）。aud と iss も確認する
     - `/internal/**` は、API キーを定数時間で比較する
     - `x-uid` による迂回は、dev のときだけ有効にする
-  - エラーの形式は ErrorResponse に合わせる。メッセージはコピーした `messages*.properties` を読み、`Accept-Language` で切り替える（既定は日本語）
+  - エラーの一覧（コード、HTTP ステータス、日英のメッセージ）を1か所に置く。メッセージはコピーした `messages*.properties` を読み、`Accept-Language` で切り替える（既定は日本語）。レスポンスの形は、P1 で記録した Java のエラーレスポンスに合わせる
+  - 各エンドポイントのハンドラーの横に、返しうるエラーを宣言する仕組みを作る。宣言外のエラーコードは返せない型にする（返そうとするとコンパイルが通らない）
+  - サービス層のエラーは閉じた型にし、ハンドラーで漏れなく変換する。変換漏れは linter で CI を落とす
+  - それでも変換されなかったエラーと panic は、すべて `SYSTEM.INTERNAL_ERROR`（500）として返す。そのときはエンドポイント名とエラーの種類をログに出し、アラートを上げる。500 はすべてのエンドポイントで宣言しておく。宣言外のエラーコードがクライアントに届くことはない
+  - エラーの対応チェックを作る。テストで観測した「エンドポイントとエラーコードの組」と宣言を両方向で比べ、どちらかにしかない組があれば CI を落とす。この仕組みは移行後も残す
+  - P2-2〜P2-5 では、各エンドポイントの宣言を P1 で記録した一覧から始め（バグも含めて引き継ぐ）、エラーの対応チェックを GREEN にする
   - 壊れた JSON、415、存在しないパスに対して、Java と同じエラーを返す
   - 構造化ログと trace（W3C traceparent）
   - migration はコマンドとして用意するだけにして、サーバーの起動時には実行しない
@@ -223,7 +234,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 変更: auth/user の5つのエンドポイントを実装する。Java の `@Transactional` の範囲を、Go の明示的なトランザクションに対応させる
 - [ ] 結果: auth/user が Go で動く
 - [ ] 確認 unit: ドメインロジックがあれば、その単体テスト
-- [ ] 確認 live: auth/user のテストが Go に対して GREEN。流し分けを両方向で実行して GREEN（GIVEN=Java・WHEN/THEN=Go、GIVEN=Go・WHEN/THEN=Java）
+- [ ] 確認 live: auth/user のテストが Go に対して GREEN。流し分けを両方向で実行して GREEN（GIVEN=Java・WHEN/THEN=Go、GIVEN=Go・WHEN/THEN=Java）。エラーの対応チェックが GREEN
 - [ ] 確認 perf: なし
 
 ## P2-3　group/member（Go）
@@ -233,7 +244,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 変更: group/member の7つのエンドポイントを実装する
 - [ ] 結果: group/member が Go で動く
 - [ ] 確認 unit: ドメインロジックの単体テスト
-- [ ] 確認 live: group/member のテストが Go に対して GREEN。流し分けを両方向で GREEN
+- [ ] 確認 live: group/member のテストが Go に対して GREEN。流し分けを両方向で GREEN。エラーの対応チェックが GREEN
 - [ ] 確認 perf: なし
 
 ## P2-4　transaction（Go）
@@ -243,7 +254,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 変更: transaction の6つのエンドポイントを実装する。精算の丸めは、Java の `BigDecimal` + `RoundingMode` と同じ結果になるようにする
 - [ ] 結果: transaction が Go で動く
 - [ ] 確認 unit: 精算計算の単体テスト
-- [ ] 確認 live: transaction のテストが Go に対して GREEN。精算のケース集がすべて一致する。流し分けを両方向で GREEN
+- [ ] 確認 live: transaction のテストが Go に対して GREEN。精算のケース集がすべて一致する。流し分けを両方向で GREEN。エラーの対応チェックが GREEN
 - [ ] 確認 perf: なし
 
 ## P2-5　exchange rate（Go）
@@ -253,7 +264,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 変更: `GET /exchange-rate/{date}` と `POST /internal/exchange-rates` を実装する。外部 API の retry（3回、1秒から倍々に待つ）と fallback も移す
 - [ ] 結果: exchange rate が Go で動く
 - [ ] 確認 unit: retry と fallback の単体テスト
-- [ ] 確認 live: exchange rate のテストが Go に対して GREEN。流し分けを両方向で GREEN
+- [ ] 確認 live: exchange rate のテストが Go に対して GREEN。流し分けを両方向で GREEN。エラーの対応チェックが GREEN
 - [ ] 確認 perf: なし
 
 ---
@@ -333,6 +344,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 依存: P5-1
 - [ ] 触るファイル
   - tateca-workspace: `AGENTS.md`（リポジトリの表の backend の説明を Go に合わせる）、このファイル（削除）。`product/requirements/` は残して保守する
+  - tateca-workspace の API ドキュメント一式を削除する: `contracts/`、`openapi.yaml`、`redocly.yaml`、`scripts/`、`package.json`、`package-lock.json`、`CNAME`、`.github/workflows/`（API ドキュメントの CI/CD）
+  - 人が行う: GitHub Pages を止め、docs.tateca.net の DNS レコードを消す
   - tateca-backend: `AGENTS.md`（技術スタック、コマンド、テストの慣習を Go に合わせ、存在しないパスへの参照を直す）
   - ローカル: RSF の仕様リポジトリ、`../tateca-backend-rsf-src/`、`../sample-reverse-spec-flow/` を削除する
 - [ ] 結果: 文書が Go の実態に合い、移行のためだけの文書がなくなる
@@ -346,9 +359,10 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 | 点 | Java 側の実態 | どこで捕まえるか |
 |---|---|---|
 | 精算の丸め | `BigDecimal` + `RoundingMode`（`TransactionServiceImpl.java:36`） | P1-3 のケース集、P2-4 |
-| JSON の型と必須項目 | BigDecimal の桁、timestamp の形式、null と欠落の違い | OpenAPI による検証、P3 の iOS 実機での確認 |
+| JSON の型と必須項目 | BigDecimal の桁、timestamp の形式、null と欠落の違い | P1 で記録した Java の実際のレスポンスとの比較、P3 の iOS 実機での確認 |
 | UUID のバイト順 | `BINARY(16)` と、`bin_to_uuid` で作られる列 | 流し分け（Java が書いたデータを Go が読む、その逆） |
 | フレームワークが返すエラー | 壊れた JSON、415、バリデーションの field メッセージ（英語の文） | P1 のテスト、P2-1 |
+| エンドポイントごとのエラーコード | 例外を `GlobalExceptionHandler` が一括で変換しており、どのエンドポイントが何を返すかはコードに書かれていない | P1 で観測した一覧、P2-1 のエラーの宣言と対応チェック |
 | トークンの検証 | 失効チェック付き、aud と iss の確認（`TatecaAuthenticationFilter.java:153`） | P2-1 の単体テスト、P3 の本物のトークン |
 | 多言語 | `Accept-Language`、既定は日本語 | テストで ja と en の両方を流す |
 | 特権ユーザー | `UNLIMITED_GROUP_UID` にはグループの上限がない | P1-2 の既存 AC（CreateGroup Req3 AC2） |

@@ -12,7 +12,7 @@ PdM・Biz・エンジニア・AI エージェントが、Tateca が何をする�
 |---|---|
 | iOS アプリ | 主な利用面。グループ作成、取引の記録、精算の確認 |
 | Web（tateca.net） | LP と、グループの精算・取引履歴の閲覧（読み取り専用） |
-| API | 本番 `https://api.tateca.net`、ステージング `https://staging-api.tateca.net`。API ドキュメントは `https://docs.tateca.net` |
+| API | 本番 `https://api.tateca.net`、ステージング `https://staging-api.tateca.net` |
 
 ## ドメインの全体像
 

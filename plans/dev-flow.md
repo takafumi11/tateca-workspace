@@ -21,7 +21,7 @@ Go 移行（`plans/go-migration.md`）とは関係なく、すべてのコンポ
 |---|---|---|---|
 | 要件と AC（何を、なぜ、やらないこと） | `product/requirements/{spec}.md` | PdM が書き、人が承認する | AC の ID とテストの対応を、CI で両方向から確かめる |
 | AC を満たしていることの証明 | black-box テスト | エンジニア | 同上 |
-| API 契約 | `contracts/`（OpenAPI） | エンジニアが書き、人が承認する | 生成した型とスキーマ検証のテストで強制する |
+| API の形と、エンドポイントごとに返りうるエラー | backend のコード（ハンドラーの型と、エラーの宣言） | エンジニア。クライアントに見える変化は、PR の差分を見て人が判断する | 宣言外のエラーコードは型で返せない。宣言とテストの観測を両方向で比べる。OpenAPI は外部に渡す必要が出たときに、宣言から生成する |
 | AC で決めていない細部 | コード | エンジニア | なし |
 | 技術判断の理由 | PR とコミット（大きな判断は ADR） | エンジニア | なし |
 
@@ -41,7 +41,7 @@ Go 移行（`plans/go-migration.md`）とは関係なく、すべてのコンポ
 
 | 作業 | 流れ | 使う pstack の playbook |
 |---|---|---|
-| 新規機能 | requirements.md を新しく書く（PdM が承認）→ 契約が変わるなら OpenAPI を変える（人が承認）→ AC ごとに ID 付きの black-box テストを書く（RED）→ 実装する（GREEN）→ verify スキルで実物を確かめる → PR に「なぜ」を書く | Feature |
+| 新規機能 | requirements.md を新しく書く（PdM が承認）→ AC ごとに ID 付きの black-box テストを書く（RED）→ 実装する（GREEN）→ verify スキルで実物を確かめる → PR に「なぜ」を書く（レスポンスの形やエラーの宣言が変わるなら、その差分を人が確かめる） | Feature |
 | 既存機能の改修 | 既存の requirements.md を直す（その差分を PdM がレビューする）→ 変わる AC のテストを先に直す（RED）→ 実装する → 実物を確かめる → PR | Feature |
 | requirements.md がない既存機能を変える | 触る範囲を `/how` と `/why` で理解する → 今の振る舞いを特性テストで固定する → requirements.md の下書きを作る → 人が「意図したもの・偶然そうなっているもの・バグ」に仕分ける → 意図したものを AC にする（PdM が承認）→ ここから先は「既存機能の改修」と同じ | Investigation、Refactoring の pin、Feature |
 | バグ修正 | 実物で再現する → AC が漏れていたなら、AC を足すかどうかを PdM が決める → 失敗するテストを書く → 直す | Bug fix |
@@ -51,7 +51,7 @@ Go 移行（`plans/go-migration.md`）とは関係なく、すべてのコンポ
 ### 人の関門
 
 1. requirements.md の承認（PdM）
-2. API 契約の変更（古いバージョンの iOS アプリが叩き続けるので、実質的に元に戻せない）
+2. クライアントに見える API の変化（レスポンスの形、エンドポイントごとのエラー）。古いバージョンの iOS アプリが叩き続けるので、実質的に元に戻せない
 3. マージ
 
 ### AC とテストの対応チェック
@@ -59,6 +59,8 @@ Go 移行（`plans/go-migration.md`）とは関係なく、すべてのコンポ
 - テストは、確かめた AC の ID を持つ。1つのテストが複数の AC を確かめてもよい。
 - CI で、テストを実行して確かめた AC の ID と、requirements.md の AC 一覧を両方向で比べる。「テストのない AC がある」「存在しない AC を指すテストがある」のどちらでも CI を落とす。
 - backend の仕組みは、Go 移行の P1-1 で作る。web と iOS には、それぞれのテストが揃った時点で同じ仕組みを入れる。
+- エラーについても同じ形で確かめる。テストで観測した「エンドポイントとエラーコードの組」と、backend のコードにあるエラーの宣言を両方向で比べる（Go 移行の P2-1 で作る）。
+- iOS のモデルと backend のレスポンスのずれは、backend のテストが記録したレスポンスを iOS のテストで decode して確かめる（任意。OpenAPI がなくても検出できる）。
 
 ### RSF（Reverse Spec Flow）を使う条件
 
@@ -76,7 +78,7 @@ Go 移行（`plans/go-migration.md`）とは関係なく、すべてのコンポ
 | 対象 | 扱い |
 |---|---|
 | `sdd-requirements` | 残した。新しい構成、ID の形式、「既存の振る舞いから下書きする」流れに合わせて書き直し済み |
-| `sdd-design-and-contract` | 削除済み。API 契約をどう作るか（手で書くか、コードから生成するか）が決まったら、必要なら契約用のスキルを作る |
+| `sdd-design-and-contract` | 削除済み。API の形とエラーはコードで宣言するので、契約を手で書くスキルは作らない |
 | `sdd-black-box-test`、`sdd-tdd` | 削除済み。pstack の Feature、Bug fix、`/tdd` と、`tateca-mode` に置き換える |
 | `sdd-reverse-requirements` | 削除済み。`sdd-requirements` の「既存の振る舞いから下書きする」流れと、RSF の下書きに置き換えた |
 | `sdd-reverse-design-and-contract`、`sdd-reverse-black-box-test`、`sdd-reverse-tdd` | 削除済み |
@@ -132,7 +134,7 @@ workspace 側は、ワークスペースの構成変更で T2 より先に済ま
   - [ ] tateca-backend、tateca-web、tateca-ios: `AGENTS.md` にテストの慣習と、workspace の `product/requirements/` への参照を書く。backend の `AGENTS.md` にある、存在しないパスへの参照を直す
 - [x] 変更: 置き換え済みのスキルと文書を、まとめて削除した。新旧を並べて残していない
 - [ ] 結果: 開発の流れが `tateca-mode`、`sdd-requirements`、pstack だけで完結する
-- [ ] 確認 live: workspace の文書とスキルが参照しているパスが、すべて存在する（workspace 側は確認済み。`contracts/` の説明文に残る design.md への言及は、API 契約の扱いを決めるときに片付ける）。新しいセッションで「既存機能の改修」を `tateca-mode` で始めると、requirements の更新から始まる
+- [ ] 確認 live: workspace の文書とスキルが参照しているパスが、すべて存在する（workspace 側は確認済み。凍結した `contracts/` の説明文に残る design.md への言及は、Go 移行の P5-3 で `contracts/` ごと削除する）。新しいセッションで「既存機能の改修」を `tateca-mode` で始めると、requirements の更新から始まる
 - [ ] 確認 perf: なし
 
 T3 の時点で T4 が終わっていなければ、T4 を tateca-ios の issue に移してから、このファイルを削除する。

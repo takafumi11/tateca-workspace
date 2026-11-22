@@ -21,7 +21,7 @@ All Tateca repositories sit side by side in one parent directory. Reach them fro
 
 System facts that cross repositories:
 
-- API: production `https://api.tateca.net`, staging `https://staging-api.tateca.net`, docs `https://docs.tateca.net`.
+- API: production `https://api.tateca.net`, staging `https://staging-api.tateca.net`.
 - Authentication: `/internal/**` uses the `X-API-Key` header (called by Lambda). Every other path uses a Firebase ID token.
 
 ## Where Things Live
@@ -30,7 +30,7 @@ System facts that cross repositories:
 |---|---|
 | `product/overview.md` | What Tateca is, the domain model, cross-domain terms |
 | `product/requirements/{domain}.md` | Requirements and ACs for one domain. The agreed source of truth for behavior |
-| `contracts/`, `openapi.yaml` | API contract and the source of `docs.tateca.net` |
+| `contracts/`, `openapi.yaml` | Frozen, hand-written OpenAPI. Not a source of truth; deleted after the Go migration (`plans/go-migration.md` P5-3) |
 | `plans/` | Plans for work in progress. Delete a plan when its work lands |
 | `.claude/skills/` | Agent skills for this project |
 
@@ -39,6 +39,7 @@ System facts that cross repositories:
 - `product/requirements/` is what was agreed. When requirements, tests, and code disagree, align them to the requirements. Changing the requirements needs PdM approval.
 - Tests prove each AC by carrying its ID (`{domain} R{n}-AC{m}`, for example `group R2-AC9`). A CI check compares the IDs tests verified with the IDs in `product/requirements/`, in both directions.
 - Code is the source of truth for details no AC decides.
+- The API shape and the errors each endpoint can return are defined in backend code: handler types and per-endpoint error declarations, compared both ways with what tests observe. Generate OpenAPI from them only when an external party needs it. Do not hand-write API contracts.
 - Reasons for technical choices go in the PR description and commits. Record a hard-to-reverse decision as an ADR in `decisions/`, creating the directory when the first one is needed.
 - Do not write design docs, task lists, or review-record files.
 
@@ -46,7 +47,7 @@ System facts that cross repositories:
 
 - Requirements: use the `sdd-requirements` skill to create, update, review, or draft requirements from current behavior.
 - Implementation, investigation, bug fixes, and refactoring: use pstack (`/pstack:poteto-mode`) in the implementation repository.
-- For a new feature or a behavior change: requirements first (PdM approval), then the API contract if it changes, then black-box tests that carry the AC IDs and fail first, then the implementation, then verification on the running app, then the PR.
-- Human gates: requirements changes (PdM), API contract changes (old iOS app versions keep calling the API, so a contract change is effectively irreversible), and merges.
+- For a new feature or a behavior change: requirements first (PdM approval), then black-box tests that carry the AC IDs and fail first, then the implementation, then verification on the running app, then the PR.
+- Human gates: requirements changes (PdM), API changes clients can see (response shapes and per-endpoint errors; old iOS app versions keep calling the API, so such a change is effectively irreversible), and merges.
 
 The move from the old SDD process to this flow is in progress; see `plans/dev-flow.md`.

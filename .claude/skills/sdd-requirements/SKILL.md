@@ -1,6 +1,6 @@
 ---
 name: sdd-requirements
-description: Create, update, or review a Tateca domain requirements doc under `product/requirements/` (business requirements and acceptance criteria with stable IDs). Use when a new feature needs requirements, an existing feature's behavior changes, an implemented feature without a requirements doc needs one drafted, or the user asks to review requirements. Not for API contract shape, implementation design, or tests.
+description: Create, update, or review a Tateca domain requirements doc under `product/requirements/` (business requirements and acceptance criteria with stable IDs). Use when a new feature needs requirements, an existing feature's behavior changes, an implemented feature without a requirements doc needs one drafted, or the user asks to review requirements. Not for API shape, implementation design, or tests.
 ---
 
 # Requirements
