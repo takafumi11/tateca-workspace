@@ -74,7 +74,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: ラン ID `20261122T113657Z-42632`。起動は15秒、状態確認は9項目すべて ok。`POST /auth/users` → `POST /groups` → `GET /groups/{groupId}` が 201 → 201 → 200 で、作成者がメンバーに含まれていた。後片付けの後も証拠が残っている
 - [x] 確認 perf: なし
 - 未検証の手順（P1 のテストで覆う）: グループ9個の上限、為替レートの代替と、レートのない通貨の 404、自分の表示名の変更が成功するケース、アカウント削除後のメンバーの紐付け解除、空の参加者リスト、為替レートがない日付
-- [ ] TODO（担当: 開発者）: P0 の検証で、`b2f784c`（`/actuator/health` を認証なしで呼べるようにする変更）が効いていないと報告された。keep-alive の Lambda は認証なしで `/actuator/health` を叩くので、本番で keep-alive が失敗していないかを確かめる。失敗していれば、Go 移行を待たずに Java 側で直すかを決める
+- [ ] TODO（担当: 開発者）: keep-alive の Lambda が `/actuator/health` で 401 になっている（本番のログに「Missing Authorization header for request」が出ている）。原因は、認証を求めないパスの一覧が `SecurityConfig` の `permitAll` と `TatecaAuthenticationFilter` の `PUBLIC_PATHS` の2か所にあり、自前の認証フィルタが `permitAll` より前に 401 を返していること。`b2f784c`（main に未マージで、`chore/allow-actuator-health` ブランチにだけある）は `permitAll` にしか足していない。直すなら `PUBLIC_PATHS` にも足し、`TatecaAuthenticationFilterUnitTest` で確かめる（移行中のルールの「急ぎのバグ修正」として Java に入れる）
 
 ## P1-0a　requirements の正本を揃える
 
@@ -220,6 +220,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
     - Firebase の ID トークンを、失効チェック付きで検証する（Java の `TatecaAuthenticationFilter.java:153` と同じ）。aud と iss も確認する
     - `/internal/**` は、API キーを定数時間で比較する
     - `x-uid` による迂回は、dev のときだけ有効にする
+    - 認証を求めないパス（`/health`）は1か所だけで定義する。Java では2か所に分かれていて、片方だけ直したために `/actuator/health` が 401 になっていた
   - エラーの一覧（コード、HTTP ステータス、日英のメッセージ）を1か所に置く。メッセージはコピーした `messages*.properties` を読み、`Accept-Language` で切り替える（既定は日本語）。レスポンスの形は、P1 で記録した Java のエラーレスポンスに合わせる
   - 各エンドポイントのハンドラーの横に、返しうるエラーを宣言する仕組みを作る。宣言外のエラーコードは返せない型にする（返そうとするとコンパイルが通らない）
   - サービス層のエラーは閉じた型にし、ハンドラーで漏れなく変換する。変換漏れは linter で CI を落とす
