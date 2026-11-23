@@ -31,6 +31,7 @@ tateca-backend で Claude Code を起動し、次のように頼みます。
    - 基準は、tateca-backend #338 の後の振る舞いと、このリポジトリの main の requirements。
    - P1-3 では固定の日付を使う。P1-4 の更新の流れのテストが、今日と明日のレートを書き換えるため。
 3. P2-0（Go のライブラリの試作と比較）。P1-4 の為替のテストで候補を比べる。
+4. 権限の修正の残り：tateca-backend #330 のコメントを参照。
 
 ### workspace の次にやること
 
