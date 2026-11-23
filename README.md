@@ -16,8 +16,29 @@ Tateca のプロダクト全体の正本を置くリポジトリです。要件�
 
 ## はじめに
 
-1. Tateca のリポジトリを、同じ親ディレクトリに並べて clone する。
+1. Tateca のリポジトリを、同じ親ディレクトリに並べて clone する。tateca-workspace、tateca-backend、tateca-web、tateca-ios、tateca-infrastructure、tateca-config の6つ。
 2. このリポジトリを開き、`product/overview.md` から読む。
+
+### 開発環境の準備
+
+backend の acceptance テスト（`tateca-backend/acceptance/run`）を流すには、次のツールが要ります。
+
+| ツール | 用途 |
+|---|---|
+| Docker（compose v2） | MySQL、WireMock、Java のサーバーを起動する |
+| JDK 25 | Java のサーバーをビルドする |
+| Go 1.27 以上 | acceptance テストと、その確認ツール |
+| jq、python3 | `acceptance/run` とテストの補助 |
+| gh | GitHub の PR と issue。リポジトリの所有アカウントでログインする |
+
+- Docker のファイル共有がホームディレクトリだけの場合（Rancher Desktop の既定など）、ホームの外に置いたリポジトリや worktree はマウントできない。worktree はホームの下に作る。
+- push や認証に machine 固有の手順がある場合は、このリポジトリには書かず、その machine の `~/.claude/rules/` などに置く。
+
+### Claude Code の準備
+
+1. pstack のプラグインを入れ、`/pstack:setup-pstack` で、その machine で使えるモデルを設定する。
+2. tateca-mode のスキルをリンクする：`ln -s <親ディレクトリ>/tateca-workspace/.claude/skills/tateca-mode ~/.claude/skills/tateca-mode`
+3. 実装の作業は、実装のリポジトリで `/tateca-mode` から始める。進め方は [`AGENTS.md`](AGENTS.md) にある。
 
 エージェントの振る舞いは [`AGENTS.md`](AGENTS.md) に従います。
 
