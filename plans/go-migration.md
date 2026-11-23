@@ -167,18 +167,20 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 確認 live: P1-1 と同じ。対象の requirements.md は `transaction`。加えて、`TransactionServiceImpl` の `RoundingMode` をわざと変えると、ケース集のテストが落ちること
 - [ ] 確認 perf: なし
 
-## P1-4　exchange rate 群
+## P1-4　exchange rate 群（完了。tateca-backend #342 でマージ済み）
 
-- [ ] 依存: P1-1
-- [ ] 触るファイル
-  - 追加: `acceptance/**`、`acceptance/wiremock/**`
-  - 削除: `scenario/GetExchangeRateScenarioTest.java`。`controller/ExchangeRateControllerWebTest.java` と `controller/InternalExchangeRateControllerWebTest.java` のうち、HTTP で再現できるケース
-- [ ] 変更: `GET /exchange-rate/{date}` と、`X-API-Key` 付きの `POST /internal/exchange-rates` を移す。外部の為替 API が失敗したときに外から観測できる結果も含める（WireMock で再現する）
-- [ ] 結果: exchange rate の AC が移る
-- [ ] 確認 unit: Java に対して GREEN
-- [ ] 確認 live: P1-1 と同じ。対象の requirements.md は `exchange-rate`
-- [ ] 確認 perf: なし
-
+- [x] 依存: P1-1
+- [x] 触るファイル
+  - 追加: `acceptance/exchange_rate_test.go`、`acceptance/internal/acc/rates.go`（WireMock を操作する `acc.ExternalRates`）、`acceptance/testdata/responses/exchange-rate/**`
+  - 変更: `acceptance/internal/acc/`（順番に流す `s.Step`、skip したテストの記録を残す、`exchange_rate` の配列を順不同で比べる）、`acceptance/compose.yaml`、`acceptance/run`、`acceptance/seed/reference-data.sql`、`acceptance/testdata/observed-errors.txt`。`acceptance/wiremock/**` は変えずに済んだ（WireMock は、テストから管理 API で操作する）
+  - 削除: `scenario/GetExchangeRateScenarioTest.java`、`controller/InternalExchangeRateControllerWebTest.java`。`controller/ExchangeRateControllerWebTest.java` は、モックがないと起こせない 500 のケースだけを残した
+- [x] 変更: `GET /exchange-rate/{date}` と、`X-API-Key` 付きの `POST /internal/exchange-rates` を移した。外部の為替 API が失敗したとき（試し直し、4xx、エラーの結果、壊れた JSON）に外から観測できる結果も、WireMock で再現して固定した
+- [x] 結果: exchange rate の AC が移った。`exchange-rate` を `REQUIRED_AC_DOMAINS` に足し、為替の controller、service、`api/client/ExchangeRateApiClient` をカバレッジの対象に足した
+- [x] 確認 unit: Java に対して GREEN（`./gradlew test --rerun` も pass）
+- [x] 確認 live: 新しいスタックでの `acceptance/run` で、AC 対応チェックは PASS（access 3/3、auth-user 22/22、exchange-rate 14/14、user 12/12）。カバレッジは対象範囲で ok（通らない行は0）。同じスタックで2回目を流すと、更新の流れのテストだけが理由を表示して skip する。Java をわざと壊す（明日のレートを今日+2日に保存する）と、更新の流れのテストが落ちる
+- [x] 確認 perf: なし
+- [x] 見つけたバグは issue にした（#340: 0以下のレートを保存して上書きする。R8-AC1 と食い違う。#341: 外部サービスがエラーの結果を返すと 500 になり、試し直さない）。テストは今の振る舞いのまま固定してある
+- [x] 注意: 更新の流れのテストが今日と明日のレートを書き換えるので、以後のテスト（P1-3）は固定の日付を使う。R3-AC1 の「有効かどうかにかかわらず」は、GET が無効な通貨を返さないため API では観測できず、GET で見える範囲を確かめている
 ---
 
 ## P2-0　試作（PR なし）
