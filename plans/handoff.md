@@ -6,6 +6,8 @@
 
 ## 再開のしかた
 
+記事用の作業記録は、非公開の tateca-notes にある。ほかの Tateca のリポジトリと同じ親フォルダに clone する。
+
 tateca-backend で Claude Code を起動し、次のように頼みます。
 
 ```
