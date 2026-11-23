@@ -25,7 +25,7 @@ tateca-backend の実装を Java / Spring Boot から Go に置き換える。AP
 ## 移行中のルール（P1-1 の開始から P5-1 まで）
 
 - 新しい migration を作らない。
-- `messages*.properties`、`contracts/`、`product/requirements/*.md` の AC を変えない（P1-0a で AC を足すのは除く）。
+- `messages*.properties`、`contracts/`、`product/requirements/*.md` の AC を変えない（P1-0a で AC を足すのは除く）。急ぎのバグ修正でエラーや AC を変える必要があるときだけ、PdM の承認を得てから変える。そのときは、requirements の PR を backend の PR の直前にマージし、AC 対応チェックが落ちる時間を短くする。
 - backend に新機能を入れない。急ぎのバグ修正は Java に入れ、同じ PR で acceptance テストを足す。Go 側の対応は、該当する P2 の PR に含める。
 - 移植中に見つけたバグは直さない。issue にして（ラベルは `go-migration-bug`）、テストは今の振る舞いのまま固定する。
 - requirements.md の AC と Java の実際の振る舞いが食い違ったら、それもバグとして扱う。issue にし、テストは今の振る舞いを固定したうえで、AC の ID と issue 番号を付ける。AC の文面は変えない。移行が終わったら、テストを AC に合わせて直してから（RED）、コードを直す。
@@ -104,10 +104,10 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: 対応表の「含まれていない」行と矛盾が、すべて決着している（決着の内容は PR に書く）。PdM の承認は PR のレビューで行う
 - [ ] 確認 perf: なし
 
-## P1-1　acceptance テストの土台と auth/user 群
+## P1-1　acceptance テストの土台と auth/user 群（完了。tateca-backend #337 でマージ済み）
 
-- [ ] 依存: P0、P1-0a
-- [ ] 触るファイル
+- [x] 依存: P0、P1-0a
+- [x] 触るファイル
   - 追加: `acceptance/**`（Go のテストパッケージと、AC 対応チェック）、`acceptance/coverage-exclusions.md`（テストで通さない分岐とその理由）、`acceptance/compose.yaml`、`acceptance/seed/*.sql`、`acceptance/wiremock/**`、`acceptance/testdata/responses/**`（Java の実際のレスポンスの記録）
   - 変更: `.github/workflows/ci.yml`
   - 削除: `src/test/java/com/tateca/tatecabackend/` 配下の次のファイル
@@ -116,7 +116,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
     - `scenario/e2e/AuthUserE2ETest.java`、`UpdateUserNameE2ETest.java`
     - `scenarios/AuthUser*`、`scenarios/UpdateUserName*`
     - `controller/AuthUserControllerWebTest.java` と `controller/UserControllerWebTest.java` のうち、HTTP で再現できるケース
-- [ ] 変更
+- [x] 変更
   - 接続先を環境変数で切り替える。WHEN/THEN の接続先は `BASE_URL`、GIVEN の接続先は `GIVEN_BASE_URL`（省略したときは `BASE_URL`）
   - 認証は `x-uid` ヘッダで通す（dev プロファイル）。認証の拒否（`access` の AC）は、すべての操作に対して表形式のテストで確かめる
   - 準備は API で行う。通貨と為替だけは SQL シードで投入する。外部の為替 API は WireMock で代用する
@@ -128,15 +128,18 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - モックを使わないと起こせないケース（500 など）は移さずに Java に残し、P5-1 で消す
   - CI では、compose で MySQL、WireMock、Java（dev プロファイル）を起動してから、テストを流す
   - カバレッジを測る仕組みを作る。Java のサーバーを JaCoCo のエージェント付きで起動し、テストを流した後に、通っていない分岐の一覧を出す。対象は controller、service、入力チェック、エラーの変換、認証のフィルタ。通っていない分岐は、テストを足して固定するか、クライアントから観測できない理由を `acceptance/coverage-exclusions.md` に書く。この仕組みは移行後も、Go のカバレッジとして残す
-- [ ] 結果: auth/user の AC が Go のテストに移り、Java 側の該当テストが消える。AC 対応チェックが CI で動く
-- [ ] 確認 unit: CI で、このテストが Java に対して GREEN になる
-- [ ] 確認 live
+- [x] 結果: auth/user の AC が Go のテストに移り、Java 側の該当テストが消える。AC 対応チェックが CI で動く
+- [x] 確認 unit: CI で、このテストが Java に対して GREEN になる（テスト499件がすべて pass）
+- [x] 確認 live
   - AC 対応チェックで、`auth-user`、`user`、`access` の AC がすべてテストで覆われている（出力を PR に貼る）。AC を1件わざと消すと、チェックが落ちる
   - カバレッジのレポートで、対象範囲の分岐がすべてテストで通っているか、通らない理由が書かれている（レポートを PR に貼る）。通っていなかった分岐には、特性テストを足してある
   - 削除した Java テストが確かめていたことが、新しいテストのどれかで確かめられている（対応表を PR に貼る）
   - Java を1か所わざと壊すと、該当するテストが落ちる（出力を PR に貼る。壊した変更はコミットしない）
   - 観測したエラーコードの一覧を、`contracts/` に書かれたエラーと突き合わせ、ずれを PR に貼る（今どれだけずれているかの記録。`contracts/` は直さない）
-- [ ] 確認 perf: なし
+- [x] 確認 perf: なし
+- [x] 結果の記録: AC 対応チェックは PASS（access 3/3、auth-user 19/19、user 10/10）。カバレッジは対象範囲で ok。AC を消す、テストを消す、Java のログイン回数を2ずつ増やす、のどれでもチェックが落ちた（最後のものではテストが9件落ちた）。`contracts/` とのずれは、観測したが宣言にないものが12件、宣言にあるが観測していないものが4件（モックがないと起こせない 500 で、Java のテストに残した）
+- [x] 見つけたバグは issue にした（tateca-backend #333〜#336。#327 にも追記）。テストは今の振る舞いのまま固定してある
+- [x] CI の初回で、Gradle がタスクの出力先にある未知のファイルを消すため、テストの結果の置き場所が消えた。置き場所を `build/acceptance/{stage,jacoco,out}` に分けて直した
 
 ## P1-2　group/member 群
 
