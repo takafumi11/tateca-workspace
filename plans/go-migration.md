@@ -294,7 +294,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 確認 perf
   - 先に、切り替え前の staging の Java で基準値を測る。対象は `GET /groups/{groupId}`、`GET /groups/{groupId}/transactions/settlement`、`POST /groups/{groupId}/transactions` の p50/p95 で、Java と Go を交互に複数回測る（`/pstack:benchmark-checklist`）
   - Go の p95 が、どれかのエンドポイントで Java の p95 を 10% 以上上回ったら失敗とする
-  - 30 分間リクエストを止めた後の、最初のリクエストのレイテンシを記録する（keep-alive は 2026-11-24 に削除したので、Railway のスリープからの立ち上がりが入る）
+  - 30 分間リクエストを止めた後の、最初のリクエストのレイテンシを記録する（keep-alive は削除する（tateca-infrastructure #9）ので、Railway のスリープからの立ち上がりが入る）
 - [ ] 人の確認: 結果を見て、P4 に進むかどうかを人が判断する
 
 ## P4　本番の切り替え（人の go が必要）
