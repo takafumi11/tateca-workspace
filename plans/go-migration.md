@@ -36,7 +36,7 @@ tateca-backend の実装を Java / Spring Boot から Go に置き換える。AP
 {P0, P1-0a} → P1-1 → {P1-2, P1-3, P1-4}
 P1-1 → P2-0（PR なし）→ P2-1 → P2-2 → P2-3 → P2-4
                          P2-1 → P2-5
-P1 と P2 のすべて → P3 → P4（人が go を出す）→ 1週間 → P5-1 → {P5-2, P5-3}
+P1 と P2 のすべて → P3 → P4（人が go を出す）→ 1週間 → P5-1 → P5-3
 ```
 
 | ID | リポジトリ | 内容 | 依存 | 並列 |
@@ -56,8 +56,7 @@ P1 と P2 のすべて → P3 → P4（人が go を出す）→ 1週間 → P5-
 | P3 | tateca-backend、tateca-ios | staging でのリハーサル | P1 と P2 のすべて | — |
 | P4 | tateca-config、tateca-backend、AWS | 本番の切り替え | P3、人の go | — |
 | P5-1 | tateca-backend | Java の削除 | P4 から1週間後 | — |
-| P5-2 | tateca-infrastructure | keep-alive の整理 | P5-1 | P5-3 と並列可 |
-| P5-3 | tateca-workspace、tateca-backend | docs の整理 | P5-1 | P5-2 と並列可 |
+| P5-3 | tateca-workspace、tateca-backend | docs の整理 | P5-1 | — |
 
 P2-2〜P2-4 を直列にするのは、テストの準備を API で行うためである。transaction のテストは、Go の group API が動いていないと準備できない。
 
@@ -141,17 +140,20 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 見つけたバグは issue にした（tateca-backend #333〜#336。#327 にも追記）。テストは今の振る舞いのまま固定してある
 - [x] CI の初回で、Gradle がタスクの出力先にある未知のファイルを消すため、テストの結果の置き場所が消えた。置き場所を `build/acceptance/{stage,jacoco,out}` に分けて直した
 
-## P1-2　group/member 群
+## P1-2　group/member 群（完了。tateca-backend #349 でマージ済み）
 
-- [ ] 依存: P1-1
-- [ ] 触るファイル
-  - 追加: `acceptance/**`
-  - 削除: `scenario/CreateGroupScenarioTest.java`、`GetGroupListScenarioTest.java`、`GetGroupDetailScenarioTest.java`、`UpdateGroupNameScenarioTest.java`、`JoinGroupScenarioTest.java`、`LeaveGroupScenarioTest.java`、`AddMemberScenarioTest.java`、`RemoveMemberScenarioTest.java`、`scenario/testcontainers/AddMemberTestcontainersTest.java`、`scenario/e2e/AddMemberE2ETest.java`、`scenarios/AddMember*`。`controller/GroupControllerWebTest.java` のうち、HTTP で再現できるケース
-- [ ] 変更: P1-1 と同じやり方で移す。特権ユーザー（`UNLIMITED_GROUP_UID`）のケースも含める
-- [ ] 結果: group/member の AC が Go のテストに移る
-- [ ] 確認 unit: Java に対して GREEN
-- [ ] 確認 live: P1-1 と同じ（AC 対応チェック、カバレッジ、削除した Java テストとの対応、わざと壊すと落ちること、エラーコードの一覧と `contracts/` のずれ）。対象の requirements.md は `group` と `group-member`
-- [ ] 確認 perf: なし
+- [x] 依存: P1-1
+- [x] 触るファイル
+  - 追加: `acceptance/group_test.go`、`acceptance/group_member_test.go`、`acceptance/testdata/responses/{group,group-member}/**`
+  - 変更: `acceptance/internal/acc/`（`group_list` の配列を順不同で比べる、`S.GivenAny`）、`acceptance/fixtures_test.go`、`acceptance/compose.yaml`（`UNLIMITED_GROUP_UID`）、`acceptance/run`、`acceptance/coverage-exclusions.md`、`acceptance/testdata/observed-errors.txt`、`src/test/java/com/tateca/tatecabackend/AbstractIntegrationTest.java`
+  - 削除: 計画にあった Java のテストすべてと、`controller/GroupControllerWebTest.java` の全体（モックがないと起こせないケースがなかった）、`rest/`（最後の利用者が AddMember だった）
+- [x] 変更: P1-1 と同じやり方で移した。特権ユーザーのケースも含めた。`AbstractIntegrationTest` で、Java の結合テストを毎回空のテーブルから始めるようにした（group のテストを消すと、残ったデータで18件が毎回落ちたため）
+- [x] 結果: group/member の AC が Go のテストに移った。`group`、`group-member` を `REQUIRED_AC_DOMAINS` に足し、`GroupController`、`GroupServiceImpl`、group の request DTO 4つをカバレッジの対象に足した
+- [x] 確認 unit: Java に対して GREEN（`./gradlew test --rerun` は 341件がすべて pass）
+- [x] 確認 live: 新しいスタックでの `acceptance/run` で、AC 対応チェックは PASS（access 3/3、auth-user 22/22、exchange-rate 14/14、group 42/42、group-member 17/17、user 12/12）。カバレッジは対象範囲で ok（通らない6行には理由を書いた）。Java をわざと壊す（グループ数の上限の比較を `>=` から `>` にする）と、group R3-AC1 が落ちる。`contracts/` とのずれは、観測したが宣言にないものが12件、宣言にあるが観測していないものが11件
+- [x] 確認 perf: なし
+- [x] AC のない振る舞いは、PdM が仕分けた。バグは issue にした（#344: 名前の前後の空白を除かない。#330 に追記: 誰でもグループを読め、メンバーのメールアドレスも見える）。意図したもの（UTF-16 で数える、同じ名前を許す、取引を消したメンバーは削除できる、参加者がいなくなってもグループは残り参加できる）は、`sdd-requirements` で AC にする。auth-user R1-AC3 の1秒のずれも #345 にした
+- [x] 注意: `security/GroupAccessGuard.java` は、取引のエンドポイントからしか通らない分岐があるので、P1-3 でカバレッジの対象に足す
 
 ## P1-3　transaction 群と精算のケース集
 
@@ -292,7 +294,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 確認 perf
   - 先に、切り替え前の staging の Java で基準値を測る。対象は `GET /groups/{groupId}`、`GET /groups/{groupId}/transactions/settlement`、`POST /groups/{groupId}/transactions` の p50/p95 で、Java と Go を交互に複数回測る（`/pstack:benchmark-checklist`）
   - Go の p95 が、どれかのエンドポイントで Java の p95 を 10% 以上上回ったら失敗とする
-  - 30 分間リクエストを止めた後の、最初のリクエストのレイテンシを記録する（P5-2 で使う）
+  - 30 分間リクエストを止めた後の、最初のリクエストのレイテンシを記録する（keep-alive は削除する（tateca-infrastructure #9）ので、Railway のスリープからの立ち上がりが入る）
 - [ ] 人の確認: 結果を見て、P4 に進むかどうかを人が判断する
 
 ## P4　本番の切り替え（人の go が必要）
@@ -301,22 +303,20 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 触るファイル
   - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/ios/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
   - tateca-backend: `.github/workflows/cd.yml`（本番用の Go サービス）
-  - AWS: keep-alive の EventBridge ルール（コードは変えず、有効・無効を切り替えるだけ）
 - [ ] 前日まで: 本番用の Go サービスを、ドメインを付けずに Railway に用意しておく。DB のバックアップ手順を確かめる。メンテナンスのメッセージと終了予定時刻（04:00 JST）を用意する
 - [ ] 手順
   1. 02:00 に、新旧両方の config でメンテナンスを ON にする。両方の URL を curl して ON になっていることを確かめる
-  2. keep-alive の EventBridge ルールを無効にする
-  3. Java を止め、`api.tateca.net` の割り当てを外す
-  4. DB のバックアップを取る
-  5. Go の migration ツールに、V2 まで適用済みとして登録する（スキーマは変えない）
-  6. Go を起動し、Railway がサービスごとに発行する URL に対して、テスト用アカウントで動作確認する。読み取り（`GET /auth/users/{uid}`、`GET /groups/list`、`GET /groups/{groupId}`、精算）と、書き込み1本（取引の作成 → 取得 → 削除）
-  7. `api.tateca.net` を Go に付け、6 と同じ確認をする
-  8. 新旧両方の config でメンテナンスを OFF にし、curl で確かめる
-  9. 監視する。Better Stack のエラー率、09:01 JST の為替更新（`GET /exchange-rate/{当日}`）、iOS の実機での主要な流れ
+  2. Java を止め、`api.tateca.net` の割り当てを外す
+  3. DB のバックアップを取る
+  4. Go の migration ツールに、V2 まで適用済みとして登録する（スキーマは変えない）
+  5. Go を起動し、Railway がサービスごとに発行する URL に対して、テスト用アカウントで動作確認する。読み取り（`GET /auth/users/{uid}`、`GET /groups/list`、`GET /groups/{groupId}`、精算）と、書き込み1本（取引の作成 → 取得 → 削除）
+  6. `api.tateca.net` を Go に付け、5 と同じ確認をする
+  7. 新旧両方の config でメンテナンスを OFF にし、curl で確かめる
+  8. 監視する。Better Stack のエラー率、09:01 JST の為替更新（`GET /exchange-rate/{当日}`）、iOS の実機での主要な流れ
 - [ ] 戻し方 A（メンテナンス中に失敗した場合）: ドメインを Go から外して Java に付け、Java を起動してから、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない
 - [ ] 戻し方 B（メンテナンスを明けてから1週間以内）: メンテナンスを ON にしてから、A と同じ手順を踏み、メンテナンスを OFF にする。Go が書いたデータを Java が読めることは、流し分けで確認済み
 - [ ] 結果: 本番が Go で動く
-- [ ] 確認 live: 手順 6、7、9 がすべて通る
+- [ ] 確認 live: 手順 5、6、8 がすべて通る
 - [ ] 確認 perf: 切り替え前1週間の Java の p95（Better Stack）と比べる。切り替え後1日の Go の p95 が 10% 以上悪化していたら、原因を調べる
 
 ---
@@ -332,15 +332,6 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 結果: tateca-backend が Go だけになる
 - [ ] 確認 unit: CI が Go だけで GREEN
 - [ ] 確認 live: CD で staging にデプロイし、テストを staging に流して GREEN
-- [ ] 確認 perf: なし
-
-## P5-2　keep-alive の整理
-
-- [ ] 依存: P5-1
-- [ ] 触るファイル: tateca-infrastructure の `lib/tateca-batch-stack.ts`、`lib/tateca-monitoring-stack.ts`（keep-alive を参照している場合）、`src/lambda/railway-keep-alive/**`
-- [ ] 変更: P3 で測った「リクエストが止まった後の最初のレイテンシ」で判断する。問題がなければ、keep-alive の Lambda とルールを削除する。問題があれば、呼び先を `/health` に向け直し、レスポンスの検証を Go の形式に合わせる
-- [ ] 結果: keep-alive を削除するか、Go の `/health` に向けた状態になる
-- [ ] 確認 live: `cdk diff` に意図した変更だけが出る。デプロイ後にアラームが出ない
 - [ ] 確認 perf: なし
 
 ## P5-3　docs の整理

@@ -16,7 +16,7 @@ All Tateca repositories sit side by side in one parent directory. Reach them fro
 | `tateca-backend` | REST API. Java / Spring Boot today, migrating to Go (`plans/go-migration.md`) |
 | `tateca-web` | Next.js. LP and read-only web view on tateca.net |
 | `tateca-ios` | SwiftUI iOS app, the main client |
-| `tateca-infrastructure` | AWS CDK. Lambda for the daily exchange-rate update and the API keep-alive |
+| `tateca-infrastructure` | AWS CDK. Lambda for the daily exchange-rate update |
 | `tateca-config` | Public app config for iOS (`config.tateca.net` on Cloudflare; legacy config on Firebase Hosting) |
 
 System facts that cross repositories:
