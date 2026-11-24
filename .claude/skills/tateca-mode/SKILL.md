@@ -13,6 +13,7 @@ Work as poteto-mode does, plus the rules below. Where they conflict, these rules
 1. Read pstack's poteto-mode in full and follow it: the newest `~/.claude/plugins/cache/cursor-plugins/pstack/*/skills/poteto-mode/SKILL.md`, and the Claude Code adapter it names. Pick the playbook it would pick.
 2. Read `tateca-workspace/AGENTS.md` and `tateca-workspace/product/overview.md`. Reach the other repositories as siblings (`../tateca-backend`, `../tateca-web`, `../tateca-ios`, `../tateca-infrastructure`, `../tateca-config`). If one is missing, stop and ask.
 3. While `tateca-workspace/plans/go-migration.md` exists, its migration rules apply to `tateca-backend`.
+4. Write everything the user reads in Japanese: replies, messages to agents and sessions, and tool descriptions. This holds right after reading English skills or writing English commits and PRs. Code, commits, and PRs follow each repository's convention.
 
 ## Sources of truth
 
@@ -26,9 +27,9 @@ Work as poteto-mode does, plus the rules below. Where they conflict, these rules
 - **Feature or behavior change.** Before implementing: the requirements are updated and the PdM approved them (if not, stop and ask). Write black-box tests for each new or changed AC, carrying its ID, and watch them fail for the right reason. Then implement until they pass. poteto-mode's "test only when cheap" does not apply to AC tests. Finish by verifying on the running app with the repository's verify skill.
 - **Existing behavior with no AC.** Pin the current behavior with characterization tests first. Then ask the human to sort each observed behavior: intended (becomes an AC through `sdd-requirements`), incidental (stays pinned, no AC), or bug (an issue).
 - **Bug fix.** As poteto-mode. If the bug shows a missing AC, ask the PdM whether to add one.
-- **Black-box tests** assert only what clients observe through the API. Never read the database in an assertion; seeding reference data in setup is fine.
+- **Black-box tests** assert only what clients observe through the API. Never read the database in an assertion; seeding reference data in setup is fine. Before recording a golden, run each new test twice against one server and once on a fresh stack. Treat any difference as behavior to model (compare as a set, avoid ties, run in sequence), never as a flake to retry.
 - **Errors.** An endpoint returns only the error codes declared next to its handler. Keep the declared codes and the codes tests observe equal, in both directions.
-- **Coverage.** Where the repository measures black-box coverage, give every uncovered branch a test or a written reason.
+- **Coverage.** Where the repository measures black-box coverage, give every uncovered branch a test or a written reason. When a written reason says no client can reach a line, send the request that would reach it, and keep that request as a test case the reason cites.
 
 ## Human gates
 
@@ -42,7 +43,12 @@ Stop and ask before:
 
 Merge every other PR yourself through poteto-mode's Shipping playbook. A PR merges when an agent that did not write its code verified its current head and posted `PASS` or `PASS+NOTES` on it, CI is green at that head, and its human gates are cleared (a requirements PR needs the PdM's approval). Keep cross-repository order: merge a requirements PR before the backend PR whose AC check reads it. Use the merge method the repository already uses, and read the PR back to confirm it merged.
 
+Do not stack PRs that a human merges. A stacked PR merges into its parent's branch, not `main`. Open the next PR against `main` after the first one lands.
+
 ## Git and GitHub
 
 - Branch from `origin/main` and unset the new branch's upstream, so a bare `git push` cannot reach `main`.
 - Push your own branches without asking. Never push to `main`. Follow any local push rules in `~/.claude/rules/`.
+- Push with `git push origin <branch>`, since a branch without an upstream rejects a bare `git push`. Then compare `git ls-remote origin <branch>` with the local head.
+- When another session works in parallel, list the files it owns as off-limits in every agent brief.
+- When splitting work into several commits, check `git diff --cached --stat` before each one; stage deletions with the commit that owns them.
