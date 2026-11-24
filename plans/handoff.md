@@ -24,19 +24,16 @@ tateca-backend で Claude Code を起動し、次のように頼みます。
 | auth-user R4-AC3 を名乗っていたテストの名前を R4-AC2 に変更 | tateca-backend #339（マージ済み） |
 | P1-4：為替レートのテスト（AC 14/14）。WireMock を操作する部品（`acc.ExternalRates`）と、順番に流す手順（`s.Step`）を追加 | tateca-backend #342（マージ済み） |
 | P1-2：グループとメンバーのテスト（group 42/42、group-member 17/17） | tateca-backend #349（マージ済み） |
+| P1-3：取引のテスト（transaction 68/68）と、精算のケース集300件 | tateca-backend #350（マージ済み） |
 | テストと文書だけの変更では、backend の CD が本番を再デプロイしない | tateca-backend #351（マージ済み） |
-| keep-alive の削除（ユーザーの判断） | tateca-infrastructure #7（マージ済み。アラームを外した）。Lambda を消す #9 は、デプロイを起こすので人のマージ待ち |
-| エージェントは、デプロイを起こさない PR を自分でマージする | このリポジトリの #10 と、この PR |
+| keep-alive の削除（ユーザーの判断） | tateca-infrastructure #7（マージ済み。アラームを外した）。Lambda を消す #9 も、2026-11-24 にマージとデプロイが済んだ |
+| エージェントは、デプロイを起こさない PR を自分でマージする | このリポジトリの #10 と #11 |
 | 移行中は直さずに固定しているバグ | tateca-backend の `go-migration-bug` ラベルの issue（`gh issue list -R takafumi11/tateca-backend --label go-migration-bug`） |
 
 ## 次にやること
 
-1. P1-3（取引と精算のケース集）。別のセッションで進めている。
-   - P1-2 と同じ行（`acceptance/run`、`fixtures_test.go`、`observed-errors.txt` など）を変えているので、main に rebase して `observed-errors.txt` を記録し直す。
-   - P1-3 では固定の日付を使う。P1-4 の更新の流れのテストが、今日と明日のレートを書き換えるため。
-   - `security/GroupAccessGuard.java` を、カバレッジの対象に足す。
-2. P2-0（Go のライブラリの試作と比較）。P1-4 の為替のテストで候補を比べる。
-3. 権限の修正の残り：tateca-backend #330 のコメントを参照。
+1. P2-0（Go のライブラリの試作と比較）。P1-4 の為替のテストで候補を比べる。
+2. 権限の修正の残り：tateca-backend #330 のコメントを参照。
 
 ### workspace の次にやること
 
