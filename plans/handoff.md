@@ -25,9 +25,9 @@ tateca-backend で Claude Code を起動し、次のように頼みます。
 | P1-4：為替レートのテスト（AC 14/14）。WireMock を操作する部品（`acc.ExternalRates`）と、順番に流す手順（`s.Step`）を追加 | tateca-backend #342（マージ済み） |
 | P1-2：グループとメンバーのテスト（group 42/42、group-member 17/17） | tateca-backend #349（マージ済み） |
 | テストと文書だけの変更では、backend の CD が本番を再デプロイしない | tateca-backend #351（マージ済み） |
-| keep-alive の削除（ユーザーの判断） | tateca-infrastructure #7、#9 |
+| keep-alive の削除（ユーザーの判断） | tateca-infrastructure #7（マージ済み。アラームを外した）。Lambda を消す #9 は、デプロイを起こすので人のマージ待ち |
 | エージェントは、デプロイを起こさない PR を自分でマージする | このリポジトリの #10 と、この PR |
-| 移行中は直さずに固定しているバグ | tateca-backend の `go-migration-bug` ラベルの issue（#326、#327、#331、#333〜#336、#340、#341、#344、#345） |
+| 移行中は直さずに固定しているバグ | tateca-backend の `go-migration-bug` ラベルの issue（`gh issue list -R takafumi11/tateca-backend --label go-migration-bug`） |
 
 ## 次にやること
 
