@@ -27,7 +27,7 @@ tateca-backend で Claude Code を起動し、次のように頼みます。
 | P1-3：取引のテスト（transaction 68/68）と、精算のケース集300件 | tateca-backend #350（マージ済み） |
 | テストと文書だけの変更では、backend の CD が本番を再デプロイしない | tateca-backend #351（マージ済み） |
 | keep-alive の削除（ユーザーの判断） | tateca-infrastructure #7（マージ済み。アラームを外した）。Lambda を消す #9 も、2026-11-24 にマージとデプロイが済んだ |
-| エージェントは、デプロイを起こさない PR を自分でマージする | このリポジトリの #10 と、この PR |
+| エージェントは、デプロイを起こさない PR を自分でマージする | このリポジトリの #10 と #11 |
 | 移行中は直さずに固定しているバグ | tateca-backend の `go-migration-bug` ラベルの issue（`gh issue list -R takafumi11/tateca-backend --label go-migration-bug`） |
 
 ## 次にやること
