@@ -36,9 +36,13 @@ Stop and ask before:
 
 - changing requirements or ACs;
 - changing a response shape or the errors an endpoint returns (old iOS app versions keep calling the API, so treat such a change as irreversible);
-- merging.
+- merging a PR whose merge deploys: its CD changes the API server, cloud resources, or app config. Today that is every PR in `tateca-backend` (its CD redeploys Railway on each push to `main`), `tateca-infrastructure`, and `tateca-config`.
+
+## Merging
+
+Merge every other PR yourself through poteto-mode's Shipping playbook. A PR merges when an agent that did not write its code verified its current head and posted `PASS` or `PASS+NOTES` on it, CI is green at that head, and its human gates are cleared (a requirements PR needs the PdM's approval). Keep cross-repository order: merge a requirements PR before the backend PR whose AC check reads it. Use the merge method the repository already uses, and read the PR back to confirm it merged.
 
 ## Git and GitHub
 
 - Branch from `origin/main` and unset the new branch's upstream, so a bare `git push` cannot reach `main`.
-- Tell the user before every push and wait for their go. Push once per working session rather than after each commit. Follow any local push rules in `~/.claude/rules/`.
+- Push your own branches without asking. Never push to `main`. Follow any local push rules in `~/.claude/rules/`.
