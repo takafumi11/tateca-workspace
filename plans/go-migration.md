@@ -155,19 +155,20 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] AC のない振る舞いは、PdM が仕分けた。バグは issue にした（#344: 名前の前後の空白を除かない。#330 に追記: 誰でもグループを読め、メンバーのメールアドレスも見える）。意図したもの（UTF-16 で数える、同じ名前を許す、取引を消したメンバーは削除できる、参加者がいなくなってもグループは残り参加できる）は、`sdd-requirements` で AC にする。auth-user R1-AC3 の1秒のずれも #345 にした
 - [x] 注意: `security/GroupAccessGuard.java` は、取引のエンドポイントからしか通らない分岐があるので、P1-3 でカバレッジの対象に足す
 
-## P1-3　transaction 群と精算のケース集
+## P1-3　transaction 群と精算のケース集（完了。tateca-backend #350 でマージ済み）
 
-- [ ] 依存: P1-1
-- [ ] 触るファイル
-  - 追加: `acceptance/**`、`acceptance/testdata/settlement/*.json`
-  - 削除: `scenario/CreateTransactionScenarioTest.java`、`GetTransactionDetailScenarioTest.java`、`UpdateTransactionScenarioTest.java`、`DeleteTransactionScenarioTest.java`、`GetTransactionHistoryScenarioTest.java`、`GetTransactionSettlementScenarioTest.java`。`controller/TransactionControllerWebTest.java` のうち、HTTP で再現できるケース
-- [ ] 変更
-  - P1-1 と同じやり方で移す
-  - 精算のケース集を作る。固定シードの乱数で取引の組み合わせを数百件組み立て、Java の `GET /groups/{groupId}/transactions/settlement` の結果を記録する。テストは、記録した結果との一致を確かめる。このケース集は、切り替えた後も回帰テストとして残す
-- [ ] 結果: transaction の AC が移り、精算の結果が Java の出力に固定される
-- [ ] 確認 unit: Java に対して GREEN
-- [ ] 確認 live: P1-1 と同じ。対象の requirements.md は `transaction`。加えて、`TransactionServiceImpl` の `RoundingMode` をわざと変えると、ケース集のテストが落ちること
-- [ ] 確認 perf: なし
+- [x] 依存: P1-1
+- [x] 触るファイル
+  - 追加: `acceptance/transaction_test.go`、`acceptance/settlement_cases_test.go`、`acceptance/cmd/settlecases/`（ケースの生成器）、`acceptance/internal/settle/`、`acceptance/testdata/settlement/*.json`、`acceptance/testdata/responses/transaction/**`
+  - 変更: `acceptance/internal/acc/`（クエリ文字列、記録に残さない `s.Probe`、`acc.Updating`、`obligations` の配列を順不同で比べる）、`acceptance/compose.yaml`（`WEB_VIEWER_UID`）、`acceptance/seed/reference-data.sql`（端数の出るレートと GBP）、`acceptance/exchange_rate_test.go`（R19-AC3 の手順）、`acceptance/run`、`acceptance/coverage-exclusions.md`、`acceptance/testdata/observed-errors.txt`
+  - 削除: 計画にあった Java のテストすべてと、`controller/TransactionControllerWebTest.java` の全体（モックで作っていた2件は、サーバーが実際には返さない応答だった）
+- [x] 変更: P1-1 と同じやり方で移した。transaction R19-AC3（後でレートが変わる）は、今日のレートを書き換えてよいのが為替の更新の流れのテストだけなので、その中の手順にした。精算のケース集は、固定シードで300件（円だけ、全通貨、端数の出る少額、各100件）を作り、Java の結果を記録した。Java は残高が同じメンバーの順番をランダムな UUID のハッシュで決めるので、生成器は同点の起きるケースを捨てる（`go run ./cmd/settlecases -check` で、生成器の計算が記録した300件と一致することを確かめられる）
+- [x] 結果: transaction の AC が Go のテストに移り、精算の結果が Java の出力に固定された。`transaction` を `REQUIRED_AC_DOMAINS` に足し、`TransactionController`、`TransactionServiceImpl`、request DTO 2つ、`TransactionDetailsValidator`、`GroupAccessGuard` をカバレッジの対象に足した
+- [x] 確認 unit: Java に対して GREEN（P1-2 の後に rebase して、`./gradlew test --rerun` は 248件がすべて pass）
+- [x] 確認 live: 新しいスタックでの `acceptance/run` で、AC 対応チェックは PASS（transaction 68/68。ほかのドメインもすべて）。カバレッジは対象範囲で ok（通らない16行には理由を書いた。精算で端数を最大の債務者に寄せる処理は、残高の合計が必ず0なので動かない）。送金の丸めを `HALF_EVEN` にすると6件、`HALF_DOWN` にすると8件のケースと、R20-AC2 が落ちる。`contracts/` とのずれは、観測したが宣言にないものが17件、宣言にあるが観測していないものが7件。コードを書いていないエージェントの確認は PASS+NOTES
+- [x] 確認 perf: なし
+- [x] AC のない振る舞いは、ユーザーが仕分けた。バグは issue にして、今の振る舞いを固定した（#343: 暦にない日時が 500、2月29日・30日が28日になる。#346: 小数の金額を切り捨てて保存する。#347: 負の count で 500）。#348（レートのない日に同時に作ると片方が 409）は、結果がタイミングで変わるのでテストで固定していない。文字列の金額、無効な通貨、count=0 は付随として固定した
+- [x] 注意: 記録は新しいスタックで取る。レートのない日の取引は、最初の1件がその日のレートを保存するので、使い回したスタックでは起きないことがある（#348 はこれで見つかった）
 
 ## P1-4　exchange rate 群（完了。tateca-backend #342 でマージ済み）
 
@@ -294,7 +295,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 確認 perf
   - 先に、切り替え前の staging の Java で基準値を測る。対象は `GET /groups/{groupId}`、`GET /groups/{groupId}/transactions/settlement`、`POST /groups/{groupId}/transactions` の p50/p95 で、Java と Go を交互に複数回測る（`/pstack:benchmark-checklist`）
   - Go の p95 が、どれかのエンドポイントで Java の p95 を 10% 以上上回ったら失敗とする
-  - 30 分間リクエストを止めた後の、最初のリクエストのレイテンシを記録する（keep-alive は削除する（tateca-infrastructure #9）ので、Railway のスリープからの立ち上がりが入る）
+  - 30 分間リクエストを止めた後の、最初のリクエストのレイテンシを記録する（keep-alive は削除した（tateca-infrastructure #9）ので、Railway のスリープからの立ち上がりが入る）
 - [ ] 人の確認: 結果を見て、P4 に進むかどうかを人が判断する
 
 ## P4　本番の切り替え（人の go が必要）
