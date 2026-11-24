@@ -43,7 +43,7 @@ Stop and ask before:
 
 Merge every other PR yourself through poteto-mode's Shipping playbook. A PR merges when an agent that did not write its code verified its current head and posted `PASS` or `PASS+NOTES` on it, CI is green at that head, and its human gates are cleared (a requirements PR needs the PdM's approval). Keep cross-repository order: merge a requirements PR before the backend PR whose AC check reads it. Use the merge method the repository already uses, and read the PR back to confirm it merged.
 
-Do not stack PRs that a human merges. A stacked PR merges into its parent's branch, not `main`. Open the next PR against `main` after the first one lands.
+Do not build a stack in which a human merges any PR. A stacked PR merges into its parent's branch, not `main`. Open the next PR against `main` after the first one lands.
 
 ## Git and GitHub
 
