@@ -295,7 +295,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [ ] 依存: P1 と P2 のすべて
 - [ ] 触るファイル
-  - tateca-backend: `.github/workflows/cd-go.yml`（新しく作る。Go のイメージを GHCR に push し、Railway の staging にデプロイする。Java の `cd.yml` は Go のパスを `paths-ignore` で無視していて、`paths-ignore` は workflow 全体に効くので、Go の CD は別の workflow にする。`cd-go.yml` は Go のパスの変更で動く）、`acceptance/**`（本物の Firebase ID トークンで認証できるようにする）
+  - tateca-backend: `.github/workflows/cd-go.yml`（新しく作る。Go のイメージを GHCR に push し、Railway の staging にデプロイする。Java の `cd.yml` は Go のパスを `paths-ignore` で無視していて、`paths-ignore` は workflow 全体に効くので、Go の CD は別の workflow にする。`cd-go.yml` は Go のパスと `cd-go.yml` 自身の変更で動く。Java の `cd.yml` の `paths-ignore` には `cd-go.yml` を足し、`cd.yml` のコメント（`Dockerfile.go`、「P4」）も今の形に直す）、`acceptance/**`（本物の Firebase ID トークンで認証できるようにする）
   - tateca-ios: `money-me-ios/src/Config/EnvConfig.swift`（開発ビルド用に STAGING を追加）
 - [ ] 変更
   - Go の 500（変換されなかったエラーと panic）のログを、アラートにつなぐ（P2-1 ではログに出すところまで作った）
