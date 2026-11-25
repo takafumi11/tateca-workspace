@@ -295,9 +295,11 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [ ] 依存: P1 と P2 のすべて
 - [ ] 触るファイル
-  - tateca-backend: `.github/workflows/cd.yml`（Go のイメージを GHCR に push し、Railway の staging にデプロイする）、`acceptance/**`（本物の Firebase ID トークンで認証できるようにする）
+  - tateca-backend: `.github/workflows/cd-go.yml`（新しく作る。Go のイメージを GHCR に push し、Railway の staging にデプロイする。Java の `cd.yml` は Go のパスを `paths-ignore` で無視していて、`paths-ignore` は workflow 全体に効くので、Go の CD は別の workflow にする。`cd-go.yml` は Go のパスの変更で動く）、`acceptance/**`（本物の Firebase ID トークンで認証できるようにする）
   - tateca-ios: `money-me-ios/src/Config/EnvConfig.swift`（開発ビルド用に STAGING を追加）
 - [ ] 変更
+  - Go の 500（変換されなかったエラーと panic）のログを、アラートにつなぐ（P2-1 ではログに出すところまで作った）
+  - `tateca-mode` のマージの関門（Human gates）に `cd-go.yml` を足す。`cd-go.yml` ができると、Go のパスを変える PR のマージでデプロイが起きるため
   - CD の Railway の CLI のイメージを、`latest` ではなく固定のバージョンにする（Java の CD も同じく）
   - P4 の手順を、メンテナンスの config を除いてそのまま staging で実行する。Java の停止、V2 までの登録、`staging-api.tateca.net` の付け替えまで含める
   - `api.tateca.net` を Railway のカスタムドメインで管理しているのか、DNS で管理しているのかを確かめ、P4 の手順に書き込む
@@ -319,7 +321,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 依存: P3、人の go
 - [ ] 触るファイル
   - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/ios/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
-  - tateca-backend: `.github/workflows/cd.yml`（本番用の Go サービス）
+  - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す）
 - [ ] 前日まで: 本番用の Go サービスを、ドメインを付けずに Railway に用意しておく。DB のバックアップ手順を確かめる。メンテナンスのメッセージと終了予定時刻（04:00 JST）を用意する
 - [ ] 手順
   1. 02:00 に、新旧両方の config でメンテナンスを ON にする。両方の URL を curl して ON になっていることを確かめる
@@ -343,8 +345,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 依存: P4 から1週間が経ち、戻していないこと
 - [ ] 触るファイル
   - 削除: `src/`、`build.gradle.kts`、`settings.gradle.kts`、`gradle.properties`、`gradle/`、`gradlew`、`gradlew.bat`、`config/`、`Dockerfile`
-  - Go の `cmd/api/Dockerfile` だけが残る。CD の `paths-ignore` から、Go のパス（`cmd/**` など）を外す
-  - 変更: `.github/workflows/ci.yml` と `cd.yml`（Java のジョブとコピーの同一性チェックを削除）、`acceptance/**`（`GIVEN_BASE_URL` を削除）、`acceptance/compose.yaml`（Java を削除）、`AGENTS.md`、`CLAUDE.md`、`README.md`
+  - Go の `cmd/api/Dockerfile` だけが残る
+  - 変更: `.github/workflows/ci.yml`（Java のジョブとコピーの同一性チェックを削除）、`cd.yml`（Java の CD。削除する。Go は `cd-go.yml` でデプロイする）、`acceptance/**`（`GIVEN_BASE_URL` を削除）、`acceptance/compose.yaml`（Java を削除）、`AGENTS.md`、`CLAUDE.md`、`README.md`
   - Railway: 停止していた Java のサービスを削除する
 - [ ] 結果: tateca-backend が Go だけになる
 - [ ] 確認 unit: CI が Go だけで GREEN
