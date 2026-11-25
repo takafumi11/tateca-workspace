@@ -245,35 +245,43 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 先に入れたもの: 21のエンドポイントのエラーを、P1 の観測一覧から宣言した。sqlc は、最初のクエリを書く P2-2 で入れる
 - [x] Go のファイルは、CD の `paths-ignore` に入れた（tateca-backend #353）。Go だけの PR では、本番は再デプロイしない
 
-## P2-2　auth/user（Go）
+## P2-2　auth/user（Go。完了。tateca-backend #356 でマージ済み）
 
-- [ ] 依存: P2-1
-- [ ] 触るファイル: `internal/**`
-- [ ] 変更: auth/user の5つのエンドポイントを実装する。Java の `@Transactional` の範囲を、Go の明示的なトランザクションに対応させる
-- [ ] 変更（P2-1 から引き継いだもの）
+- [x] 依存: P2-1
+- [x] 触るファイル: `internal/**`
+- [x] 変更: auth/user の5つのエンドポイントを実装する。Java の `@Transactional` の範囲を、Go の明示的なトランザクションに対応させる
+- [x] 変更（P2-1 から引き継いだもの）
   - sqlc を入れる。`BINARY(16)` の UUID は、16バイトで書く小さな型を override で当てる（P2-0）。DB のタイムゾーンを Java と合わせる
   - `acceptance/run` の `GO_TESTS` と `GO_AC_DOMAINS` を広げ、`GO_COVERAGE_ENFORCE` に `internal/httpapi/httpapi.go` と `internal/endpoint/` を足す。エラーの対応チェックが、Go で観測したエラーとも比べるようにする
   - Accept が合わないときの 406（auth-user の #327 の pin）、パスの UUID を body より先に読む順番、Jackson との JSON の違い（型の強制変換など）を、Java の記録に合わせる
-- [ ] 結果: auth/user が Go で動く
-- [ ] 確認 unit: ドメインロジックがあれば、その単体テスト
-- [ ] 確認 live: auth/user のテストが Go に対して GREEN。流し分けを両方向で実行して GREEN（GIVEN=Java・WHEN/THEN=Go、GIVEN=Go・WHEN/THEN=Java）。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
-- [ ] 確認 perf: なし
+- [x] 結果: auth/user が Go で動く
+- [x] 確認 unit: ドメインロジックがあれば、その単体テスト
+- [x] 確認 live: auth/user のテストが Go に対して GREEN。流し分けを両方向で実行して GREEN（GIVEN=Java・WHEN/THEN=Go、GIVEN=Go・WHEN/THEN=Java）。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
+- [x] 確認 perf: なし
+- [x] 結果の記録: Go に向けた `acceptance/run` で 532件が pass（access 3/3、auth-user 22/22、user 12/12）。流し分けの両方向、Go が返したエラーと宣言の両方向の比較（`TestGoAnswersDeclaredErrors`）、カバレッジも ok。Java に対して pin テストを9件足した（既存の golden は書き換えていない）。新しいバグは #355（body で同じ項目を2回書くか、パスの UUID が空白だけだと 500）。Go にまだないエンドポイントへの呼び出しは、`GO_ENDPOINTS` で Java に送る。コードを書いていないエージェントの確認は PASS+NOTES
+- [x] 注意: DB のエラーを 500 にする `store.Check` / `store.Must` は、`InTx` の中だけで使う
 
-## P2-3　group/member（Go）
+## P2-3　group/member（Go。完了。tateca-backend #357 でマージ済み）
 
-- [ ] 依存: P2-2、P1-2
-- [ ] 触るファイル: `internal/**`
-- [ ] 変更: group/member の7つのエンドポイントを実装する
-- [ ] 結果: group/member が Go で動く
-- [ ] 確認 unit: ドメインロジックの単体テスト
-- [ ] 確認 live: group/member のテストが Go に対して GREEN。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
-- [ ] 確認 perf: なし
+- [x] 依存: P2-2、P1-2
+- [x] 触るファイル: `internal/**`
+- [x] 変更: group/member の8つのエンドポイントを実装する（`GroupController` に8つある）
+- [x] 結果: group/member が Go で動く
+- [x] 確認 unit: ドメインロジックの単体テスト
+- [x] 確認 live: group/member のテストが Go に対して GREEN。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
+- [x] 確認 perf: なし
+- [x] 結果の記録: Go に向けた `acceptance/run` で 905件が pass（group 42/42、group-member 17/17 を含む）。流し分けの両方向、エラーの対応チェック、カバレッジも ok。Java の参加（`POST /groups/{groupId}`）は本文を groupId より先に読むので、本文の検証をルーターが読むときに行う形にした（`endpoints.txt` の `json-first`）。#326、#330、#334、#344 は Java のとおりに残した。Java に対して pin テストを5件足した。新しいバグはなく、#355 に条件を書き足した。コードを書いていないエージェントの確認は PASS+NOTES
 
 ## P2-4　transaction（Go）
 
 - [ ] 依存: P2-3、P1-3
 - [ ] 触るファイル: `internal/**`
 - [ ] 変更: transaction の6つのエンドポイントを実装する。精算の丸めは、Java の `BigDecimal` + `RoundingMode` と同じ結果になるようにする
+- [ ] 変更（P2-3 から引き継いだもの）
+  - 参加の確認は `group.RequireMember` をそのまま使う
+  - Java の `requireReader`（Web 閲覧用のサービスアカウント `WEB_VIEWER_UID` を通す）と `requireTransactionInGroup` を移す。取引の読み取り3つ（履歴、精算、1件）が `requireReader` を通る
+  - 取引の本文にも `Check` を付け、Java の引数の順番を `endpoints.txt` に合わせる
+  - sqlc が生成する、複数行を返すクエリの DB エラーの分岐は、クライアントから起こせない。カバレッジの除外に理由を書く（P2-3 と同じ扱い）
 - [ ] 結果: transaction が Go で動く
 - [ ] 確認 unit: 精算計算の単体テスト
 - [ ] 確認 live: transaction のテストが Go に対して GREEN。精算のケース集がすべて一致する。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
