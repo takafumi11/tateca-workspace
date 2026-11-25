@@ -208,13 +208,13 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   | A | 全サブテスト PASS | 全サブテスト PASS |
   | B | 全サブテスト PASS（要求を記録する中継を挟み、テストの要求がすべて Go に届いたことを確かめた） | 全サブテスト PASS |
 
-## P2-1　Go の土台
+## P2-1　Go の土台（完了。tateca-backend #354 でマージ済み）
 
-- [ ] 依存: P2-0
-- [ ] 触るファイル
-  - 追加: `go.mod`、`cmd/api/**`、`cmd/migrate/**`（登録の前の `up` を拒否する migration のコマンド）、`internal/**`（エンドポイントのエラーの宣言の表と、そこから生成するコードを含む）、`db/migrations/**`（V1 と V2 のコピー）、メッセージファイル（`messages*.properties` のコピー）、`Dockerfile.go`
+- [x] 依存: P2-0
+- [x] 触るファイル
+  - 追加: `go.mod`、`cmd/api/**`、`cmd/migrate/**`（登録の前の `up` を拒否する migration のコマンド）、`internal/**`（エンドポイントのエラーの宣言の表と、そこから生成するコードを含む）、`db/migrations/**`（V1 と V2 のコピー）、メッセージファイル（`messages*.properties` のコピー。`internal/` の下）、`cmd/api/Dockerfile`（直下の `Dockerfile.go` は、Go のソースとして読まれてビルドを壊すので置かない）
   - 変更: `acceptance/compose.yaml`（Go を追加）、`.github/workflows/ci.yml`（Go のビルドとテスト、コピーの同一性チェック）
-- [ ] 変更
+- [x] 変更
   - 環境変数は Java と同じ名前を使う（`MYSQLHOST`、`MYSQLPORT`、`MYSQLDATABASE`、`MYSQLUSER`、`MYSQLPASSWORD`、`FIREBASE_SERVICE_ACCOUNT_KEY`、`FIREBASE_PROJECT_ID`、`LAMBDA_API_KEY`、`EXCHANGE_RATE_API_KEY`、`UNLIMITED_GROUP_UID`、`PORT`）
   - ヘルスチェックは Go 独自の `/health` にする。`/actuator/health` の互換は作らない
   - 認証
@@ -232,21 +232,28 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - それでも変換されなかったエラーと panic は、すべて `SYSTEM.INTERNAL_ERROR`（500）として返す。そのときはエンドポイント名とエラーの種類をログに出し、アラートを上げる。500 はすべてのエンドポイントで宣言しておく。宣言外のエラーコードがクライアントに届くことはない
   - エラーの対応チェックを作る。テストで観測した「エンドポイントとエラーコードの組」と宣言を両方向で比べ、どちらかにしかない組があれば CI を落とす。この仕組みは移行後も残す
   - Go のサーバーをカバレッジを取れる形でビルドし（`go build -cover`）、テストを流したときのカバレッジを出す。P1 と同じく、通っていない分岐はテストを足すか、理由を書く
-  - P2-2〜P2-5 では、各エンドポイントの宣言を P1 で記録した一覧から始め（バグも含めて引き継ぐ）、エラーの対応チェックを GREEN にする
+  - P2-2〜P2-5 では、各エンドポイントの宣言を P1 で記録した一覧から始め（バグも含めて引き継ぐ。P2-1 で、この一覧から表を作ってある）、エラーの対応チェックを GREEN にする
   - 壊れた JSON、415、存在しないパスに対して、Java と同じエラーを返す（存在しないパスが 500 になるのはバグで、#327 として移行後に直す）
   - 構造化ログと trace（W3C traceparent）
   - migration はコマンドとして用意するだけにして、サーバーの起動時には実行しない。`flyway_schema_history` があって golang-migrate の表が空のときは、`up` を拒否する。そのときは、Flyway の履歴で V1 と V2 の成功を確かめてから `force 2` を打つ登録だけを許す（P2-0 で、登録の前に `up` が流れると V2 で落ちることを確かめた）
   - CI では、`db/migrations` と Java の `src/main/resources/db/migration`、およびメッセージファイルが同じ内容かを diff で確かめる
-- [ ] 結果: 認証とエラー処理を備えた Go のサーバーが起動する（ハンドラはまだない）
-- [ ] 確認 unit: 認証の単体テスト（失効チェック、aud と iss、API キー、dev 以外では `x-uid` が効かないこと）
-- [ ] 確認 live: テストのうち認証まわりの AC（各機能の「未認証は拒否」など）が、Go に対して GREEN
-- [ ] 確認 perf: なし
+- [x] 結果: 認証とエラー処理を備えた Go のサーバーが起動する（ハンドラはまだない）
+- [x] 確認 unit: 認証の単体テスト（失効チェック、aud と iss、API キー、dev 以外では `x-uid` が効かないこと）
+- [x] 確認 live: テストのうち認証まわりの AC（各機能の「未認証は拒否」など）が、Go に対して GREEN
+- [x] 確認 perf: なし
+- [x] 結果の記録: Go に向けた `acceptance/run`（`ACCEPTANCE_TARGET=go`）で、access の R1-AC1、R1-AC2、R2-AC1 が GREEN。Java の記録のうち、壊れた JSON、415、存在しないパス、違うメソッドの92件を Go に流し、応答の全体が一致した（`TestReplayJavaRecordings`）。わざと宣言外のエラーを返すとコンパイルが落ち、変換を漏らすと gochecksumtype が、禁止した書き出しを呼ぶと forbidigo が落ちた。Java が作った DB で、登録の前の `up` は拒否され、登録の後の `up` は変更なし。コードを書いていないエージェントの確認は PASS+NOTES
+- [x] 先に入れたもの: 21のエンドポイントのエラーを、P1 の観測一覧から宣言した。sqlc は、最初のクエリを書く P2-2 で入れる
+- [x] Go のファイルは、CD の `paths-ignore` に入れた（tateca-backend #353）。Go だけの PR では、本番は再デプロイしない
 
 ## P2-2　auth/user（Go）
 
 - [ ] 依存: P2-1
 - [ ] 触るファイル: `internal/**`
 - [ ] 変更: auth/user の5つのエンドポイントを実装する。Java の `@Transactional` の範囲を、Go の明示的なトランザクションに対応させる
+- [ ] 変更（P2-1 から引き継いだもの）
+  - sqlc を入れる。`BINARY(16)` の UUID は、16バイトで書く小さな型を override で当てる（P2-0）。DB のタイムゾーンを Java と合わせる
+  - `acceptance/run` の `GO_TESTS` と `GO_AC_DOMAINS` を広げ、`GO_COVERAGE_ENFORCE` に `internal/httpapi/httpapi.go` と `internal/endpoint/` を足す。エラーの対応チェックが、Go で観測したエラーとも比べるようにする
+  - Accept が合わないときの 406（auth-user の #327 の pin）、パスの UUID を body より先に読む順番、Jackson との JSON の違い（型の強制変換など）を、Java の記録に合わせる
 - [ ] 結果: auth/user が Go で動く
 - [ ] 確認 unit: ドメインロジックがあれば、その単体テスト
 - [ ] 確認 live: auth/user のテストが Go に対して GREEN。流し分けを両方向で実行して GREEN（GIVEN=Java・WHEN/THEN=Go、GIVEN=Go・WHEN/THEN=Java）。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
@@ -336,7 +343,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 依存: P4 から1週間が経ち、戻していないこと
 - [ ] 触るファイル
   - 削除: `src/`、`build.gradle.kts`、`settings.gradle.kts`、`gradle.properties`、`gradle/`、`gradlew`、`gradlew.bat`、`config/`、`Dockerfile`
-  - 名前変更: `Dockerfile.go` を `Dockerfile` にする
+  - Go の `cmd/api/Dockerfile` だけが残る。CD の `paths-ignore` から、Go のパス（`cmd/**` など）を外す
   - 変更: `.github/workflows/ci.yml` と `cd.yml`（Java のジョブとコピーの同一性チェックを削除）、`acceptance/**`（`GIVEN_BASE_URL` を削除）、`acceptance/compose.yaml`（Java を削除）、`AGENTS.md`、`CLAUDE.md`、`README.md`
   - Railway: 停止していた Java のサービスを削除する
 - [ ] 結果: tateca-backend が Go だけになる
