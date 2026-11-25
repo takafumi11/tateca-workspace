@@ -41,7 +41,7 @@ Stop and ask before:
 
 ## Merging
 
-Merge every other PR yourself through poteto-mode's Shipping playbook. A PR merges when an agent that did not write its code verified its current head and posted `PASS` or `PASS+NOTES` on it, CI is green at that head, and its human gates are cleared (a requirements PR needs the PdM's approval). Keep cross-repository order: merge a requirements PR before the backend PR whose AC check reads it. Use the merge method the repository already uses, and read the PR back to confirm it merged.
+Merge every other PR yourself through poteto-mode's Shipping playbook. A PR merges when an agent that did not write its code verified its current head and posted `PASS` or `PASS+NOTES` on it, CI is green at that head, and its human gates are cleared (a requirements PR needs the PdM's approval). Keep cross-repository order: merge a requirements PR before the backend PR whose AC check reads it, then rerun that backend PR's Acceptance job, because CI reads the workspace's `main` when the job starts. Use the merge method the repository already uses, and read the PR back to confirm it merged.
 
 Do not build a stack in which a human merges any PR. A stacked PR merges into its parent's branch, not `main`. Open the next PR against `main` after the first one lands.
 
@@ -51,4 +51,5 @@ Do not build a stack in which a human merges any PR. A stacked PR merges into it
 - Push your own branches without asking. Never push to `main`. Follow any local push rules in `~/.claude/rules/`.
 - Push with `git push origin <branch>`, since a branch without an upstream rejects a bare `git push`. Then compare `git ls-remote origin <branch>` with the local head.
 - When another session works in parallel, list the files it owns as off-limits in every agent brief.
+- In PR and commit text, never put `fix`, `close`, or `resolve` (in any form) right before an issue number, even in a negative sentence. GitHub reads it as closing the issue.
 - When splitting work into several commits, check `git diff --cached --stat` before each one; stage deletions with the commit that owns them.
