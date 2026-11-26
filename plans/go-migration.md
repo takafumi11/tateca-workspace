@@ -272,30 +272,37 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 perf: なし
 - [x] 結果の記録: Go に向けた `acceptance/run` で 905件が pass（group 42/42、group-member 17/17 を含む）。流し分けの両方向、エラーの対応チェック、カバレッジも ok。Java の参加（`POST /groups/{groupId}`）は本文を groupId より先に読むので、本文の検証をルーターが読むときに行う形にした（`endpoints.txt` の `json-first`）。#326、#330、#334、#344 は Java のとおりに残した。Java に対して pin テストを5件足した。新しいバグはなく、#355 に条件を書き足した。コードを書いていないエージェントの確認は PASS+NOTES
 
-## P2-4　transaction（Go）
+## P2-4　transaction（Go。完了。tateca-backend #360 でマージ済み）
 
-- [ ] 依存: P2-3、P1-3
-- [ ] 触るファイル: `internal/**`
-- [ ] 変更: transaction の6つのエンドポイントを実装する。精算の丸めは、Java の `BigDecimal` + `RoundingMode` と同じ結果になるようにする
-- [ ] 変更（P2-3 から引き継いだもの）
+- [x] 依存: P2-3、P1-3
+- [x] 触るファイル: `internal/**`
+- [x] 変更: transaction の6つのエンドポイントを実装する。精算の丸めは、Java の `BigDecimal` + `RoundingMode` と同じ結果になるようにする
+- [x] 変更（P2-3 から引き継いだもの）
   - 参加の確認は `group.RequireMember` をそのまま使う
   - Java の `requireReader`（Web 閲覧用のサービスアカウント `WEB_VIEWER_UID` を通す）と `requireTransactionInGroup` を移す。取引の読み取り3つ（履歴、精算、1件）が `requireReader` を通る
   - 取引の本文にも `Check` を付け、Java の引数の順番を `endpoints.txt` に合わせる
   - sqlc が生成する、複数行を返すクエリの DB エラーの分岐は、クライアントから起こせない。カバレッジの除外に理由を書く（P2-3 と同じ扱い）
-- [ ] 結果: transaction が Go で動く
-- [ ] 確認 unit: 精算計算の単体テスト
-- [ ] 確認 live: transaction のテストが Go に対して GREEN。精算のケース集がすべて一致する。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
-- [ ] 確認 perf: なし
+- [x] 結果: transaction が Go で動く
+- [x] 確認 unit: 精算計算の単体テスト
+- [x] 確認 live: transaction のテストが Go に対して GREEN。精算のケース集がすべて一致する。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
+- [x] 確認 perf: なし
+- [x] 結果の記録: Go に向けた `acceptance/run` で 1617件が pass（transaction 68/68）。精算のケース集300件が一致した。流し分けの両方向、エラーの対応チェック、カバレッジも ok。精算は、1e-7 円を1とする整数（`math/big`）で計算する。Java の同点の並びは、UUID が決まれば一つに決まる。Go は Java の `HashMap` と `PriorityQueue` の動きを再現して、同じ並びにした（同点のある60グループで、精算が Java と完全に一致した）。新しいバグは #358（日付が TIMESTAMP の範囲外だと 409）と #359（負担者のリストに null があると 500）。コードを書いていないエージェントの確認は PASS+NOTES
+- [ ] **人の判断待ち（P3 の前に決める）**: Go は次の3つで Java と違う応答を返す。どれも iOS と Web が送らない要求。違いを付随する振る舞いとして残すか、Go を Java に合わせるかを決める
+  - 空白だけの groupId と不正な count を一緒に送る: Java 400、Go 500
+  - count が全角の数字（例 `１０`）: Java 200、Go 400
+  - 本文の amount が全角の数字の文字列（例 `"３００"`）: Java は保存する、Go 400
 
-## P2-5　exchange rate（Go）
+## P2-5　exchange rate（Go。完了。tateca-backend #361 でマージ済み）
 
-- [ ] 依存: P2-1、P1-4
-- [ ] 触るファイル: `internal/**`
-- [ ] 変更: `GET /exchange-rate/{date}` と `POST /internal/exchange-rates` を実装する。外部 API の retry（3回、1秒から倍々に待つ）と fallback も移す
-- [ ] 結果: exchange rate が Go で動く
-- [ ] 確認 unit: retry と fallback の単体テスト
-- [ ] 確認 live: exchange rate のテストが Go に対して GREEN。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
-- [ ] 確認 perf: なし
+- [x] 依存: P2-1、P1-4
+- [x] 触るファイル: `internal/**`
+- [x] 変更: `GET /exchange-rate/{date}` と `POST /internal/exchange-rates` を実装する。外部 API の retry（3回、1秒から倍々に待つ）と fallback も移す
+- [x] 結果: exchange rate が Go で動く
+- [x] 確認 unit: retry と fallback の単体テスト
+- [x] 確認 live: exchange rate のテストが Go に対して GREEN。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
+- [x] 確認 perf: なし
+- [x] 結果の記録: これで、すべてのエンドポイントが Go で動く。Go に向けた `acceptance/run` は、全部のテストをそのまま流す形になった（Go にないエンドポイントを Java に回す `GO_ENDPOINTS` は消した）。1687件が pass し、7つのドメインの AC がすべてそろった。新しいスタックでの為替の更新の流れ、流し分けの両方向、観測したエラーの一覧と使われていない記録の検査、カバレッジも ok。外部の為替 API の試し直し、#340、#341 は Java と同じ。Lambda と同じ要求を Java と Go に送ると、応答も外部 API への呼び出しの回数も同じだった。Java と違う振る舞いは、外部 API と実際のクライアントが起こさない形だけに残した（PR の Tradeoffs）。コードを書いていないエージェントの確認は PASS+NOTES
+- [x] 後で考えること: 外部 API が応答を返さずに止まると、更新が終わらずに残る。Java も同じなので、移行による後退ではない。タイムアウトを足すのは P4 の後の候補。同時に2回更新したときの振る舞い（Java は 409）は、#348 と同じくテストしていない
 
 ---
 
