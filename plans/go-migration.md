@@ -287,10 +287,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] 確認 live: transaction のテストが Go に対して GREEN。精算のケース集がすべて一致する。流し分けを両方向で GREEN。エラーの対応チェックが GREEN。Go のカバレッジで、通っていない分岐がない（理由を書いたものを除く）
 - [x] 確認 perf: なし
 - [x] 結果の記録: Go に向けた `acceptance/run` で 1617件が pass（transaction 68/68）。精算のケース集300件が一致した。流し分けの両方向、エラーの対応チェック、カバレッジも ok。精算は、1e-7 円を1とする整数（`math/big`）で計算する。Java の同点の並びは、UUID が決まれば一つに決まる。Go は Java の `HashMap` と `PriorityQueue` の動きを再現して、同じ並びにした（同点のある60グループで、精算が Java と完全に一致した）。新しいバグは #358（日付が TIMESTAMP の範囲外だと 409）と #359（負担者のリストに null があると 500）。コードを書いていないエージェントの確認は PASS+NOTES
-- [ ] **人の判断待ち（P3 の前に決める）**: Go は次の3つで Java と違う応答を返す。どれも iOS と Web が送らない要求。違いを付随する振る舞いとして残すか、Go を Java に合わせるかを決める
-  - 空白だけの groupId と不正な count を一緒に送る: Java 400、Go 500
-  - count が全角の数字（例 `１０`）: Java 200、Go 400
-  - 本文の amount が全角の数字の文字列（例 `"３００"`）: Java は保存する、Go 400
+- [x] Java と違う応答が3つ残っている。残すか合わせるかは、P3 の依存として人が決める（P3 の節）
 
 ## P2-5　exchange rate（Go。完了。tateca-backend #361 でマージ済み）
 
@@ -309,6 +306,10 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 ## P3　staging でのリハーサル
 
 - [ ] 依存: P1 と P2 のすべて
+- [ ] 依存（人の判断）: P2-4 の Go は、次の3つの要求で Java と違う応答を返す。違いを付随する振る舞いとして残すか、Go を Java に合わせるかを決める。どれも iOS は送らない（amount と count を整数から作る）。Web は読み取り専用で取引を作らず、count は 5 か 50 に固定。合わせる手間は小さい（tateca-backend #360 の確認による）
+  - 空白だけの groupId と不正な count を一緒に送る: Java 400、Go 500
+  - count が ASCII 以外の数字（全角の `１０` など）: Java 200、Go 400
+  - 本文の amount が ASCII 以外の数字の文字列（全角の `"３００"` など）: Java は保存する、Go 400
 - [ ] 触るファイル
   - tateca-backend: `.github/workflows/cd-go.yml`（新しく作る。Go のイメージを GHCR に push し、Railway の staging にデプロイする。Java の `cd.yml` は Go のパスを `paths-ignore` で無視していて、`paths-ignore` は workflow 全体に効くので、Go の CD は別の workflow にする。`cd-go.yml` は Go のパスと `cd-go.yml` 自身の変更で動く。Java の `cd.yml` の `paths-ignore` には `cd-go.yml` を足し、`cd.yml` のコメント（`Dockerfile.go`、「P4」）も今の形に直す）、`acceptance/**`（本物の Firebase ID トークンで認証できるようにする）
   - tateca-ios: `money-me-ios/src/Config/EnvConfig.swift`（開発ビルド用に STAGING を追加）
