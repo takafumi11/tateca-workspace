@@ -37,7 +37,7 @@ Stop and ask before:
 
 - changing requirements or ACs;
 - changing a response shape or the errors an endpoint returns (old iOS app versions keep calling the API, so treat such a change as irreversible);
-- merging a PR whose merge deploys: its CD changes the API server, cloud resources, or app config. Today that is every PR in `tateca-infrastructure` and `tateca-config`, and a `tateca-backend` PR that changes any file its CD does not skip (`paths-ignore` in `.github/workflows/cd.yml`; without one, CD redeploys Railway on every push to `main`).
+- merging a PR whose merge deploys: its CD changes the API server, cloud resources, or app config. Today that is every PR in `tateca-infrastructure` and `tateca-config`, and a `tateca-backend` PR that starts any of its CD workflows: `.github/workflows/cd.yml` deploys Java to production for any file outside its `paths-ignore`, and `.github/workflows/cd-go.yml` deploys Go to staging for any file in its `paths`.
 
 ## Merging
 

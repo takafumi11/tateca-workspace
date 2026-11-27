@@ -315,7 +315,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - tateca-ios: `money-me-ios/src/Config/EnvConfig.swift`（開発ビルド用に STAGING を追加）
 - [ ] 変更
   - Go の 500（変換されなかったエラーと panic）のログを、アラートにつなぐ（P2-1 ではログに出すところまで作った）
-  - `tateca-mode` のマージの関門（Human gates）に `cd-go.yml` を足す。`cd-go.yml` ができると、Go のパスを変える PR のマージでデプロイが起きるため
+  - `tateca-mode` のマージの関門（Human gates）に `cd-go.yml` を足す。`cd-go.yml` ができると、Go のパスを変える PR のマージでデプロイが起きるため（tateca-backend #363 で `cd-go.yml` ができ、2026-11-27 に関門へ足した）
   - CD の Railway の CLI のイメージを、`latest` ではなく固定のバージョンにする（Java の CD も同じく）
   - P4 の手順を、メンテナンスの config を除いてそのまま staging で実行する。Java の停止、V2 までの登録、`staging-api.tateca.net` の付け替えまで含める
   - `api.tateca.net` を Railway のカスタムドメインで管理しているのか、DNS で管理しているのかを確かめ、P4 の手順に書き込む
