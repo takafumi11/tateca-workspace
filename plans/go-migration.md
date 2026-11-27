@@ -341,7 +341,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - P4 の手順のリハーサル（メンテナンスの config を除く）: 約3分半。Java の停止とドメインの取り外し 6秒、DB のバックアップ 3秒、V2 の登録 約40秒、Go の確認 11秒、ドメインの付け替え 70秒（Cloudflare の CNAME の書き換えを含む）、ドメインでの確認 11秒
   - 戻し方 A のリハーサル: 2分。Java の起動 22秒（Go が作った `schema_migrations` があっても Flyway の確認は通る）、ドメインの付け替え 58秒、確認 15秒
   - Go のイメージにはシェルがなく、Railway の SSH で入れない。`migrate register` は、MySQL のコンテナを経由した SSH の通り道から、手元で `cmd/migrate` を流して行った
-- [ ] Better Stack のアラート（`level = "ERROR" AND message = "unexpected error"`、5分間に1件以上）を、人が作って確かめる
+- [x] Better Stack のアラート `Go unexpected error (staging)`（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）を作った。実際に鳴ることは、P4 の前日までに確かめる
 - [ ] 人の確認: 結果を見て、P4 に進むかどうかを人が判断する
 
 ## P4　本番の切り替え（人の go が必要）
@@ -351,9 +351,9 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/ios/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
   - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す）
 - [ ] 前日まで
-  - [x] 本番用の Go サービス `tateca-backend-go` を、ドメインを付けずに Railway の本番の環境に用意した（2026-11-27）。イメージは、staging で確かめたコミットに固定した `go-sha-4dd5679…`（staging と同じ digest）。環境変数は本番の Java から写し、Better Stack は本番の Java と同じソース `tateca-backend-prod` に送る（`application` の項目に頼る画面はなかった）。起動して本番の DB につながることを確かめた
+  - [x] 本番用の Go サービス `tateca-backend-go` を、ドメインを付けずに Railway の本番の環境に用意した（2026-11-27）。イメージは、staging で確かめたコミットに固定した `go-sha-4dd5679…`（2026-11-27 に GHCR で、staging が動かしていた `go-latest` と同じ digest `ee05dc1b…` であることを確かめた。staging は `go-latest` を指すので、次の CD の後は本番と版が離れる）。環境変数は本番の Java から写し、Better Stack は本番の Java と同じソース `tateca-backend-prod` に送る（`application` の項目に頼る画面はなかった）。起動して本番の DB につながることを確かめた
   - [x] Better Stack に、本番の Go のアラート `Go unexpected error (prod)` を作った（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）。画面のブロックで作るクエリは API では作れないので、SQL で作った。Java のログには当たらないので、切り替えるまでは鳴らない
-  - [x] TXT: staging で TXT を消してドメインを付け直すと、Railway は確認を求め（Verified: no）、TXT と新しい CNAME を示した。TXT の値は、同じドメインなら前と同じだった。TXT と CNAME を入れてから、約25秒で確認が済み、Go が応答した。本番の `api.tateca.net` も、当日、手順 6 で TXT（Railway が示す値）を Cloudflare に足す
+  - [x] TXT: staging で TXT を消してドメインを付け直すと、Railway は確認を求め（Verified: no）、TXT と新しい CNAME を示した。TXT の値は、同じドメインなら前と同じだった。TXT と CNAME を入れてから、約25秒（実測）で確認が済み、Go が応答した。本番の `api.tateca.net` も、当日、手順 6 で TXT（Railway が示す値）を Cloudflare に足す
   - [x] Railway の SSH の鍵が登録してあり、本番の MySQL のコンテナに入れることを確かめた（MySQL 9.4.0。Flyway の履歴は BASELINE、V1、V2 がすべて成功。`schema_migrations` はまだない）。`migrate register` は、BASELINE の後に V1 と V2 がある履歴にも対応している
   - [ ] アラートが実際に鳴ることを確かめる（staging で、条件を一時的に変えて試すかを、人が決める）
   - 当日、Cloudflare の DNS を書き換えられる人を決めておく（手順 6 と戻し方で、`api` の CNAME を書き換える）
@@ -364,7 +364,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   3. DB のバックアップを取る（MySQL のコンテナに SSH で入り、`mysqldump --single-transaction`）
   4. Go の migration ツールに、V2 まで適用済みとして登録する（スキーマは変えない）。登録は `up` より必ず先に行う。migration のコマンドは、登録の前の `up` を拒否する（P2-1）。Go のイメージにはシェルがなく SSH で入れないので、MySQL のコンテナを経由した SSH の通り道（`ssh -L`）を作り、手元で `go run ./cmd/migrate register` を流す（P3 で確かめた）。接続先は、`MYSQLHOST=127.0.0.1`、`MYSQLPORT` を通り道の手元のポートにし、`MYSQLUSER`、`MYSQLPASSWORD`、`MYSQLDATABASE` は Railway の本番の MySQL の変数から、画面に出さずに渡す
   5. Go を起動し、Railway がサービスごとに発行する URL に対して、テスト用アカウントで動作確認する。読み取り（`GET /auth/users/{uid}`、`GET /groups/list`、`GET /groups/{groupId}`、精算）と、書き込み1本（取引の作成 → 取得 → 削除）
-  6. `api.tateca.net` を Go に付け（`railway domain api.tateca.net -s tateca-backend-go`）、Railway が示す CNAME の値に Cloudflare の `api` のレコードを書き換え（プロキシはそのまま）、示された `_railway-verify.api` の TXT を足す。約30秒で確認が済み、証明書が有効になる。それから、5 と同じ確認をする
+  6. `api.tateca.net` を Go に付け（`railway domain api.tateca.net -s tateca-backend-go`）、Railway が示す CNAME の値に Cloudflare の `api` のレコードを書き換え（プロキシはそのまま）、示された `_railway-verify.api` の TXT を足す。約25秒（staging での実測）で確認が済み、証明書が有効になる。それから、5 と同じ確認をする
   7. 新旧両方の config でメンテナンスを OFF にし、curl で確かめる
   8. 監視する。Better Stack のエラー率、09:01 JST の為替更新（`GET /exchange-rate/{当日}`）、iOS の実機での主要な流れ
 - [ ] 戻し方 A（メンテナンス中に失敗した場合）: 先に Java を起動する（起動に約20秒）。それから、ドメインを Go から外して Java に付け、Railway が示す新しい CNAME の値に Cloudflare を書き換える（付け直すたびに値が変わる）。確認してから、Go のデプロイを止め、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない（P3 のリハーサルで2分）
