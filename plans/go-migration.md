@@ -341,7 +341,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - P4 の手順のリハーサル（メンテナンスの config を除く）: 約3分半。Java の停止とドメインの取り外し 6秒、DB のバックアップ 3秒、V2 の登録 約40秒、Go の確認 11秒、ドメインの付け替え 70秒（Cloudflare の CNAME の書き換えを含む）、ドメインでの確認 11秒
   - 戻し方 A のリハーサル: 2分。Java の起動 22秒（Go が作った `schema_migrations` があっても Flyway の確認は通る）、ドメインの付け替え 58秒、確認 15秒
   - Go のイメージにはシェルがなく、Railway の SSH で入れない。`migrate register` は、MySQL のコンテナを経由した SSH の通り道から、手元で `cmd/migrate` を流して行った
-- [x] Better Stack のアラート `Go unexpected error (staging)`（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）を作った。実際に鳴ることは、P4 の前日までに確かめる
+- [x] Better Stack のアラート `Go unexpected error (staging)`（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）を作った。実際に鳴ることは、P4 の前日までの準備で確かめた
 - [ ] 人の確認: 結果を見て、P4 に進むかどうかを人が判断する
 
 ## P4　本番の切り替え（人の go が必要）
@@ -355,9 +355,9 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - [x] Better Stack に、本番の Go のアラート `Go unexpected error (prod)` を作った（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）。画面のブロックで作るクエリは API では作れないので、SQL で作った。Java のログには当たらないので、切り替えるまでは鳴らない
   - [x] TXT: staging で TXT を消してドメインを付け直すと、Railway は確認を求め（Verified: no）、TXT と新しい CNAME を示した。TXT の値は、同じドメインなら前と同じだった。TXT と CNAME を入れてから、約25秒（実測）で確認が済み、Go が応答した。本番の `api.tateca.net` も、当日、手順 6 で TXT（Railway が示す値）を Cloudflare に足す
   - [x] Railway の SSH の鍵が登録してあり、本番の MySQL のコンテナに入れることを確かめた（MySQL 9.4.0。Flyway の履歴は BASELINE、V1、V2 がすべて成功。`schema_migrations` はまだない）。`migrate register` は、BASELINE の後に V1 と V2 がある履歴にも対応している
-  - [x] アラートが実際に鳴ることを確かめた（2026-11-28。staging で試験用のアラートを作り、500 を起こした。インシデントが立ち、約2分後にメールが届いた。試験用のアラートは消した）
-  - [ ] Java と Go の DB の差分のチェック（移行のためだけ。P5-1 で消す）。空の DB を2つ用意し、同じ acceptance を Java と Go に流し、両方の DB を表と列ごとに比べる（毎回変わる UUID と時刻はそろえる）。API の応答に出ない違い（読み返さない列の値、NULL と空文字、余計な行）を捕まえる。見つかった違いは、直すか、残してよいかを仕分ける
-  - [ ] migration のコマンドの結合テスト。Flyway の履歴がある本物の MySQL（本番と同じ BASELINE、V1、V2 の形）で、`register` が通ること、登録の前の `up` を拒否すること、登録の後の `up` が変更なしになることを確かめる
+  - [x] アラートが実際に鳴ることを確かめた（2026-11-28。staging で 500 を起こした。本番と同じ条件の `Go unexpected error (staging)` と、条件を変えた試験用のアラート（`status = 500 AND endpoint = "getGroup"`）の両方でインシデントが立ち、約2分後にメールが届いた。試験用のアラートは消した）
+  - [ ] Java と Go の DB の差分のチェック（移行のためだけ。tateca-backend の `acceptance/` の下に置き、P5-1 で消す。UUID や時刻のそろえ方などの設計は、その PR に書く）。空の DB を2つ用意し、同じ acceptance を Java と Go に流し、両方の DB を表と列ごとに比べる（毎回変わる UUID と時刻はそろえる）。API の応答に出ない違い（読み返さない列の値、NULL と空文字、余計な行）を捕まえる。見つかった違いは、直すか、残してよいかを仕分ける
+  - [ ] migration のコマンドの結合テスト。Flyway の履歴がある本物の MySQL（本番と同じ BASELINE、V1、V2 の形）で、`register` が通ること、登録の前の `up` を拒否すること、登録の後の `up` が変更なしになることを確かめる（MySQL の立て方と Flyway の履歴の作り方は、その PR に書く。migration のコマンドは P5-1 の後も残るので、このテストも残す）
   - 当日、Cloudflare の DNS を書き換えられる人を決めておく（手順 6 と戻し方で、`api` の CNAME を書き換える）
   - メンテナンスのメッセージと終了予定時刻（04:00 JST）を用意する
 - [ ] 手順
@@ -384,6 +384,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [ ] 触るファイル
   - 削除: `src/`、`build.gradle.kts`、`settings.gradle.kts`、`gradle.properties`、`gradle/`、`gradlew`、`gradlew.bat`、`config/`、`Dockerfile`
   - Go の `cmd/api/Dockerfile` だけが残る
+  - 削除: Java と Go の DB の差分のチェック（`acceptance/` の下）
   - 変更: `.github/workflows/ci.yml`（Java のジョブとコピーの同一性チェックを削除）、`cd.yml`（Java の CD。削除する。Go は `cd-go.yml` でデプロイする）、`acceptance/**`（`GIVEN_BASE_URL` を削除）、`acceptance/compose.yaml`（Java を削除）、`AGENTS.md`、`CLAUDE.md`、`README.md`
   - Railway: 停止していた Java のサービスを削除する
 - [ ] 結果: tateca-backend が Go だけになる
