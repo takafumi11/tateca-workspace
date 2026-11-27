@@ -335,7 +335,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - ドメインの管理: カスタムドメインは Railway、DNS は Cloudflare（プロキシあり）。Railway はドメインを付けるサービスごとに CNAME の向き先を発行し、付け直すたびに値が変わる
   - 本物のトークンでの acceptance（tateca-backend #362）: Java 25/25、Go 25/25 が PASS
   - Lambda と同じ要求: Go も Java も 204 で、今日と明日のレートが同じ値で保存された
-  - iOS（STAGING の開発ビルド、Go）: グループの作成 → 取引の作成 → 精算の表示 → 取引の削除が通った（Go のログで、すべての要求の成功を確かめた。録画は残していない）。staging にアカウントがないと 404 になるので、テスト用に1行入れた
+  - iOS（STAGING の開発ビルド、Go）: グループの作成 → 取引の作成 → 精算の表示 → 取引の削除が通った（Go のログで、すべての要求の成功を確かめた。計画が求めた画面の録画は、残していない）。staging にアカウントがないと 404 になるので、テスト用に1行入れた
   - レイテンシ（この Mac から、Java と Go を交互に各330回）: p95 は `GET /groups/{groupId}` が Java 564 ms・Go 524 ms、精算が 640・522、取引の作成が 720・568。基準（Go が10%以上悪い）に当たるものはない。大半はネットワーク（約125 ms）と Firebase の失効チェック（約250 ms、推定）
   - 30分止めた後の最初の要求: Java 1730 ms、Go 638 ms（各1回）。Railway のスリープの設定はなし
   - P4 の手順のリハーサル（メンテナンスの config を除く）: 約3分半。Java の停止とドメインの取り外し 6秒、DB のバックアップ 3秒、V2 の登録 約40秒、Go の確認 11秒、ドメインの付け替え 70秒（Cloudflare の CNAME の書き換えを含む）、ドメインでの確認 11秒
@@ -355,17 +355,18 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - Better Stack に、本番の Go の 500 のアラートを作る（staging と同じ条件）
   - 本番の `api.tateca.net` には、Cloudflare に `_railway-verify` の TXT がない（2025年に作ったとき、Railway が求めていなかった）。Go に付け直すときに TXT の確認を求められると、待ち時間が出る。前日までに、Railway で求められるかを確かめ、要るなら TXT を先に足しておく
   - Railway の SSH の鍵が登録してあること。本番の MySQL のコンテナに入れることを確かめる（DB のバックアップと、V2 の登録の通り道に使う）
+  - 当日、Cloudflare の DNS を書き換えられる人を決めておく（手順 6 と戻し方で、`api` の CNAME を書き換える）
   - メンテナンスのメッセージと終了予定時刻（04:00 JST）を用意する
 - [ ] 手順
   1. 02:00 に、新旧両方の config でメンテナンスを ON にする。両方の URL を curl して ON になっていることを確かめる
   2. Java を止め、`api.tateca.net` の割り当てを外す（Railway の `railway domain delete` と、デプロイの停止）
   3. DB のバックアップを取る（MySQL のコンテナに SSH で入り、`mysqldump --single-transaction`）
-  4. Go の migration ツールに、V2 まで適用済みとして登録する（スキーマは変えない）。登録は `up` より必ず先に行う。migration のコマンドは、登録の前の `up` を拒否する（P2-1）。Go のイメージにはシェルがなく SSH で入れないので、MySQL のコンテナを経由した SSH の通り道（`ssh -L`）を作り、手元で `go run ./cmd/migrate register` を流す（P3 で確かめた）
+  4. Go の migration ツールに、V2 まで適用済みとして登録する（スキーマは変えない）。登録は `up` より必ず先に行う。migration のコマンドは、登録の前の `up` を拒否する（P2-1）。Go のイメージにはシェルがなく SSH で入れないので、MySQL のコンテナを経由した SSH の通り道（`ssh -L`）を作り、手元で `go run ./cmd/migrate register` を流す（P3 で確かめた）。接続先は、`MYSQLHOST=127.0.0.1`、`MYSQLPORT` を通り道の手元のポートにし、`MYSQLUSER`、`MYSQLPASSWORD`、`MYSQLDATABASE` は Railway の本番の MySQL の変数から、画面に出さずに渡す
   5. Go を起動し、Railway がサービスごとに発行する URL に対して、テスト用アカウントで動作確認する。読み取り（`GET /auth/users/{uid}`、`GET /groups/list`、`GET /groups/{groupId}`、精算）と、書き込み1本（取引の作成 → 取得 → 削除）
   6. `api.tateca.net` を Go に付け（`railway domain api.tateca.net -s <Go のサービス>`）、Railway が示す CNAME の値に、Cloudflare の `api` のレコードを書き換える（プロキシはそのまま）。証明書が有効になってから、5 と同じ確認をする
   7. 新旧両方の config でメンテナンスを OFF にし、curl で確かめる
   8. 監視する。Better Stack のエラー率、09:01 JST の為替更新（`GET /exchange-rate/{当日}`）、iOS の実機での主要な流れ
-- [ ] 戻し方 A（メンテナンス中に失敗した場合）: 先に Java を起動する（起動に約20秒）。それから、ドメインを Go から外して Java に付け、Railway が示す新しい CNAME の値に Cloudflare を書き換える（付け直すたびに値が変わる）。確認してから、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない（P3 のリハーサルで2分）
+- [ ] 戻し方 A（メンテナンス中に失敗した場合）: 先に Java を起動する（起動に約20秒）。それから、ドメインを Go から外して Java に付け、Railway が示す新しい CNAME の値に Cloudflare を書き換える（付け直すたびに値が変わる）。確認してから、Go のデプロイを止め、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない（P3 のリハーサルで2分）
 - [ ] 戻し方 B（メンテナンスを明けてから1週間以内）: メンテナンスを ON にしてから、A と同じ手順を踏み、メンテナンスを OFF にする。Go が書いたデータを Java が読めることは、流し分けで確認済み
 - [ ] 結果: 本番が Go で動く
 - [ ] 確認 live: 手順 5、6、8 がすべて通る
