@@ -348,7 +348,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [x] 依存: P3、人の go（2026-11-28 に、ユーザーが日中に行うと決めた）
 - [x] 触るファイル
-  - tateca-config: `firebase-public/maintenance_mode.json`（`is_maintenance`。ストアにある 1.47.0 までのすべてのアプリが読む）、`cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.48.0 以降のアプリが読む。2026-11-28 の時点で、ストアに出た版はない）。どちらも main に push すると自動でデプロイされる。P4 の当日は「1.47.0 以降が app-config.json を読む」と誤って書いていたが、両方を書き換えたので影響はなかった（app-config.json を読む処理は、出していない `release/v1.48.0` にしかなかった）
+  - tateca-config: `firebase-public/maintenance_mode.json`（`is_maintenance`。ストアにあるすべてのアプリと、tateca-ios の `main`（2026-11-28 から 1.48.0）が読む）、`cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。今はどのアプリも読まない。読む処理は、出さないことにした `release/v1.48.0-backup` にしかない）。どちらも main に push すると自動でデプロイされる。P4 の当日は「1.47.0 以降が app-config.json を読む」と誤って書いていたが、両方を書き換えたので影響はなかった。メンテナンスでは、`maintenance_mode.json` を必ず書き換える
   - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す。tateca-backend #367 で足した）
 - [x] 前日まで
   - [x] 本番用の Go サービス `tateca-backend-go` を、ドメインを付けずに Railway の本番の環境に用意した（2026-11-27）。イメージは、staging で確かめたコミットに固定した `go-sha-4dd5679…`（2026-11-27 に GHCR で、staging が動かしていた `go-latest` と同じ digest `ee05dc1b…` であることを確かめた。staging は `go-latest` を指すので、次の CD の後は本番と版が離れる）。環境変数は本番の Java から写し、Better Stack は本番の Java と同じソース `tateca-backend-prod` に送る（`application` の項目に頼る画面はなかった）。起動して本番の DB につながることを確かめた
@@ -400,7 +400,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - 削除: `src/`、`build.gradle.kts`、`settings.gradle.kts`、`gradle.properties`、`gradle/`、`gradlew`、`gradlew.bat`、`config/`、`Dockerfile`
   - Go の `cmd/api/Dockerfile` だけが残る
   - 削除: Java と Go の DB の差分のチェック（`acceptance/` の下）
-  - 変更: `.github/workflows/ci.yml`（Java のジョブとコピーの同一性チェックを削除）、`cd.yml`（Java の CD。削除する。Go は `cd-go.yml` でデプロイする）、`acceptance/**`（`GIVEN_BASE_URL` を削除）、`acceptance/compose.yaml`（Java を削除）、`AGENTS.md`、`CLAUDE.md`、`README.md`
+  - 変更: `.github/workflows/ci.yml`（Java のジョブとコピーの同一性チェックを削除）、`cd.yml`（Java の CD。削除する。Go は `cd-go.yml` でデプロイする）、`cd-go.yml`（`cd.yml` に触れた先頭のコメントを直す。`cd-go.yml` は自分の変更でも動くので、P5-1 の PR にも `pr-<番号>` の環境ができ、マージで本番にデプロイされる）、`acceptance/**`（`GIVEN_BASE_URL` を削除）、`acceptance/compose.yaml`（Java を削除）、`AGENTS.md`、`CLAUDE.md`、`README.md`
   - Railway: 停止していた Java のサービスを削除する
 - [ ] 結果: tateca-backend が Go だけになる
 - [ ] 確認 unit: CI が Go だけで GREEN
