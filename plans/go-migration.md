@@ -344,24 +344,24 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 - [x] Better Stack のアラート `Go unexpected error (staging)`（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）を作った。実際に鳴ることは、P4 の前日までの準備で確かめた
 - [ ] 人の確認: 結果を見て、P4 に進むかどうかを人が判断する
 
-## P4　本番の切り替え（人の go が必要）
+## P4　本番の切り替え（2026-11-28 に完了。翌日の確認を除く）
 
-- [ ] 依存: P3、人の go
-- [ ] 触るファイル
+- [x] 依存: P3、人の go（2026-11-28 に、ユーザーが日中に行うと決めた）
+- [x] 触るファイル
   - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/ios/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
-  - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す）
-- [ ] 前日まで
+  - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す）。**まだ足していない**。今は、本番の Go のイメージのタグを Railway で手で書き換える。P5 の前に足す
+- [x] 前日まで
   - [x] 本番用の Go サービス `tateca-backend-go` を、ドメインを付けずに Railway の本番の環境に用意した（2026-11-27）。イメージは、staging で確かめたコミットに固定した `go-sha-4dd5679…`（2026-11-27 に GHCR で、staging が動かしていた `go-latest` と同じ digest `ee05dc1b…` であることを確かめた。staging は `go-latest` を指すので、次の CD の後は本番と版が離れる）。環境変数は本番の Java から写し、Better Stack は本番の Java と同じソース `tateca-backend-prod` に送る（`application` の項目に頼る画面はなかった）。起動して本番の DB につながることを確かめた
   - [x] Better Stack に、本番の Go のアラート `Go unexpected error (prod)` を作った（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）。画面のブロックで作るクエリは API では作れないので、SQL で作った。Java のログには当たらないので、切り替えるまでは鳴らない
   - [x] TXT: staging で TXT を消してドメインを付け直すと、Railway は確認を求め（Verified: no）、TXT と新しい CNAME を示した。TXT の値は、同じドメインなら前と同じだった。TXT と CNAME を入れてから、約25秒（実測）で確認が済み、Go が応答した。本番の `api.tateca.net` も、当日、手順 6 で TXT（Railway が示す値）を Cloudflare に足す
   - [x] Railway の SSH の鍵が登録してあり、本番の MySQL のコンテナに入れることを確かめた（MySQL 9.4.0。Flyway の履歴は BASELINE、V1、V2 がすべて成功。`schema_migrations` はまだない）。`migrate register` は、BASELINE の後に V1 と V2 がある履歴にも対応している
   - [x] アラートが実際に鳴ることを確かめた（2026-11-28。staging で 500 を起こした。本番と同じ条件の `Go unexpected error (staging)` と、条件を変えた試験用のアラート（`status = 500 AND endpoint = "getGroup"`）の両方でインシデントが立ち、約2分後にメールが届いた。試験用のアラートは消した）
-  - [ ] Java と Go の DB の差分のチェック（移行のためだけ。tateca-backend の `acceptance/` の下に置き、P5-1 で消す。UUID や時刻のそろえ方などの設計は、その PR に書く）。空の DB を2つ用意し、同じ acceptance を Java と Go に流し、両方の DB を表と列ごとに比べる（毎回変わる UUID と時刻はそろえる）。API の応答に出ない違い（読み返さない列の値、NULL と空文字、余計な行）を捕まえる。見つかった違いは、直すか、残してよいかを仕分ける
-  - [ ] migration のコマンドの結合テスト。Flyway の履歴がある本物の MySQL（本番と同じ BASELINE、V1、V2 の形）で、`register` が通ること、登録の前の `up` を拒否すること、登録の後の `up` が変更なしになることを確かめる（MySQL の立て方と Flyway の履歴の作り方は、その PR に書く。migration のコマンドは P5-1 の後も残るので、このテストも残す）
-  - 当日、Cloudflare の DNS を書き換えられる人を決めておく（手順 6 と戻し方で、`api` の CNAME を書き換える）
-  - メンテナンスのメッセージと終了予定時刻（04:00 JST）を用意する
-- [ ] 手順
-  1. 02:00 に、新旧両方の config でメンテナンスを ON にする。両方の URL を curl して ON になっていることを確かめる
+  - [x] Java と Go の DB の差分のチェック（tateca-backend #366。違いは0件。わざと壊した Go では違いを捕まえた）（移行のためだけ。tateca-backend の `acceptance/` の下に置き、P5-1 で消す。UUID や時刻のそろえ方などの設計は、その PR に書く）。空の DB を2つ用意し、同じ acceptance を Java と Go に流し、両方の DB を表と列ごとに比べる（毎回変わる UUID と時刻はそろえる）。API の応答に出ない違い（読み返さない列の値、NULL と空文字、余計な行）を捕まえる。見つかった違いは、直すか、残してよいかを仕分ける
+  - [x] migration のコマンドの結合テスト（tateca-backend #365）。Flyway の履歴がある本物の MySQL（本番と同じ BASELINE、V1、V2 の形）で、`register` が通ること、登録の前の `up` を拒否すること、登録の後の `up` が変更なしになることを確かめる（MySQL の立て方と Flyway の履歴の作り方は、その PR に書く。migration のコマンドは P5-1 の後も残るので、このテストも残す）
+  - [x] 当日、Cloudflare の DNS を書き換えられる人を決めておく（ユーザー）（手順 6 と戻し方で、`api` の CNAME を書き換える）
+  - [x] メンテナンスのメッセージと終了予定時刻を用意する。**終了予定時刻は UTC で書く**。アプリは config の時刻を UTC として読み、端末の時刻で表示する。2026-11-28 には JST のつもりで `14:00:00` と書き、アプリには 23:00 と表示された（14:00 JST なら `05:00:00` と書く）
+- [x] 手順（日中に行った。時刻は JST）
+  1. 新旧両方の config でメンテナンスを ON にする（tateca-config の PR をマージすると、自動でデプロイされる）。両方の URL を curl して ON になっていることを確かめる
   2. Java を止め、`api.tateca.net` の割り当てを外す（Railway の `railway domain delete` と、デプロイの停止）
   3. DB のバックアップを取る（MySQL のコンテナに SSH で入り、`mysqldump --single-transaction`）
   4. Go の migration ツールに、V2 まで適用済みとして登録する（スキーマは変えない）。登録は `up` より必ず先に行う。migration のコマンドは、登録の前の `up` を拒否する（P2-1）。Go のイメージにはシェルがなく SSH で入れないので、MySQL のコンテナを経由した SSH の通り道（`ssh -L`）を作り、手元で `go run ./cmd/migrate register` を流す（P3 で確かめた）。接続先は、`MYSQLHOST=127.0.0.1`、`MYSQLPORT` を通り道の手元のポートにし、`MYSQLUSER`、`MYSQLPASSWORD`、`MYSQLDATABASE` は Railway の本番の MySQL の変数から、画面に出さずに渡す
@@ -369,11 +369,22 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   6. `api.tateca.net` を Go に付け（`railway domain api.tateca.net -s tateca-backend-go`）、Railway が示す CNAME の値に Cloudflare の `api` のレコードを書き換え（プロキシはそのまま）、示された `_railway-verify.api` の TXT を足す。約25秒（staging での実測）で確認が済み、証明書が有効になる。それから、5 と同じ確認をする
   7. 新旧両方の config でメンテナンスを OFF にし、curl で確かめる
   8. 監視する。Better Stack のエラー率、09:01 JST の為替更新（`GET /exchange-rate/{当日}`）、iOS の実機での主要な流れ
-- [ ] 戻し方 A（メンテナンス中に失敗した場合）: 先に Java を起動する（起動に約20秒）。それから、ドメインを Go から外して Java に付け、Railway が示す新しい CNAME の値に Cloudflare を書き換える（付け直すたびに値が変わる）。確認してから、Go のデプロイを止め、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない（P3 のリハーサルで2分）
-- [ ] 戻し方 B（メンテナンスを明けてから1週間以内）: メンテナンスを ON にしてから、A と同じ手順を踏み、メンテナンスを OFF にする。Go が書いたデータを Java が読めることは、流し分けで確認済み
-- [ ] 結果: 本番が Go で動く
-- [ ] 確認 live: 手順 5、6、8 がすべて通る
-- [ ] 確認 perf: 切り替え前1週間の Java の p95（Better Stack）と比べる。切り替え後1日の Go の p95 が 10% 以上悪化していたら、原因を調べる
+- 戻し方 A（メンテナンス中に失敗した場合。2026-11-28 は使わなかった）: 先に Java を起動する（起動に約20秒）。それから、ドメインを Go から外して Java に付け、Railway が示す新しい CNAME の値に Cloudflare を書き換える（付け直すたびに値が変わる）。確認してから、Go のデプロイを止め、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない（P3 のリハーサルで2分）
+- 戻し方 B（メンテナンスを明けてから1週間以内。2026-12-05 まで。本番の Java のサービスは止めて残してある）: メンテナンスを ON にしてから、A と同じ手順を踏み、メンテナンスを OFF にする。Go が書いたデータを Java が読めることは、流し分けで確認済み
+- [x] 結果: 本番が Go で動く（2026-11-28 13:42 JST から）
+- [ ] 確認 live: 手順 5、6、8 がすべて通る。5 と 6 は通った。8 は iOS の実機と、Better Stack に想定外のエラーがないことは確かめた。翌朝 09:00 の為替の更新（Lambda → Go）は、まだ確かめていない
+- [ ] 確認 perf: 切り替え前1週間の Java の p95（Better Stack）と比べる。切り替え後1日の Go の p95 が 10% 以上悪化していたら、原因を調べる（2026-11-29 以降）
+- [x] 結果の記録（2026-11-28、JST）
+  - 13:37 メンテナンス ON（tateca-config #4。両方の config を curl で確かめた）
+  - 13:38 本番の Java を止め、ドメインを外した（4秒）
+  - 13:38 DB のバックアップ（約31 MB、9つの表。手元の作業用の一時フォルダに、本人だけが読める形で置いた。個人の情報を含むので、2026-12-05 に消す）
+  - 13:38 `migrate register` で V2 まで登録した（`recorded version 2`。その後の `up` は変更なし。10秒）
+  - 13:39 本番の Go を Railway の一時的な URL で確かめた（本物のトークンで、アカウントの取得、グループの詳細、精算、取引の作成と削除。4件 PASS）。一時的な URL は、終わった後に外した
+  - 13:40〜13:41 `api.tateca.net` を Go に付けた。Railway は TXT を求めた。ユーザーが CNAME と TXT を入れてから、約30秒で確認が済み、Go が応答した。同じ4つの確認が `api.tateca.net` で PASS
+  - 13:43 メンテナンス OFF（tateca-config #5）。メンテナンスは約6分
+  - その後: iOS の実機で、主な流れが通ることをユーザーが確かめた。本番の Go に利用者の要求が届き、想定外のエラーはない
+  - 本番の DB に、確認で作ったテスト用のグループが数個残っている（参加済みのメンバーはいない。グループを消す API はない）
+  - `api.tateca.net/actuator/health` は、Java にしかないパスなので、今は 401 を返す。外形監視は、これを見ていない（Better Stack の監視は、止めてある google.com だけ）
 
 ---
 
