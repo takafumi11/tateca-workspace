@@ -348,8 +348,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [x] 依存: P3、人の go（2026-11-28 に、ユーザーが日中に行うと決めた）
 - [x] 触るファイル
-  - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
-  - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す）。**まだ足していない**。今は、本番の Go のイメージのタグを Railway で手で書き換える。P5 の前に足す
+  - tateca-config: `firebase-public/maintenance_mode.json`（`is_maintenance`。ストアにある 1.47.0 までのすべてのアプリが読む）、`cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.48.0 以降のアプリが読む。2026-11-28 の時点で、ストアに出た版はない）。どちらも main に push すると自動でデプロイされる。P4 の当日は「1.47.0 以降が app-config.json を読む」と誤って書いていたが、両方を書き換えたので影響はなかった（app-config.json を読む処理は、出していない `release/v1.48.0` にしかなかった）
+  - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す。tateca-backend #367 で足した）
 - [x] 前日まで
   - [x] 本番用の Go サービス `tateca-backend-go` を、ドメインを付けずに Railway の本番の環境に用意した（2026-11-27）。イメージは、staging で確かめたコミットに固定した `go-sha-4dd5679…`（2026-11-27 に GHCR で、staging が動かしていた `go-latest` と同じ digest `ee05dc1b…` であることを確かめた。staging は `go-latest` を指すので、次の CD の後は本番と版が離れる）。環境変数は本番の Java から写し、Better Stack は本番の Java と同じソース `tateca-backend-prod` に送る（`application` の項目に頼る画面はなかった）。起動して本番の DB につながることを確かめた
   - [x] Better Stack に、本番の Go のアラート `Go unexpected error (prod)` を作った（`level = "ERROR" AND message = "unexpected error"`、1分ごとに1件以上で、チームにメール）。画面のブロックで作るクエリは API では作れないので、SQL で作った。Java のログには当たらないので、切り替えるまでは鳴らない
@@ -385,7 +385,8 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - その後: iOS の実機で、主な流れが通ることをユーザーが確かめた。本番の Go に利用者の要求が届き、想定外のエラーはない
   - 本番の DB に、確認で作ったテスト用のグループが数個残っている（参加済みのメンバーはいない。グループを消す API はない）
   - `api.tateca.net/actuator/health` は、Java にしかないパスなので、今は 401 を返す。外形監視は、これを見ていない（Better Stack の監視は、止めてある google.com だけ）
-- [ ] `cd-go.yml` に本番へのデプロイを足す（今は、本番の Go のイメージのタグを Railway で手で書き換える）
+- [x] `cd-go.yml` に本番へのデプロイを足した（tateca-backend #367、2026-11-28）。main への push で、本番の Go に `go-sha-<sha>` をデプロイし、pre-deploy で `/migrate up` を流し、`api.tateca.net/health` を確かめる。最初の実行（`c1c33b2`）は成功し、`/health` は UP だった
+- [x] staging をなくし、Go を変える PR ごとに Railway の環境 `pr-<番号>` を作るようにした（tateca-backend #367）。環境 `staging` はひな形 `preview-template` に改名し、Java のサービスと `staging-api.tateca.net` を外した。各 PR の環境は空の MySQL に migration と参照データを入れ、URL を PR にコメントし、PR を閉じると消える。iOS の開発ビルドは、スキームの環境変数 `API_BASE_URL` でその URL を向く（tateca-ios #217）。Better Stack のソースは `tateca-backend-go-preview` に改名し、そのアラートは止めた（acceptance が既知の 500 を起こすため）
 - [ ] 2026-12-05（戻し方 B の期限）に、手元の DB のバックアップを消す（個人の情報を含む）
 
 ---
@@ -393,7 +394,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 ## P5-1　Java の削除（P4 から1週間後）
 
 - [ ] 依存: P4 から1週間が経ち、戻していないこと
-- [ ] 依存（本番へのデプロイ）: `cd-go.yml` から本番の Go にデプロイできること（P4 の残り）
+- [x] 依存（本番へのデプロイ）: `cd-go.yml` から本番の Go にデプロイできること（tateca-backend #367）
 - [ ] 依存（DB の層のテスト）: Go の結合テストで、Java の `*IntegrationTest` と `*RepositoryTest` が確かめていたことを置き換えておく。書いた列の値（UUID のバイトの並び、UTC の時刻と精度、金額、enum）、失敗したときのロールバック、取引と義務の削除の連なり、一意と外部キーの制約、為替の上書きと読み飛ばし。Java のテストを消すと、DB の層を確かめるテストがなくなるため（black-box のテストは DB を読まないが、結合テストは読んでよい）。同時に書いたときの振る舞い（#348 など）も、任意で比べる
 - [ ] 触るファイル
   - 削除: `src/`、`build.gradle.kts`、`settings.gradle.kts`、`gradle.properties`、`gradle/`、`gradlew`、`gradlew.bat`、`config/`、`Dockerfile`
@@ -403,7 +404,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - Railway: 停止していた Java のサービスを削除する
 - [ ] 結果: tateca-backend が Go だけになる
 - [ ] 確認 unit: CI が Go だけで GREEN
-- [ ] 確認 live: CD で staging にデプロイし、テストを staging に流して GREEN
+- [ ] 確認 live: CD で PR の環境 `pr-<番号>` にデプロイし、テストをそこに流して GREEN。マージで本番にデプロイされ、`api.tateca.net/health` が UP
 - [ ] 確認 perf: なし
 
 ## P5-3　docs の整理
