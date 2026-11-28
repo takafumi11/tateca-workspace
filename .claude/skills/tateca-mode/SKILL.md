@@ -39,6 +39,10 @@ Stop and ask before:
 - changing a response shape or the errors an endpoint returns (old iOS app versions keep calling the API, so treat such a change as irreversible);
 - merging a PR whose merge deploys: its CD changes the API server, cloud resources, or app config. Today that is every PR in `tateca-infrastructure` and `tateca-config`, and a `tateca-backend` PR that starts any of its CD workflows: `.github/workflows/cd.yml` deploys Java to production for any file outside its `paths-ignore`, and `.github/workflows/cd-go.yml` deploys Go to production for any file in its `paths`. A Go PR's own Railway environment (`pr-<number>`) does not count: it holds only test data and is deleted when the PR closes.
 
+## Waiting on delegated work
+
+When you hand work to an agent, a CI run, or a build, know how long it should take: `tateca-backend` CI about 10 minutes, an Xcode Cloud build 15 to 25 minutes, an agent's implementation 30 to 60 minutes. When you hand it off, set something that wakes you at twice that time (a `Monitor`, a background watch, or `/loop`), because a notification may never come. If the work has not reported by then, do not keep waiting. Check its state yourself (`gh pr checks`, `gh run view`, the App Store Connect API). If an agent stopped while it waits on something that already finished, tell it the current state and have it continue. When an agent reports that it is waiting on CI, check that CI yourself right away.
+
 ## Merging
 
 Merge every other PR yourself through poteto-mode's Shipping playbook. A PR merges when an agent that did not write its code verified its current head and posted `PASS` or `PASS+NOTES` on it, CI is green at that head, and its human gates are cleared (a requirements PR needs the PdM's approval). Keep cross-repository order: merge a requirements PR before the backend PR whose AC check reads it, then rerun that backend PR's Acceptance job, because CI reads the workspace's `main` when the job starts. Use the merge method the repository already uses, and read the PR back to confirm it merged.
