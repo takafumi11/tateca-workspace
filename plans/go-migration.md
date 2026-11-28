@@ -348,7 +348,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
 
 - [x] 依存: P3、人の go（2026-11-28 に、ユーザーが日中に行うと決めた）
 - [x] 触るファイル
-  - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/ios/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
+  - tateca-config: `cloudflare-public/ios/v1/app-config.json`（`maintenance.enabled`。1.47.0 以降のアプリが読む）、`firebase-public/maintenance_mode.json`（`is_maintenance`。1.47.0 より前のアプリが読む）。どちらも main に push すると自動でデプロイされる
   - tateca-backend: `.github/workflows/cd-go.yml`（本番用の Go サービスへのデプロイを足す）。**まだ足していない**。今は、本番の Go のイメージのタグを Railway で手で書き換える。P5 の前に足す
 - [x] 前日まで
   - [x] 本番用の Go サービス `tateca-backend-go` を、ドメインを付けずに Railway の本番の環境に用意した（2026-11-27）。イメージは、staging で確かめたコミットに固定した `go-sha-4dd5679…`（2026-11-27 に GHCR で、staging が動かしていた `go-latest` と同じ digest `ee05dc1b…` であることを確かめた。staging は `go-latest` を指すので、次の CD の後は本番と版が離れる）。環境変数は本番の Java から写し、Better Stack は本番の Java と同じソース `tateca-backend-prod` に送る（`application` の項目に頼る画面はなかった）。起動して本番の DB につながることを確かめた
@@ -371,7 +371,7 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   8. 監視する。Better Stack のエラー率、09:01 JST の為替更新（`GET /exchange-rate/{当日}`）、iOS の実機での主要な流れ
 - 戻し方 A（メンテナンス中に失敗した場合。2026-11-28 は使わなかった）: 先に Java を起動する（起動に約20秒）。それから、ドメインを Go から外して Java に付け、Railway が示す新しい CNAME の値に Cloudflare を書き換える（付け直すたびに値が変わる）。確認してから、Go のデプロイを止め、メンテナンスを OFF にする。この時点ではユーザーの書き込みがないので、データの心配はない（P3 のリハーサルで2分）
 - 戻し方 B（メンテナンスを明けてから1週間以内。2026-12-05 まで。本番の Java のサービスは止めて残してある）: メンテナンスを ON にしてから、A と同じ手順を踏み、メンテナンスを OFF にする。Go が書いたデータを Java が読めることは、流し分けで確認済み
-- [x] 結果: 本番が Go で動く（2026-11-28 13:42 JST から）
+- [x] 結果: 本番が Go で動く（2026-11-28 13:41 JST から）
 - [ ] 確認 live: 手順 5、6、8 がすべて通る。5 と 6 は通った。8 は iOS の実機と、Better Stack に想定外のエラーがないことは確かめた。翌朝 09:00 の為替の更新（Lambda → Go）は、まだ確かめていない
 - [ ] 確認 perf: 切り替え前1週間の Java の p95（Better Stack）と比べる。切り替え後1日の Go の p95 が 10% 以上悪化していたら、原因を調べる（2026-11-29 以降）
 - [x] 結果の記録（2026-11-28、JST）
@@ -380,17 +380,20 @@ P2-2〜P2-4 を直列にするのは、テストの準備を API で行うため
   - 13:38 DB のバックアップ（約31 MB、9つの表。手元の作業用の一時フォルダに、本人だけが読める形で置いた。個人の情報を含むので、2026-12-05 に消す）
   - 13:38 `migrate register` で V2 まで登録した（`recorded version 2`。その後の `up` は変更なし。10秒）
   - 13:39 本番の Go を Railway の一時的な URL で確かめた（本物のトークンで、アカウントの取得、グループの詳細、精算、取引の作成と削除。4件 PASS）。一時的な URL は、終わった後に外した
-  - 13:40〜13:41 `api.tateca.net` を Go に付けた。Railway は TXT を求めた。ユーザーが CNAME と TXT を入れてから、約30秒で確認が済み、Go が応答した。同じ4つの確認が `api.tateca.net` で PASS
+  - 13:40〜13:41 `api.tateca.net` を Go に付けた。Railway は TXT を求めた。ユーザーが CNAME と TXT を入れてから、約40秒で確認が済み、Go が応答した。同じ4つの確認が `api.tateca.net` で PASS
   - 13:43 メンテナンス OFF（tateca-config #5）。メンテナンスは約6分
   - その後: iOS の実機で、主な流れが通ることをユーザーが確かめた。本番の Go に利用者の要求が届き、想定外のエラーはない
   - 本番の DB に、確認で作ったテスト用のグループが数個残っている（参加済みのメンバーはいない。グループを消す API はない）
   - `api.tateca.net/actuator/health` は、Java にしかないパスなので、今は 401 を返す。外形監視は、これを見ていない（Better Stack の監視は、止めてある google.com だけ）
+- [ ] `cd-go.yml` に本番へのデプロイを足す（今は、本番の Go のイメージのタグを Railway で手で書き換える）
+- [ ] 2026-12-05（戻し方 B の期限）に、手元の DB のバックアップを消す（個人の情報を含む）
 
 ---
 
 ## P5-1　Java の削除（P4 から1週間後）
 
 - [ ] 依存: P4 から1週間が経ち、戻していないこと
+- [ ] 依存（本番へのデプロイ）: `cd-go.yml` から本番の Go にデプロイできること（P4 の残り）
 - [ ] 依存（DB の層のテスト）: Go の結合テストで、Java の `*IntegrationTest` と `*RepositoryTest` が確かめていたことを置き換えておく。書いた列の値（UUID のバイトの並び、UTC の時刻と精度、金額、enum）、失敗したときのロールバック、取引と義務の削除の連なり、一意と外部キーの制約、為替の上書きと読み飛ばし。Java のテストを消すと、DB の層を確かめるテストがなくなるため（black-box のテストは DB を読まないが、結合テストは読んでよい）。同時に書いたときの振る舞い（#348 など）も、任意で比べる
 - [ ] 触るファイル
   - 削除: `src/`、`build.gradle.kts`、`settings.gradle.kts`、`gradle.properties`、`gradle/`、`gradlew`、`gradlew.bat`、`config/`、`Dockerfile`
