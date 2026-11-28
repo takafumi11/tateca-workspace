@@ -41,7 +41,7 @@ Stop and ask before:
 
 ## Waiting on delegated work
 
-When you hand work to an agent, a CI run, or a build, know how long it should take: `tateca-backend` CI about 10 minutes, an Xcode Cloud build 15 to 25 minutes, an agent's implementation 30 to 60 minutes. When you hand it off, set something that wakes you near that time (a `Monitor`, a background watch, or `/loop`), because a notification may never come. Once it runs past twice that time, do not keep waiting for a notification. Check its state yourself (`gh pr checks`, `gh run view`, the App Store Connect API). If an agent stopped while it waits on something that already finished, tell it the current state and have it continue. When an agent reports that it is waiting on CI, check that CI yourself right away.
+When you hand work to an agent, a CI run, or a build, know how long it should take: `tateca-backend` CI about 10 minutes, an Xcode Cloud build 15 to 25 minutes, an agent's implementation 30 to 60 minutes. When you hand it off, set something that wakes you at twice that time (a `Monitor`, a background watch, or `/loop`), because a notification may never come. If the work has not reported by then, do not keep waiting. Check its state yourself (`gh pr checks`, `gh run view`, the App Store Connect API). If an agent stopped while it waits on something that already finished, tell it the current state and have it continue. When an agent reports that it is waiting on CI, check that CI yourself right away.
 
 ## Merging
 
