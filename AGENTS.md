@@ -21,7 +21,7 @@ All Tateca repositories sit side by side in one parent directory. Reach them fro
 
 System facts that cross repositories:
 
-- API: production `https://api.tateca.net`, staging `https://staging-api.tateca.net`.
+- API: production `https://api.tateca.net`. There is no staging: each `tateca-backend` PR that changes Go code gets its own Railway environment `pr-<number>`, whose URL the PR comment gives. An iOS Debug build can point at it by setting `API_BASE_URL` in its scheme.
 - Authentication: `/internal/**` uses the `X-API-Key` header (called by Lambda). Every other path uses a Firebase ID token.
 
 ## Where Things Live
@@ -48,6 +48,7 @@ System facts that cross repositories:
 - Requirements: use the `sdd-requirements` skill to create, update, review, or draft requirements from current behavior.
 - Implementation, investigation, bug fixes, and refactoring: use `/tateca-mode` (pstack's poteto-mode plus the Tateca rules in `.claude/skills/tateca-mode/SKILL.md`) in the implementation repository. It is linked from `~/.claude/skills/`, so it works in every Tateca repository.
 - For a new feature or a behavior change: requirements first (PdM approval), then black-box tests that carry the AC IDs and fail first, then the implementation, then verification on the running app, then the PR.
+- Automate first. Before asking the developer to click through a console or send screenshots (App Store Connect and Xcode Cloud, Railway, Cloudflare, Better Stack, GitHub), check whether an API or CLI can read or do it, and use that. When a credential is missing, ask for a key with the narrowest role that works, stored outside every repository and never pasted into chat. Fall back to manual steps only when no API or CLI exists, and say which step is manual and why. Human gates still apply to what an API call changes.
 - Human gates: requirements changes (PdM), API changes clients can see (response shapes and per-endpoint errors; old iOS app versions keep calling the API, so such a change is effectively irreversible), and merges that deploy (the API server, cloud resources, or app config). Agents merge other PRs after an independent verification and green CI; see `/tateca-mode`.
 
 The move from the old SDD process to this flow is in progress; see `plans/dev-flow.md`.
